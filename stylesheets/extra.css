@@ -1,0 +1,119 @@
+/* Custom styles for Sentinel DV documentation */
+
+:root {
+  --md-primary-fg-color: #4f46e5;
+  --md-primary-fg-color--light: #6366f1;
+  --md-primary-fg-color--dark: #4338ca;
+  --md-accent-fg-color: #7c3aed;
+}
+
+/* Hero section */
+.hero {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.hero p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.hero .md-button {
+  margin: 0.5rem;
+}
+
+.hero .md-button--primary {
+  background-color: white;
+  color: #4f46e5;
+}
+
+.hero .md-button--primary:hover {
+  background-color: #f3f4f6;
+}
+
+/* Cards grid */
+.grid.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.grid.cards > * {
+  padding: 1.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.grid.cards > *:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+}
+
+/* Icons in cards */
+.lg.middle {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--md-primary-fg-color);
+}
+
+/* Code blocks */
+.highlight {
+  border-radius: 0.5rem;
+}
+
+/* Admonitions */
+.admonition {
+  border-radius: 0.5rem;
+}
+
+/* Navigation tabs */
+.md-tabs {
+  background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+/* Footer */
+.md-footer {
+  background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+/* Text center utility */
+.text-center {
+  text-align: center;
+}
+
+/* Custom card styling */
+.card {
+  padding: 1.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.card h3 {
+  margin-top: 0;
+  color: var(--md-primary-fg-color);
+}
+
+/* Responsive hero */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+  
+  .hero p {
+    font-size: 1rem;
+  }
+}
