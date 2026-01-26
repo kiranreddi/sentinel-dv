@@ -2,38 +2,46 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/how-to-use/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/ids/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/index-store/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/taxonomy/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/about/changelog/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/architecture/overview/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/architecture/schemas/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/architecture/security/</loc>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/getting-started/quick-start/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/tools/overview/</loc>
-         <lastmod>2026-01-25</lastmod>
+         <lastmod>2026-01-26</lastmod>
     </url>
 </urlset>
