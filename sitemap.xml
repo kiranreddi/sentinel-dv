@@ -25,6 +25,10 @@
          <lastmod>2026-01-26</lastmod>
     </url>
     <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/adapters/custom/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/architecture/overview/</loc>
          <lastmod>2026-01-26</lastmod>
     </url>
@@ -41,7 +45,31 @@
          <lastmod>2026-01-26</lastmod>
     </url>
     <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/guides/performance/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/guides/simulator-support/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/tools/analysis/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/tools/detail/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/tools/discovery/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/tools/overview/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/tools/regression/</loc>
          <lastmod>2026-01-26</lastmod>
     </url>
 </urlset>
