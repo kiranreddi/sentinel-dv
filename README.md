@@ -5,8 +5,8 @@
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/MCP-1.0.0-purple.svg)](https://modelcontextprotocol.io)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/yourusername/sentinel-dv/ci.yml?branch=main&label=CI)](https://github.com/yourusername/sentinel-dv/actions)
-[![Docs](https://img.shields.io/github/actions/workflow/status/yourusername/sentinel-dv/docs.yml?branch=main&label=docs)](https://yourusername.github.io/sentinel-dv/)
+[![CI](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml)
+[![Documentation](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-70%25+-brightgreen.svg)](tests/)
 
