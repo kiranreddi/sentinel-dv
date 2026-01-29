@@ -171,6 +171,10 @@ def get_regression_summary(
 
     Returns:
         Regression summary with pass rates and top failures
+
+    Note:
+        Currently retrieves up to 10,000 tests and failures per run.
+        For very large runs (>10,000 tests), results may be incomplete.
     """
     from datetime import datetime, timedelta
 
@@ -180,10 +184,11 @@ def get_regression_summary(
     start_time_str = start_time.isoformat() + "Z"
 
     # Get all runs in the time window for this suite
+    # Note: Currently limited to 1000 runs. For higher volume, consider server-side filtering.
     runs, total_runs = store.query_runs(
         suite=suite,
         page=1,
-        page_size=1000,  # Get all runs in window
+        page_size=1000,
     )
 
     # Filter by time (if created_at is available)
@@ -224,7 +229,7 @@ def get_regression_summary(
 
     # Group by signature and count
     signature_counts: dict[str, int] = {}
-    signature_details: dict[str, dict] = {}
+    signature_details: dict[str, dict[str, Any]] = {}
 
     for failure in all_failures:
         sig_id = failure.get("signature_id") or "unknown"
@@ -272,8 +277,13 @@ def compare_runs(
 
     Returns:
         Diff summary with test changes and failure differences
+
+    Note:
+        Currently retrieves up to 10,000 tests and failures per run.
+        For very large runs (>10,000 tests/failures), results may be incomplete.
     """
     # Get tests from both runs
+    # Note: Limited to 10,000 tests per run
     base_tests, _ = store.query_tests(run_id=base_run_id, page=1, page_size=10000)
     compare_tests, _ = store.query_tests(run_id=compare_run_id, page=1, page_size=10000)
 

@@ -662,6 +662,13 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
+        # Validate sort_by to prevent SQL injection
+        allowed_sort_columns = ["created_at", "run_id", "suite", "status", "ci_system"]
+        if sort_by not in allowed_sort_columns:
+            raise ValueError(
+                f"Invalid sort_by column: {sort_by}. Allowed: {allowed_sort_columns}"
+            )
+
         # Build WHERE clause
         where_clauses = []
         params = []

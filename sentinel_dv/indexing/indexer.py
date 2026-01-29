@@ -214,29 +214,30 @@ class ArtifactIndexer:
         # Parse the XML file
         results = self.cocotb_adapter.parse_junit_xml(xml_path)
 
+        # Create run ID once for the entire XML file
+        run_data = {
+            "suite": suite_name or "cocotb",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "artifact_path": str(xml_path),
+        }
+        run_id_full, run_id_short = generate_run_id(run_data)
+
+        # Insert run once
+        try:
+            self.store.insert_run(
+                run_id=run_id_short,
+                run_id_full=run_id_full,
+                suite=suite_name or "cocotb",
+                created_at=datetime.utcnow().isoformat() + "Z",
+                status="completed",
+            )
+            stats["runs_indexed"] += 1
+        except Exception as e:
+            # Run might already exist if re-indexing
+            logger.debug(f"Run {run_id_short} already exists: {e}")
+
+        # Insert all tests from this XML file
         for result in results:
-            # Create run ID
-            run_data = {
-                "suite": suite_name or "cocotb",
-                "timestamp": datetime.utcnow().isoformat() + "Z",
-                "artifact_path": str(xml_path),
-            }
-            run_id_full, run_id_short = generate_run_id(run_data)
-
-            # Insert run (skip if already exists)
-            try:
-                self.store.insert_run(
-                    run_id=run_id_short,
-                    run_id_full=run_id_full,
-                    suite=suite_name or "cocotb",
-                    created_at=datetime.utcnow().isoformat() + "Z",
-                    status="completed",
-                )
-                stats["runs_indexed"] += 1
-            except Exception:
-                # Run might already exist from another test in same file
-                pass
-
             # Insert test
             test_data = {
                 "run_id": run_id_short,
