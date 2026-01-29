@@ -633,3 +633,72 @@ class IndexStore:
 
         columns = [desc[0] for desc in self._conn.description]
         return [dict(zip(columns, row, strict=False)) for row in results], total
+
+    def query_runs(
+        self,
+        suite: str | None = None,
+        ci_system: str | None = None,
+        status: str | None = None,
+        page: int = 1,
+        page_size: int = 100,
+        sort_by: str = "created_at",
+        sort_desc: bool = True,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """
+        Query runs with filters and pagination.
+
+        Args:
+            suite: Filter by suite name
+            ci_system: Filter by CI system
+            status: Filter by status
+            page: Page number (1-based)
+            page_size: Items per page
+            sort_by: Column to sort by
+            sort_desc: Sort in descending order
+
+        Returns:
+            Tuple of (results, total_count)
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        # Build WHERE clause
+        where_clauses = []
+        params = []
+
+        if suite:
+            where_clauses.append("suite = ?")
+            params.append(suite)
+
+        if ci_system:
+            where_clauses.append("ci_system = ?")
+            params.append(ci_system)
+
+        if status:
+            where_clauses.append("status = ?")
+            params.append(status)
+
+        where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+
+        # Get total count
+        count_result = self._conn.execute(
+            f"SELECT COUNT(*) FROM runs WHERE {where_sql}", params
+        ).fetchone()
+        total = count_result[0] if count_result else 0
+
+        # Get paginated results
+        offset = (page - 1) * page_size
+        order = "DESC" if sort_desc else "ASC"
+
+        results = self._conn.execute(
+            f"""
+            SELECT * FROM runs
+            WHERE {where_sql}
+            ORDER BY {sort_by} {order}, run_id ASC
+            LIMIT ? OFFSET ?
+        """,
+            params + [page_size, offset],
+        ).fetchall()
+
+        columns = [desc[0] for desc in self._conn.description]
+        return [dict(zip(columns, row, strict=False)) for row in results], total

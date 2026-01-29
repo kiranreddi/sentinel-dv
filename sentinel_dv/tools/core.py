@@ -33,11 +33,19 @@ def list_runs(
     Returns:
         Dictionary with runs and pagination info
     """
-    # TODO: Implement with store.query_runs()
+    results, total = store.query_runs(
+        suite=suite,
+        ci_system=ci_system,
+        page=page,
+        page_size=page_size,
+    )
+
+    total_pages = (total + page_size - 1) // page_size
+
     return {
-        "runs": [],
+        "runs": results,
         "pagination": PaginationInfo(
-            page=page, page_size=page_size, total_items=0, total_pages=0
+            page=page, page_size=page_size, total_items=total, total_pages=total_pages
         ).model_dump(),
     }
 

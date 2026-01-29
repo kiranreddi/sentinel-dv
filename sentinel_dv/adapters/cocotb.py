@@ -15,7 +15,7 @@ from sentinel_dv.taxonomy_engine import classify_failure
 from sentinel_dv.utils.bounded_text import truncate_text
 
 
-class CocotbParser:
+class CocotbAdapter:
     """
     Parser for cocotb test results.
 
@@ -33,7 +33,7 @@ class CocotbParser:
         """
         self.redactor = redactor or Redactor()
 
-    def parse_junit_xml(self, xml_path: Path) -> dict:
+    def parse_junit_xml(self, xml_path: Path) -> list[dict]:
         """
         Parse cocotb JUnit XML output.
 
@@ -41,13 +41,12 @@ class CocotbParser:
             xml_path: Path to results.xml file
 
         Returns:
-            Dictionary with tests and failures
+            List of test result dictionaries
         """
         tree = ET.parse(xml_path)
         root = tree.getroot()
 
         tests = []
-        failures = []
 
         # Parse each testcase
         for testcase in root.findall(".//testcase"):
@@ -58,6 +57,10 @@ class CocotbParser:
             # Check for failure/error elements
             failure_elem = testcase.find("failure")
             error_elem = testcase.find("error")
+
+            failure_message = None
+            category = "unknown"
+            tags = []
 
             if failure_elem is not None or error_elem is not None:
                 status = "fail"
@@ -71,49 +74,25 @@ class CocotbParser:
                     message=message + "\n" + details, severity="error", framework="cocotb"
                 )
 
-                # Create failure event dict (IDs added during indexing)
-                failure = {
-                    "severity": taxonomy.severity,
-                    "category": taxonomy.category,
-                    "summary": self.redactor.redact(truncate_text(message, 200)),
-                    "message": self.redactor.redact(truncate_text(details, 2000)),
-                    "time_ns": None,
-                    "phase": None,
-                    "component": None,
-                    "tags": taxonomy.tags,
-                    "evidence": [
-                        {
-                            "kind": "artifact",
-                            "path": xml_path.name,  # Use relative path (just filename)
-                            "span": None,
-                            "extract": truncate_text(details, 1000),
-                            "hash": None,
-                        }
-                    ],
-                }
-                failures.append(failure)
+                failure_message = self.redactor.redact(truncate_text(message + "\n" + details, 2000))
+                category = taxonomy.category
+                tags = taxonomy.tags
             else:
                 status = "pass"
 
-            # Create test case dict (IDs and run ref added during indexing)
+            # Create test result dict
             test = {
                 "name": f"{classname}.{name}" if classname else name,
                 "status": status,
-                "framework": "cocotb",
-                "duration_ms": int(time_sec * 1000),  # Convert to ms
-                "seed": None,
-                "simulator": None,
-                "dut": None,
-                "evidence": [
-                    {
-                        "kind": "artifact",
-                        "path": xml_path.name,
-                        "span": None,
-                        "extract": None,
-                        "hash": None,
-                    }
-                ],
+                "duration_s": time_sec,
+                "failure_message": failure_message,
+                "category": category,
+                "tags": tags,
             }
             tests.append(test)
 
-        return {"tests": tests, "failures": failures}
+        return tests
+
+
+# Alias for backward compatibility
+CocotbParser = CocotbAdapter
