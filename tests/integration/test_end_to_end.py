@@ -122,11 +122,12 @@ UVM_INFO @ 200 ns: (uvm_test_top) [TEST] Test completed
 
         # Parse XML
         parser = CocotbParser()
-        result = parser.parse_junit_xml(xml_file)
+        results = parser.parse_junit_xml(xml_file)
 
-        assert len(result["tests"]) == 1
-        assert result["tests"][0]["status"] == "fail"
-        assert len(result["failures"]) == 1
+        # CocotbParser now returns a list of test dicts
+        assert len(results) == 1
+        assert results[0]["status"] == "fail"
+        assert results[0]["failure_message"] is not None
 
     def test_id_generation_determinism(self):
         """Test that ID generation is deterministic."""
