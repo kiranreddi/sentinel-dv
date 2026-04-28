@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/kiranreddi-sentinel-dv-badge.png)](https://mseep.ai/app/kiranreddi-sentinel-dv)
+
 # 🛡️ Sentinel DV v1.0.0 - Verification Intelligence for AI Agents
 
 <div align="center">
