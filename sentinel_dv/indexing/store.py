@@ -491,6 +491,8 @@ class IndexStore:
     # Query operations
     # ========================================================================
 
+    _TESTS_SORT_COLUMNS = frozenset({"created_at", "name", "status", "test_id", "duration_ms"})
+
     def query_tests(
         self,
         run_id: str | None = None,
@@ -511,6 +513,9 @@ class IndexStore:
         """
         if not self._conn:
             raise RuntimeError("Not connected to database")
+
+        if sort_by not in self._TESTS_SORT_COLUMNS:
+            raise ValueError(f"Invalid sort_by: {sort_by}")
 
         # Build WHERE clause
         where_clauses = []
@@ -633,3 +638,441 @@ class IndexStore:
 
         columns = [desc[0] for desc in self._conn.description]
         return [dict(zip(columns, row, strict=False)) for row in results], total
+
+    _RUNS_SORT_COLUMNS = frozenset({"created_at", "suite", "status", "run_id"})
+
+    def query_runs(
+        self,
+        suite: str | None = None,
+        status: str | None = None,
+        ci_system: str | None = None,
+        page: int = 1,
+        page_size: int = 100,
+        sort_by: str = "created_at",
+        sort_desc: bool = True,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """Query runs with optional filters and aggregated test counts."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        if sort_by not in self._RUNS_SORT_COLUMNS:
+            raise ValueError(f"Invalid sort_by: {sort_by}")
+
+        where_clauses: list[str] = []
+        params: list[Any] = []
+
+        if suite:
+            where_clauses.append("r.suite = ?")
+            params.append(suite)
+        if status:
+            where_clauses.append("r.status = ?")
+            params.append(status)
+        if ci_system:
+            where_clauses.append("r.ci_system = ?")
+            params.append(ci_system)
+
+        where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+        order = "DESC" if sort_desc else "ASC"
+
+        count_result = self._conn.execute(
+            f"SELECT COUNT(*) FROM runs r WHERE {where_sql}", params
+        ).fetchone()
+        total = count_result[0] if count_result else 0
+
+        offset = (page - 1) * page_size
+        results = self._conn.execute(
+            f"""
+            SELECT
+                r.run_id,
+                r.suite,
+                r.status,
+                r.created_at,
+                r.ci_system,
+                r.ci_build_id,
+                COUNT(t.test_id) AS total_tests,
+                SUM(CASE WHEN t.status = 'pass' THEN 1 ELSE 0 END) AS passed_tests,
+                SUM(CASE WHEN t.status = 'fail' THEN 1 ELSE 0 END) AS failed_tests
+            FROM runs r
+            LEFT JOIN tests t ON r.run_id = t.run_id
+            WHERE {where_sql}
+            GROUP BY r.run_id, r.suite, r.status, r.created_at, r.ci_system, r.ci_build_id
+            ORDER BY r.{sort_by} {order}, r.run_id ASC
+            LIMIT ? OFFSET ?
+        """,
+            params + [page_size, offset],
+        ).fetchall()
+
+        columns = [desc[0] for desc in self._conn.description]
+        return [dict(zip(columns, row, strict=False)) for row in results], total
+
+    def get_test(self, test_id: str) -> dict[str, Any] | None:
+        """Get a single test record by ID."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        result = self._conn.execute("SELECT * FROM tests WHERE test_id = ?", [test_id]).fetchone()
+        if not result:
+            return None
+        columns = [desc[0] for desc in self._conn.description]
+        return dict(zip(columns, result, strict=False))
+
+    def get_topology(self, test_id: str) -> dict[str, Any] | None:
+        """Get stored topology JSON for a test."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        result = self._conn.execute(
+            "SELECT topology_json FROM topologies WHERE test_id = ?", [test_id]
+        ).fetchone()
+        if not result:
+            return None
+        return json.loads(result[0])
+
+    def insert_topology(self, test_id: str, topology: dict[str, Any]) -> None:
+        """Insert or replace topology for a test."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        self._conn.execute(
+            """
+            INSERT OR REPLACE INTO topologies (test_id, topology_json)
+            VALUES (?, ?)
+        """,
+            [test_id, json.dumps(topology)],
+        )
+
+    def query_assertions(
+        self,
+        scope: str | None = None,
+        name_pattern: str | None = None,
+        page: int = 1,
+        page_size: int = 100,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """List assertion definitions."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        where_clauses: list[str] = []
+        params: list[Any] = []
+
+        if scope:
+            where_clauses.append("scope = ?")
+            params.append(scope)
+        if name_pattern:
+            where_clauses.append("name LIKE ?")
+            params.append(f"%{name_pattern}%")
+
+        where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+
+        count_result = self._conn.execute(
+            f"SELECT COUNT(*) FROM assertions WHERE {where_sql}", params
+        ).fetchone()
+        total = count_result[0] if count_result else 0
+
+        offset = (page - 1) * page_size
+        results = self._conn.execute(
+            f"""
+            SELECT * FROM assertions
+            WHERE {where_sql}
+            ORDER BY name ASC, assertion_id ASC
+            LIMIT ? OFFSET ?
+        """,
+            params + [page_size, offset],
+        ).fetchall()
+
+        columns = [desc[0] for desc in self._conn.description]
+        return [dict(zip(columns, row, strict=False)) for row in results], total
+
+    def get_assertion(self, assertion_id: str) -> dict[str, Any] | None:
+        """Get assertion definition by ID."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        result = self._conn.execute(
+            "SELECT * FROM assertions WHERE assertion_id = ?", [assertion_id]
+        ).fetchone()
+        if not result:
+            return None
+        columns = [desc[0] for desc in self._conn.description]
+        return dict(zip(columns, result, strict=False))
+
+    def query_assertion_failures(
+        self,
+        run_id: str | None = None,
+        test_id: str | None = None,
+        assertion_id: str | None = None,
+        page: int = 1,
+        page_size: int = 100,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """List runtime assertion failures."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        where_clauses: list[str] = []
+        params: list[Any] = []
+
+        if run_id:
+            where_clauses.append("run_id = ?")
+            params.append(run_id)
+        if test_id:
+            where_clauses.append("test_id = ?")
+            params.append(test_id)
+        if assertion_id:
+            where_clauses.append("assertion_id = ?")
+            params.append(assertion_id)
+
+        where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+
+        count_result = self._conn.execute(
+            f"SELECT COUNT(*) FROM assertion_failures WHERE {where_sql}", params
+        ).fetchone()
+        total = count_result[0] if count_result else 0
+
+        offset = (page - 1) * page_size
+        results = self._conn.execute(
+            f"""
+            SELECT * FROM assertion_failures
+            WHERE {where_sql}
+            ORDER BY time_ns DESC, id ASC
+            LIMIT ? OFFSET ?
+        """,
+            params + [page_size, offset],
+        ).fetchall()
+
+        columns = [desc[0] for desc in self._conn.description]
+        return [dict(zip(columns, row, strict=False)) for row in results], total
+
+    def query_coverage_summaries(
+        self,
+        run_id: str | None = None,
+        kind: str | None = None,
+        page: int = 1,
+        page_size: int = 100,
+    ) -> tuple[list[dict[str, Any]], int]:
+        """List coverage summary rows."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        where_clauses: list[str] = []
+        params: list[Any] = []
+
+        if run_id:
+            where_clauses.append("run_id = ?")
+            params.append(run_id)
+        if kind:
+            where_clauses.append("kind = ?")
+            params.append(kind)
+
+        where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+
+        count_result = self._conn.execute(
+            f"SELECT COUNT(*) FROM coverage_summaries WHERE {where_sql}", params
+        ).fetchone()
+        total = count_result[0] if count_result else 0
+
+        offset = (page - 1) * page_size
+        results = self._conn.execute(
+            f"""
+            SELECT id, run_id, test_id, kind, metrics_json, evidence_json
+            FROM coverage_summaries
+            WHERE {where_sql}
+            ORDER BY run_id ASC, kind ASC, id ASC
+            LIMIT ? OFFSET ?
+        """,
+            params + [page_size, offset],
+        ).fetchall()
+
+        items = []
+        for row in results:
+            items.append(
+                {
+                    "id": row[0],
+                    "run_id": row[1],
+                    "test_id": row[2],
+                    "kind": row[3],
+                    "metrics": json.loads(row[4]),
+                    "evidence": json.loads(row[5]) if row[5] else None,
+                }
+            )
+        return items, total
+
+    def insert_coverage_summary(
+        self,
+        run_id: str,
+        kind: str,
+        metrics: dict[str, Any],
+        test_id: str | None = None,
+        evidence: dict[str, Any] | None = None,
+    ) -> None:
+        """Insert a coverage summary row."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        self._conn.execute(
+            """
+            INSERT INTO coverage_summaries (run_id, test_id, kind, metrics_json, evidence_json)
+            VALUES (?, ?, ?, ?, ?)
+        """,
+            [
+                run_id,
+                test_id,
+                kind,
+                json.dumps(metrics),
+                json.dumps(evidence) if evidence else None,
+            ],
+        )
+
+    def diff_runs(self, base_run_id: str, compare_run_id: str) -> dict[str, Any]:
+        """Compute structured diff between two runs."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        base = self.get_run(base_run_id)
+        compare = self.get_run(compare_run_id)
+        if not base:
+            raise ValueError(f"Run not found: {base_run_id}")
+        if not compare:
+            raise ValueError(f"Run not found: {compare_run_id}")
+
+        base_tests, _ = self.query_tests(run_id=base_run_id, page_size=10_000)
+        compare_tests, _ = self.query_tests(run_id=compare_run_id, page_size=10_000)
+
+        base_by_name = {t["name"]: t for t in base_tests}
+        compare_by_name = {t["name"]: t for t in compare_tests}
+
+        test_changes: list[dict[str, Any]] = []
+        for name in sorted(set(base_by_name) | set(compare_by_name)):
+            b = base_by_name.get(name)
+            c = compare_by_name.get(name)
+            if b and c and b["status"] != c["status"]:
+                test_changes.append(
+                    {
+                        "kind": "test_status_change",
+                        "name": name,
+                        "base_status": b["status"],
+                        "compare_status": c["status"],
+                    }
+                )
+            elif b and not c:
+                test_changes.append(
+                    {"kind": "test_removed", "name": name, "base_status": b["status"]}
+                )
+            elif c and not b:
+                test_changes.append(
+                    {"kind": "test_added", "name": name, "compare_status": c["status"]}
+                )
+
+        base_sigs = self._failure_signatures_for_run(base_run_id)
+        compare_sigs = self._failure_signatures_for_run(compare_run_id)
+
+        new_failures = [
+            {"signature_id": sig, "count": compare_sigs[sig]}
+            for sig in sorted(compare_sigs.keys() - base_sigs.keys())
+        ]
+        resolved_failures = [
+            {"signature_id": sig, "count": base_sigs[sig]}
+            for sig in sorted(base_sigs.keys() - compare_sigs.keys())
+        ]
+
+        return {
+            "base_run_id": base_run_id,
+            "compare_run_id": compare_run_id,
+            "test_changes": test_changes,
+            "new_failures": new_failures,
+            "resolved_failures": resolved_failures,
+        }
+
+    def _failure_signatures_for_run(self, run_id: str) -> dict[str, int]:
+        """Count failures grouped by signature_id for a run."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        rows = self._conn.execute(
+            """
+            SELECT COALESCE(signature_id, failure_id) AS sig, COUNT(*) AS cnt
+            FROM failures
+            WHERE run_id = ?
+            GROUP BY sig
+        """,
+            [run_id],
+        ).fetchall()
+        return {row[0]: row[1] for row in rows}
+
+    def regression_summary(self, suite: str, window_days: int) -> dict[str, Any]:
+        """Compute regression summary for a suite over a time window."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        from datetime import UTC, datetime, timedelta
+
+        cutoff = (datetime.now(UTC) - timedelta(days=window_days)).isoformat().replace(
+            "+00:00", "Z"
+        )
+
+        runs = self._conn.execute(
+            """
+            SELECT run_id, suite, status, created_at
+            FROM runs
+            WHERE suite = ? AND created_at >= ?
+            ORDER BY created_at DESC
+        """,
+            [suite, cutoff],
+        ).fetchall()
+
+        run_ids = [r[0] for r in runs]
+        if not run_ids:
+            return {
+                "suite": suite,
+                "window_days": window_days,
+                "pass_rate": 0.0,
+                "runs": [],
+                "top_signatures": [],
+            }
+
+        placeholders = ",".join("?" * len(run_ids))
+        stats = self._conn.execute(
+            f"""
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN status = 'pass' THEN 1 ELSE 0 END) AS passed
+            FROM tests
+            WHERE run_id IN ({placeholders})
+        """,
+            run_ids,
+        ).fetchone()
+
+        total_tests = stats[0] or 0
+        passed = stats[1] or 0
+        pass_rate = (100.0 * passed / total_tests) if total_tests else 0.0
+
+        sig_rows = self._conn.execute(
+            f"""
+            SELECT COALESCE(signature_id, summary) AS sig, category, summary, COUNT(*) AS cnt
+            FROM failures
+            WHERE run_id IN ({placeholders})
+            GROUP BY sig, category, summary
+            ORDER BY cnt DESC
+            LIMIT 20
+        """,
+            run_ids,
+        ).fetchall()
+
+        top_signatures = [
+            {
+                "signature_id": row[0],
+                "category": row[1],
+                "summary": row[2],
+                "count": row[3],
+            }
+            for row in sig_rows
+        ]
+
+        return {
+            "suite": suite,
+            "window_days": window_days,
+            "pass_rate": round(pass_rate, 2),
+            "runs": [
+                {"run_id": r[0], "suite": r[1], "status": r[2], "created_at": r[3]} for r in runs
+            ],
+            "top_signatures": top_signatures,
+        }

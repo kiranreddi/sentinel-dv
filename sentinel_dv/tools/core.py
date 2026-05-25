@@ -1,62 +1,47 @@
-"""MCP tools for Sentinel DV.
+"""MCP tool implementations for Sentinel DV."""
 
-This module implements all 14 MCP tools documented in docs/tools/overview.md.
-"""
+from __future__ import annotations
 
 from typing import Any
 
 from sentinel_dv.indexing.store import IndexStore
-from sentinel_dv.schemas.common import PaginationInfo
-
-# ============================================================================
-# Tool implementations
-# ============================================================================
+from sentinel_dv.schemas.versioning import CURRENT_SCHEMA_VERSION
+from sentinel_dv.tools.errors import ToolError
+from sentinel_dv.tools.validate import (
+    clamp_pagination,
+    item_response,
+    list_response,
+    validate_id,
+)
 
 
 def list_runs(
     store: IndexStore,
     suite: str | None = None,
+    status: str | None = None,
     ci_system: str | None = None,
     page: int = 1,
     page_size: int = 100,
 ) -> dict[str, Any]:
-    """
-    List available test runs.
-
-    Args:
-        store: Index store instance
-        suite: Filter by suite name
-        ci_system: Filter by CI system
-        page: Page number (1-based)
-        page_size: Items per page
-
-    Returns:
-        Dictionary with runs and pagination info
-    """
-    # TODO: Implement with store.query_runs()
-    return {
-        "runs": [],
-        "pagination": PaginationInfo(
-            page=page, page_size=page_size, total_items=0, total_pages=0
-        ).model_dump(),
-    }
+    """List verification runs with pagination."""
+    page, page_size = clamp_pagination(page, page_size)
+    results, total = store.query_runs(
+        suite=suite,
+        status=status,
+        ci_system=ci_system,
+        page=page,
+        page_size=page_size,
+    )
+    return list_response("runs", results, page, page_size, total)
 
 
 def get_run_details(store: IndexStore, run_id: str) -> dict[str, Any]:
-    """
-    Get detailed information about a specific run.
-
-    Args:
-        store: Index store instance
-        run_id: Run identifier
-
-    Returns:
-        Run details dictionary
-    """
+    """Get run metadata by ID."""
+    validate_id(run_id, "run_id")
     run = store.get_run(run_id)
     if not run:
-        raise ValueError(f"Run not found: {run_id}")
-    return run
+        raise ToolError("NOT_FOUND", f"Run not found: {run_id}")
+    return {"schema_version": CURRENT_SCHEMA_VERSION, "run": run}
 
 
 def list_tests(
@@ -68,21 +53,10 @@ def list_tests(
     page: int = 1,
     page_size: int = 100,
 ) -> dict[str, Any]:
-    """
-    List tests with filtering and pagination.
-
-    Args:
-        store: Index store instance
-        run_id: Filter by run
-        framework: Filter by framework (uvm, cocotb)
-        status: Filter by status (pass, fail, error)
-        name_pattern: Filter by name pattern
-        page: Page number
-        page_size: Items per page
-
-    Returns:
-        Dictionary with tests and pagination
-    """
+    """List tests with filters."""
+    if run_id:
+        validate_id(run_id, "run_id")
+    page, page_size = clamp_pagination(page, page_size)
     results, total = store.query_tests(
         run_id=run_id,
         framework=framework,
@@ -91,15 +65,25 @@ def list_tests(
         page=page,
         page_size=page_size,
     )
+    return list_response("tests", results, page, page_size, total)
 
-    total_pages = (total + page_size - 1) // page_size
 
-    return {
-        "tests": results,
-        "pagination": PaginationInfo(
-            page=page, page_size=page_size, total_items=total, total_pages=total_pages
-        ).model_dump(),
-    }
+def get_test_details(store: IndexStore, test_id: str) -> dict[str, Any]:
+    """Get a single test record."""
+    validate_id(test_id, "test_id")
+    test = store.get_test(test_id)
+    if not test:
+        raise ToolError("NOT_FOUND", f"Test not found: {test_id}")
+    return item_response(test)
+
+
+def get_test_topology(store: IndexStore, test_id: str) -> dict[str, Any]:
+    """Get UVM/test topology for a test."""
+    validate_id(test_id, "test_id")
+    topology = store.get_topology(test_id)
+    if topology is None:
+        raise ToolError("NOT_FOUND", f"Topology not found for test: {test_id}")
+    return item_response({"test_id": test_id, **topology})
 
 
 def list_failures(
@@ -112,22 +96,12 @@ def list_failures(
     page: int = 1,
     page_size: int = 100,
 ) -> dict[str, Any]:
-    """
-    List failures with filtering.
-
-    Args:
-        store: Index store instance
-        test_id: Filter by test
-        run_id: Filter by run
-        category: Filter by category
-        severity: Filter by severity
-        tags_any: Filter by any of these tags
-        page: Page number
-        page_size: Items per page
-
-    Returns:
-        Dictionary with failures and pagination
-    """
+    """List failure events."""
+    if test_id:
+        validate_id(test_id, "test_id")
+    if run_id:
+        validate_id(run_id, "run_id")
+    page, page_size = clamp_pagination(page, page_size)
     results, total = store.query_failures(
         test_id=test_id,
         run_id=run_id,
@@ -137,14 +111,92 @@ def list_failures(
         page=page,
         page_size=page_size,
     )
+    return list_response("failures", results, page, page_size, total)
 
-    total_pages = (total + page_size - 1) // page_size
 
+def list_assertions(
+    store: IndexStore,
+    scope: str | None = None,
+    name_pattern: str | None = None,
+    page: int = 1,
+    page_size: int = 100,
+) -> dict[str, Any]:
+    """List assertion definitions."""
+    page, page_size = clamp_pagination(page, page_size)
+    results, total = store.query_assertions(
+        scope=scope,
+        name_pattern=name_pattern,
+        page=page,
+        page_size=page_size,
+    )
+    return list_response("assertions", results, page, page_size, total)
+
+
+def get_assertion_details(store: IndexStore, assertion_id: str) -> dict[str, Any]:
+    """Get assertion definition by ID."""
+    validate_id(assertion_id, "assertion_id")
+    assertion = store.get_assertion(assertion_id)
+    if not assertion:
+        raise ToolError("NOT_FOUND", f"Assertion not found: {assertion_id}")
+    return item_response(assertion)
+
+
+def list_assertion_failures(
+    store: IndexStore,
+    run_id: str | None = None,
+    test_id: str | None = None,
+    assertion_id: str | None = None,
+    page: int = 1,
+    page_size: int = 100,
+) -> dict[str, Any]:
+    """List runtime assertion failures."""
+    if run_id:
+        validate_id(run_id, "run_id")
+    if test_id:
+        validate_id(test_id, "test_id")
+    if assertion_id:
+        validate_id(assertion_id, "assertion_id")
+    page, page_size = clamp_pagination(page, page_size)
+    results, total = store.query_assertion_failures(
+        run_id=run_id,
+        test_id=test_id,
+        assertion_id=assertion_id,
+        page=page,
+        page_size=page_size,
+    )
+    return list_response("assertion_failures", results, page, page_size, total)
+
+
+def list_coverage(
+    store: IndexStore,
+    run_id: str | None = None,
+    kind: str | None = None,
+    page: int = 1,
+    page_size: int = 100,
+) -> dict[str, Any]:
+    """List coverage summaries."""
+    if run_id:
+        validate_id(run_id, "run_id")
+    page, page_size = clamp_pagination(page, page_size)
+    results, total = store.query_coverage_summaries(
+        run_id=run_id,
+        kind=kind,
+        page=page,
+        page_size=page_size,
+    )
+    return list_response("coverage", results, page, page_size, total)
+
+
+def get_coverage_summary(store: IndexStore, run_id: str, kind: str | None = None) -> dict[str, Any]:
+    """Get aggregated coverage for a run (first matching summary)."""
+    validate_id(run_id, "run_id")
+    results, total = store.query_coverage_summaries(run_id=run_id, kind=kind, page=1, page_size=50)
+    if total == 0:
+        raise ToolError("NOT_FOUND", f"No coverage found for run: {run_id}")
     return {
-        "failures": results,
-        "pagination": PaginationInfo(
-            page=page, page_size=page_size, total_items=total, total_pages=total_pages
-        ).model_dump(),
+        "schema_version": CURRENT_SCHEMA_VERSION,
+        "run_id": run_id,
+        "summaries": results,
     }
 
 
@@ -153,19 +205,11 @@ def get_regression_summary(
     suite: str,
     window_days: int = 7,
 ) -> dict[str, Any]:
-    """
-    Get regression summary for a suite.
-
-    Args:
-        store: Index store instance
-        suite: Suite name
-        window_days: Time window in days
-
-    Returns:
-        Regression summary
-    """
-    # Simplified implementation
-    return {"suite": suite, "window_days": window_days, "pass_rate": 0.0, "top_signatures": []}
+    """Regression analytics for a suite."""
+    if window_days < 1 or window_days > 365:
+        raise ToolError("INVALID_ARGUMENT", "window_days must be between 1 and 365")
+    summary = store.regression_summary(suite=suite, window_days=window_days)
+    return {"schema_version": CURRENT_SCHEMA_VERSION, **summary}
 
 
 def compare_runs(
@@ -173,22 +217,43 @@ def compare_runs(
     base_run_id: str,
     compare_run_id: str,
 ) -> dict[str, Any]:
-    """
-    Compare two runs (diff).
+    """Diff two runs."""
+    validate_id(base_run_id, "base_run_id")
+    validate_id(compare_run_id, "compare_run_id")
+    try:
+        diff = store.diff_runs(base_run_id, compare_run_id)
+    except ValueError as exc:
+        raise ToolError("NOT_FOUND", str(exc)) from exc
+    return {"schema_version": CURRENT_SCHEMA_VERSION, **diff}
 
-    Args:
-        store: Index store instance
-        base_run_id: Base run ID
-        compare_run_id: Compare run ID
 
-    Returns:
-        Diff summary
-    """
-    # Simplified implementation
+def wave_signals(
+    store: IndexStore,
+    test_id: str,
+) -> dict[str, Any]:
+    """Experimental waveform signal listing (requires pre-indexed summaries)."""
+    validate_id(test_id, "test_id")
+    _ = store  # reserved for future index-backed waveform summaries
     return {
-        "base_run_id": base_run_id,
-        "compare_run_id": compare_run_id,
-        "test_changes": [],
-        "new_failures": [],
-        "resolved_failures": [],
+        "schema_version": CURRENT_SCHEMA_VERSION,
+        "status": "experimental",
+        "test_id": test_id,
+        "signals": [],
+        "message": "Waveform summaries are not indexed; enable waveform_summary adapter.",
+    }
+
+
+def wave_summary(
+    store: IndexStore,
+    test_id: str,
+) -> dict[str, Any]:
+    """Experimental waveform summary (requires pre-indexed summaries)."""
+    validate_id(test_id, "test_id")
+    _ = store
+    return {
+        "schema_version": CURRENT_SCHEMA_VERSION,
+        "status": "experimental",
+        "test_id": test_id,
+        "summary": None,
+        "message": "Waveform summaries are not indexed; enable waveform_summary adapter.",
     }

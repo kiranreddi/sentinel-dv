@@ -52,6 +52,10 @@ Documentation = "https://yourusername.github.io/sentinel-dv/"
 Repository = "https://github.com/yourusername/sentinel-dv"
 Issues = "https://github.com/yourusername/sentinel-dv/issues"
 
+[project.scripts]
+sentinel-dv-server = "sentinel_dv.server:main"
+sentinel-dv-index = "sentinel_dv.indexing.__main__:main"
+
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"

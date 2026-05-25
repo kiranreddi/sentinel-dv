@@ -156,7 +156,7 @@ def get_config() -> SentinelDVConfig:
     return _config
 
 
-def load_config(path: str) -> SentinelDVConfig:
+def load_config(path: str | Path) -> SentinelDVConfig:
     """Load and set global configuration.
 
     Args:
@@ -166,8 +166,34 @@ def load_config(path: str) -> SentinelDVConfig:
         Loaded configuration.
     """
     global _config
-    _config = SentinelDVConfig.from_yaml(path)
+    _config = SentinelDVConfig.from_yaml(str(path))
     return _config
+
+
+def resolve_config(config_path: str | Path | None = None) -> SentinelDVConfig:
+    """Resolve configuration from explicit path, env, or repository defaults."""
+    if config_path is not None:
+        return load_config(config_path)
+
+    env_path = os.environ.get("SENTINEL_DV_CONFIG")
+    if env_path:
+        return load_config(env_path)
+
+    for candidate in (Path("config.yaml"), Path("config.yml")):
+        if candidate.is_file():
+            return load_config(candidate)
+
+    repo_root = Path(__file__).resolve().parent.parent
+    demo_root = repo_root / "demo"
+    if demo_root.is_dir():
+        return SentinelDVConfig(
+            artifact_roots=[str(demo_root)],
+            index=IndexConfig(path=str(repo_root / "sentinel_dv.db")),
+        )
+
+    raise RuntimeError(
+        "No configuration found. Set SENTINEL_DV_CONFIG or pass --config to the server."
+    )
 
 
 def set_config(config: SentinelDVConfig) -> None:
