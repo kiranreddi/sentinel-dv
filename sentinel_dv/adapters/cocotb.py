@@ -73,6 +73,7 @@ class CocotbParser:
 
                 # Create failure event dict (IDs added during indexing)
                 failure = {
+                    "test_name": f"{classname}.{name}" if classname else name,
                     "severity": taxonomy.severity,
                     "category": taxonomy.category,
                     "summary": self.redactor.redact(truncate_text(message, 200)),
