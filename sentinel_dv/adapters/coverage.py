@@ -24,12 +24,25 @@ class CoverageParser:
 
     # Coverage patterns (simplified)
     COVERAGE_LINE_PATTERN = re.compile(r"(\w+)\s+coverage:\s*([\d.]+)%", re.IGNORECASE)
+    _KIND_MAP = {
+        "line": "code",
+        "branch": "code",
+        "toggle": "toggle",
+        "fsm": "fsm",
+        "functional": "functional",
+        "assertion": "assertion",
+    }
 
     def __init__(self):
         """Initialize coverage parser."""
         pass
 
-    def parse_report(self, report_path: Path) -> CoverageSummary:
+    def parse_report(
+        self,
+        report_path: Path,
+        run_id: str = "local",
+        kind: str = "functional",
+    ) -> CoverageSummary:
         """
         Parse a coverage report file.
 
@@ -46,29 +59,27 @@ class CoverageParser:
 
         # Extract coverage metrics
         for match in self.COVERAGE_LINE_PATTERN.finditer(content):
-            kind = match.group(1).lower()
+            raw_kind = match.group(1).lower()
             percentage = float(match.group(2))
 
             metric = CoverageMetric(
-                kind=kind,
-                name=kind,
+                name=raw_kind,
                 scope="module",
-                hit=int(percentage),
+                covered=percentage,
+                hits=int(percentage),
                 total=100,
-                percentage=percentage,
             )
             metrics.append(metric)
 
         # If no metrics found, create a default metric
         if not metrics:
-            metrics.append(
-                CoverageMetric(
-                    kind="line", name="line", scope="module", hit=0, total=0, percentage=0.0
-                )
-            )
+            metrics.append(CoverageMetric(name="line", scope="module", covered=0.0, hits=0, total=0))
 
+        summary_kind = kind if kind in {"functional", "code", "assertion", "toggle", "fsm", "unknown"} else "functional"
+        rel_path = report_path.name
         return CoverageSummary(
-            kind="functional",
+            run_id=run_id,
+            kind=summary_kind,  # type: ignore[arg-type]
             metrics=metrics,
-            evidence=[EvidenceRef(kind="coverage_report", path=str(report_path))],
+            evidence=[EvidenceRef(kind="coverage", path=rel_path)],
         )
