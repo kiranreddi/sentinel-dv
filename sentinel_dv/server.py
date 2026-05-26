@@ -83,7 +83,9 @@ def runs_list(
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
     """List indexed verification runs."""
-    return core.list_runs(get_store(), suite=suite, status=status, ci_system=ci_system, page=page, page_size=page_size)
+    return core.list_runs(
+        get_store(), suite=suite, status=status, ci_system=ci_system, page=page, page_size=page_size
+    )
 
 
 @mcp.tool(name="runs.get")
@@ -140,9 +142,7 @@ def coverage_list(
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
     """List coverage summaries."""
-    return core.list_coverage(
-        get_store(), run_id=run_id, kind=kind, page=page, page_size=page_size
-    )
+    return core.list_coverage(get_store(), run_id=run_id, kind=kind, page=page, page_size=page_size)
 
 
 # ============================================================================

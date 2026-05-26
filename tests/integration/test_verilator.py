@@ -22,9 +22,7 @@ def counter_fixture(tmp_path: Path) -> Path:
     """Minimal SystemVerilog design for Verilator smoke test."""
     design_dir = tmp_path / "counter"
     design_dir.mkdir()
-    (design_dir / "counter.sv").write_text(
-        textwrap.dedent(
-            """
+    (design_dir / "counter.sv").write_text(textwrap.dedent("""
             module counter (
                 input  logic clk,
                 input  logic rst,
@@ -38,9 +36,7 @@ def counter_fixture(tmp_path: Path) -> Path:
               end
             endmodule
 
-            """
-        ).strip()
-    )
+            """).strip())
     return design_dir
 
 
