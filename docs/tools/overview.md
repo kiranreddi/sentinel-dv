@@ -1,6 +1,6 @@
 # Tool Overview
 
-Sentinel DV provides **14 MCP tools** organized into categories for verification intelligence.
+Sentinel DV provides **15 MCP tools** organized into categories for verification intelligence.
 
 ## Tool Categories
 
@@ -23,6 +23,7 @@ Get comprehensive information about specific items.
 |------|---------|---------|
 | [`tests.get`](detail.md#testsget) | Get test details | Full TestCase with evidence |
 | [`tests.topology`](detail.md#teststopology) | Get test topology | UVM hierarchy + interface bindings |
+| `runs.get` | Get run details | Run identifier |
 | [`assertions.get`](detail.md#assertionsget) | Get assertion definition | AssertionInfo with intent |
 
 ### 🔬 Analysis Tools
@@ -50,8 +51,8 @@ Pre-computed waveform summaries (no raw streaming).
 
 | Tool | Purpose | Status |
 |------|---------|--------|
-| [`wave.signals`](../adapters/waveforms.md#wavesignals) | List signal groups | Experimental |
-| [`wave.summary`](../adapters/waveforms.md#wavesummary) | Get waveform summary | Experimental |
+| `wave.signals` | List signal groups | Experimental |
+| `wave.summary` | Get waveform summary | Experimental |
 
 ---
 

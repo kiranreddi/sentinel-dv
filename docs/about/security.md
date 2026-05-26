@@ -72,16 +72,16 @@ Security patches are backported to the latest stable release only.
 
 **1. Configure Path Restrictions**
 ```bash
-# Only allow access to verification directories
-export SENTINEL_ALLOWED_PATHS="/path/to/verification:/path/to/results"
-sentinel-dv server --db-path ./sentinel_db
+# Restrict file access by configuring `artifact_roots` in `config.yaml`.
+# The server validates that roots exist and are readable at startup.
+python -m sentinel_dv.server --config config.yaml
 ```
 
 **2. Use Separate Databases**
 ```bash
-# Separate production and development databases
-sentinel-dv server --db-path /secure/path/prod_db  # Production
-sentinel-dv server --db-path ./dev_db             # Development
+# Use separate `config.yaml` files with different `index.path` values.
+python -m sentinel_dv.server --config ./config-prod.yaml  # Production
+python -m sentinel_dv.server --config ./config-dev.yaml   # Development
 ```
 
 **3. Regular Updates**
@@ -94,7 +94,7 @@ pip install --upgrade sentinel-dv
 ```bash
 # Enable audit logging
 export SENTINEL_AUDIT_LOG=/var/log/sentinel-dv/audit.log
-sentinel-dv server --db-path ./sentinel_db
+python -m sentinel_dv.server --config config.yaml
 ```
 
 ---
@@ -156,7 +156,7 @@ cursor.execute(
 
 **Risk**: Sentinel DV indexes local files
 **Mitigation**:
-- Use `SENTINEL_ALLOWED_PATHS` to restrict access
+- Configure path access by setting `artifact_roots` in `config.yaml`.
 - Run with least-privilege user account
 - Use read-only file mounts in Docker
 
