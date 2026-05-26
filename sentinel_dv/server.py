@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 from fastmcp import FastMCP
 from pydantic import Field
