@@ -12,12 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI builds the wheel and smoke-imports subpackages before release.
 
 ### Changed
-- Version 1.0.0 yanked on PyPI; install `sentinel-dv>=1.0.1`.
+- Install `sentinel-dv>=1.0.1`; yank PyPI 1.0.0 manually via [release management](https://pypi.org/manage/project/sentinel-dv/releases/).
 
 ## [1.0.0] - 2026-01-25
 
 ### Deprecated
-- **Yanked on PyPI** — use 1.0.1 or newer.
+- **Do not use** — broken PyPI wheel; yank on PyPI and use 1.0.1+.
 
 ### Added
 - Initial release of Sentinel DV
