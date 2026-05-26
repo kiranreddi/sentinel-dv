@@ -1003,10 +1003,12 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
-        from datetime import UTC, datetime, timedelta
+        from datetime import datetime, timedelta, timezone
 
         cutoff = (
-            (datetime.now(UTC) - timedelta(days=window_days)).isoformat().replace("+00:00", "Z")
+            (datetime.now(timezone.utc) - timedelta(days=window_days))
+            .isoformat()
+            .replace("+00:00", "Z")
         )
 
         runs = self._conn.execute(

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from sentinel_dv.adapters.cocotb import CocotbParser
@@ -59,7 +59,7 @@ class ArtifactIndexer:
             artifact_manifest=[(rel, self._file_hash(log_path))],
         )
         status = "fail" if result.get("failures") else "pass"
-        created_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
         if not store.get_run(run_id):
             store.insert_run(
@@ -126,7 +126,7 @@ class ArtifactIndexer:
         )
         any_fail = any(t["status"] == "fail" for t in result["tests"])
         status = "fail" if any_fail else "pass"
-        created_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
         if not store.get_run(run_id):
             store.insert_run(
