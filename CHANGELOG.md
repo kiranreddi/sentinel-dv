@@ -5,7 +5,19 @@ All notable changes to Sentinel DV will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-05-26
+
+### Fixed
+- PyPI wheel now includes all Python subpackages (`indexing`, `tools`, `schemas`, `adapters`, etc.). Version 1.0.0 was broken at install time (`ModuleNotFoundError: sentinel_dv.schemas`).
+- CI builds the wheel and smoke-imports subpackages before release.
+
+### Changed
+- Version 1.0.0 yanked on PyPI; install `sentinel-dv>=1.0.1`.
+
 ## [1.0.0] - 2026-01-25
+
+### Deprecated
+- **Yanked on PyPI** — use 1.0.1 or newer.
 
 ### Added
 - Initial release of Sentinel DV

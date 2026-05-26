@@ -15,8 +15,10 @@ uvx --from sentinel-dv sentinel-dv-server --config /absolute/path/to/config.yaml
 ### From PyPI
 
 ```bash
-pip install sentinel-dv
+pip install "sentinel-dv>=1.0.1"
 ```
+
+> **Note:** PyPI **1.0.0** is yanked (broken wheel). Use **1.0.1** or newer. Verified flow: install → `sentinel-dv-index --index-all` → `sentinel-dv-server` → MCP tools (15).
 
 For development:
 
