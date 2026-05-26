@@ -16,16 +16,16 @@ theme:
     # Light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: deep purple
+      primary: teal
+      accent: cyan
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: deep purple
+      primary: teal
+      accent: cyan
       toggle:
         icon: material/weather-night
         name: Switch to light mode
@@ -131,17 +131,14 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/yourusername/sentinel-dv
+      link: https://github.com/kiranreddi/sentinel-dv
       name: GitHub Repository
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/sentinel-dv/
       name: PyPI Package
     - icon: fontawesome/solid/book
-      link: https://yourusername.github.io/sentinel-dv/
+      link: https://kiranreddi.github.io/sentinel-dv/
       name: Documentation
-  analytics:
-    provider: google
-    property: G-XXXXXXXXXX  # Replace with your GA4 property
   
 extra_css:
   - stylesheets/extra.css

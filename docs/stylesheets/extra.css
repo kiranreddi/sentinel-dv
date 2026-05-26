@@ -1,119 +1,375 @@
-/* Custom styles for Sentinel DV documentation */
+/* Sentinel DV — documentation theme */
 
 :root {
-  --md-primary-fg-color: #4f46e5;
-  --md-primary-fg-color--light: #6366f1;
-  --md-primary-fg-color--dark: #4338ca;
-  --md-accent-fg-color: #7c3aed;
+  --sdv-brand: #0f766e;
+  --sdv-brand-light: #14b8a6;
+  --sdv-brand-dark: #115e59;
+  --sdv-accent: #06b6d4;
+  --sdv-ink: #0f172a;
+  --sdv-muted: #64748b;
+  --sdv-surface: #f8fafc;
+  --sdv-border: rgba(15, 23, 42, 0.08);
+  --sdv-radius: 0.75rem;
+  --sdv-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  --md-primary-fg-color: var(--sdv-brand);
+  --md-primary-fg-color--light: var(--sdv-brand-light);
+  --md-primary-fg-color--dark: var(--sdv-brand-dark);
+  --md-accent-fg-color: var(--sdv-accent);
+  --md-typeset-a-color: var(--sdv-brand);
 }
 
-/* Hero section */
-.hero {
+[data-md-color-scheme="slate"] {
+  --sdv-ink: #e2e8f0;
+  --sdv-muted: #94a3b8;
+  --sdv-surface: #1e293b;
+  --sdv-border: rgba(226, 232, 240, 0.1);
+  --sdv-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  --md-primary-fg-color: #2dd4bf;
+  --md-primary-fg-color--light: #5eead4;
+  --md-primary-fg-color--dark: #14b8a6;
+  --md-accent-fg-color: #22d3ee;
+  --md-typeset-a-color: #2dd4bf;
+}
+
+/* Header & footer — solid brand, no gradient band */
+.md-header {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+.md-tabs {
+  background-color: var(--md-primary-fg-color);
+}
+
+.md-footer {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* Readable prose width on doc pages */
+.md-content__inner > :not(.sdv-landing) {
+  max-width: 48rem;
+}
+
+.md-content__inner > .sdv-landing {
+  max-width: none;
+}
+
+/* ─── Landing page ─── */
+
+.sdv-landing {
+  --sdv-hero-bg: linear-gradient(165deg, #0f172a 0%, #134e4a 55%, #0f766e 100%);
+  --sdv-hero-fg: #f8fafc;
+  --sdv-hero-muted: rgba(248, 250, 252, 0.82);
+  --sdv-grid-color: rgba(255, 255, 255, 0.06);
+  --sdv-hero-btn-border: rgba(255, 255, 255, 0.45);
+  --sdv-hero-btn-bg: rgba(255, 255, 255, 0.08);
+  --sdv-hero-btn-hover: rgba(255, 255, 255, 0.16);
+}
+
+[data-md-color-scheme="slate"] .sdv-landing {
+  --sdv-hero-bg: linear-gradient(165deg, #020617 0%, #0f172a 40%, #134e4a 100%);
+  --sdv-grid-color: rgba(45, 212, 191, 0.08);
+}
+
+.sdv-hero {
+  position: relative;
+  margin: 0 0 2.5rem;
+  padding: 3.5rem 2rem 3rem;
+  border-radius: calc(var(--sdv-radius) + 0.25rem);
+  background: var(--sdv-hero-bg);
+  color: var(--sdv-hero-fg);
   text-align: center;
-  padding: 3rem 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  margin-bottom: 2rem;
-  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: var(--sdv-shadow);
 }
 
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+.sdv-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--sdv-grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--sdv-grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% -10%, black 20%, transparent 75%);
+  pointer-events: none;
+}
+
+.sdv-hero::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -15%;
+  width: 50%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sdv-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.sdv-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sdv-hero-fg);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+.sdv-hero h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
   font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--sdv-hero-fg);
 }
 
-.hero p {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
+.sdv-hero__tagline {
+  margin: 0 0 1rem;
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  font-weight: 500;
+  color: var(--sdv-hero-fg);
+  opacity: 1;
 }
 
-.hero .md-button {
-  margin: 0.5rem;
+.sdv-hero__lead {
+  margin: 0 auto 1.75rem;
+  max-width: 36rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--sdv-hero-muted);
 }
 
-.hero .md-button--primary {
-  background-color: white;
-  color: #4f46e5;
+.sdv-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
-.hero .md-button--primary:hover {
-  background-color: #f3f4f6;
-}
-
-/* Cards grid */
-.grid.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem 0;
-}
-
-.grid.cards > * {
-  padding: 1.5rem;
-  border: 1px solid var(--md-default-fg-color--lightest);
+.sdv-hero .md-button {
+  margin: 0;
+  font-weight: 600;
   border-radius: 0.5rem;
-  transition: all 0.3s ease;
+  padding: 0.55em 1.35em;
 }
 
-.grid.cards > *:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  transform: translateY(-5px);
+.sdv-hero .md-button--primary {
+  color: var(--sdv-brand-dark);
+  background-color: #fff;
+  border-color: #fff;
 }
 
-/* Icons in cards */
-.lg.middle {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+.sdv-hero .md-button--primary:hover {
+  color: var(--sdv-brand-dark);
+  background-color: #f1f5f9;
+  border-color: #f1f5f9;
+}
+
+.sdv-hero .md-button.sdv-btn-outline {
+  color: var(--sdv-hero-fg);
+  background: var(--sdv-hero-btn-bg);
+  border: 2px solid var(--sdv-hero-btn-border);
+}
+
+.sdv-hero .md-button.sdv-btn-outline:hover {
+  color: var(--sdv-hero-fg);
+  background: var(--sdv-hero-btn-hover);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+/* Stats strip */
+.sdv-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: -1.25rem auto 2.5rem;
+  padding: 0 0.5rem;
+  max-width: 52rem;
+  position: relative;
+  z-index: 2;
+}
+
+.sdv-stat {
+  padding: 1.1rem 1rem;
+  text-align: center;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--sdv-border);
+  border-radius: var(--sdv-radius);
+  box-shadow: var(--sdv-shadow);
+}
+
+.sdv-stat__value {
+  display: block;
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--md-primary-fg-color);
+  letter-spacing: -0.02em;
+}
+
+.sdv-stat__label {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--sdv-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Section headings on landing */
+.sdv-landing h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.sdv-landing h2::after {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin: 0.65rem auto 0;
+  background: var(--md-primary-fg-color);
+  border-radius: 2px;
+}
+
+/* Feature cards (Material grid) */
+.sdv-landing .grid.cards {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin: 0 0 2rem;
+}
+
+.sdv-landing .grid.cards > * {
+  padding: 1.35rem 1.25rem;
+  border: 1px solid var(--sdv-border);
+  border-radius: var(--sdv-radius);
+  background: var(--md-default-bg-color);
+  box-shadow: var(--sdv-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.sdv-landing .grid.cards > *:hover {
+  border-color: var(--md-primary-fg-color--light);
+  box-shadow: 0 4px 20px rgba(15, 118, 110, 0.12);
+  transform: translateY(-2px);
+}
+
+.sdv-landing .lg.middle {
+  font-size: 2.25rem;
+  margin-bottom: 0.65rem;
   color: var(--md-primary-fg-color);
 }
 
-/* Code blocks */
-.highlight {
-  border-radius: 0.5rem;
+/* Framework panels */
+.sdv-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin: 1rem 0 2rem;
 }
 
-/* Admonitions */
-.admonition {
-  border-radius: 0.5rem;
+.sdv-panel {
+  padding: 1.35rem 1.25rem;
+  border: 1px solid var(--sdv-border);
+  border-radius: var(--sdv-radius);
+  background: var(--sdv-surface);
 }
 
-/* Navigation tabs */
-.md-tabs {
-  background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+[data-md-color-scheme="slate"] .sdv-panel {
+  background: var(--md-code-bg-color);
 }
 
-/* Footer */
-.md-footer {
-  background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+.sdv-panel h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--md-primary-fg-color);
 }
 
-/* Text center utility */
+.sdv-panel ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--md-default-fg-color--light);
+}
+
+/* Code example band */
+.sdv-code-band {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--sdv-border);
+  border-radius: var(--sdv-radius);
+  background: var(--sdv-surface);
+}
+
+[data-md-color-scheme="slate"] .sdv-code-band {
+  background: var(--md-code-bg-color);
+}
+
+.sdv-code-band .tabbed-set {
+  margin-top: 0;
+}
+
+/* CTA footer strip */
+.sdv-cta {
+  margin: 3rem 0 1rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  border-radius: var(--sdv-radius);
+  border: 1px solid var(--sdv-border);
+  background: var(--sdv-surface);
+}
+
+[data-md-color-scheme="slate"] .sdv-cta {
+  background: var(--md-code-bg-color);
+}
+
+.sdv-cta p {
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  color: var(--md-default-fg-color--light);
+}
+
+/* Utilities */
 .text-center {
   text-align: center;
 }
 
-/* Custom card styling */
-.card {
-  padding: 1.5rem;
-  border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
+.highlight,
+.admonition {
+  border-radius: var(--sdv-radius);
 }
 
-.card h3 {
-  margin-top: 0;
-  color: var(--md-primary-fg-color);
-}
-
-/* Responsive hero */
 @media (max-width: 768px) {
-  .hero h1 {
-    font-size: 2rem;
+  .sdv-hero {
+    padding: 2.5rem 1.25rem 2.25rem;
   }
-  
-  .hero p {
-    font-size: 1rem;
+
+  .sdv-stats {
+    margin-top: -0.75rem;
   }
 }
