@@ -1,0 +1,53 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.kiranreddi/sentinel-dv",
+  "title": "Sentinel DV",
+  "description": "Security-first MCP server for verification intelligence (SystemVerilog/UVM/cocotb)",
+  "version": "1.0.0",
+  "websiteUrl": "https://github.com/kiranreddi/sentinel-dv",
+  "repository": {
+    "url": "https://github.com/kiranreddi/sentinel-dv",
+    "source": "github",
+    "id": "1141861890"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "sentinel-dv",
+      "version": "1.0.0",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--from",
+          "value": "sentinel-dv"
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "sentinel-dv-server"
+        },
+        {
+          "type": "named",
+          "name": "--config",
+          "description": "Path to config.yaml (artifact roots, index path, adapters)",
+          "format": "filepath",
+          "placeholder": "/absolute/path/to/config.yaml"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "SENTINEL_DV_CONFIG",
+          "description": "Path to config.yaml (alternative to --config)",
+          "format": "filepath",
+          "placeholder": "/absolute/path/to/config.yaml"
+        }
+      ]
+    }
+  ]
+}
