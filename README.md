@@ -129,7 +129,9 @@ sentinel_dv/
 
 ## 🚀 Quick Start
 
-> **PyPI:** Use **`sentinel-dv>=1.0.1`**. Version **1.0.0** was yanked (broken wheel missing Python subpackages). Install flow verified: `pip install` → `sentinel-dv-index` → `sentinel-dv-server` → 15 MCP tools.
+> **PyPI:** Use **`sentinel-dv>=1.0.1`**. Do **not** use **1.0.0** (broken wheel missing Python subpackages). Install flow verified on **1.0.1**: `pip install` → `sentinel-dv-index` → `sentinel-dv-server` → 15 MCP tools.
+>
+> **Maintainers:** [Yank 1.0.0 on PyPI](https://pypi.org/manage/project/sentinel-dv/releases/) (Options → Yank) with reason: *Broken wheel missing subpackages; use >=1.0.1.* PyPI has no public yank API yet.
 
 ### Install from MCP Registry
 
