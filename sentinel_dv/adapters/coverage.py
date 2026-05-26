@@ -73,9 +73,15 @@ class CoverageParser:
 
         # If no metrics found, create a default metric
         if not metrics:
-            metrics.append(CoverageMetric(name="line", scope="module", covered=0.0, hits=0, total=0))
+            metrics.append(
+                CoverageMetric(name="line", scope="module", covered=0.0, hits=0, total=0)
+            )
 
-        summary_kind = kind if kind in {"functional", "code", "assertion", "toggle", "fsm", "unknown"} else "functional"
+        summary_kind = (
+            kind
+            if kind in {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
+            else "functional"
+        )
         rel_path = report_path.name
         return CoverageSummary(
             run_id=run_id,

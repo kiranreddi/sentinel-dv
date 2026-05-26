@@ -1005,8 +1005,8 @@ class IndexStore:
 
         from datetime import UTC, datetime, timedelta
 
-        cutoff = (datetime.now(UTC) - timedelta(days=window_days)).isoformat().replace(
-            "+00:00", "Z"
+        cutoff = (
+            (datetime.now(UTC) - timedelta(days=window_days)).isoformat().replace("+00:00", "Z")
         )
 
         runs = self._conn.execute(
