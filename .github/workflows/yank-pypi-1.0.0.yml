@@ -1,0 +1,19 @@
+# One-time (or manual) workflow to yank broken PyPI 1.0.0 after 1.0.1 is published.
+name: Yank PyPI 1.0.0
+
+on:
+  workflow_dispatch:
+
+jobs:
+  yank:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Yank sentinel-dv 1.0.0 on PyPI
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          curl -fsS -X POST \
+            -u "__token__:${PYPI_API_TOKEN}" \
+            "https://pypi.org/pypi/sentinel-dv/1.0.0/yank" \
+            -F "reason=Broken wheel missing Python subpackages (indexing, tools, schemas). Install sentinel-dv>=1.0.1."
+          echo "Yanked 1.0.0 successfully"
