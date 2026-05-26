@@ -227,14 +227,14 @@ With Claude or any MCP client:
 ### Core Concepts
 - [Architecture Overview](docs/architecture.md) - Design principles and structure
 - [Schema Reference](docs/schemas.md) - Complete type definitions
-- [Tool Contracts](docs/tools.md) - Request/response specifications
-- [Security Model](docs/security.md) - Redaction, bounding, sandboxing
+- [Tool Contracts](docs/tools/overview.md) - Request/response specifications
+- [Security Model](docs/architecture/security.md) - Redaction, bounding, sandboxing
 
 ### Guides
 - [Getting Started](docs/getting-started/quick-start.md) - Setup and first queries
-- [Adapter Development](docs/adapters.md) - Parse new artifact formats
+- [Adapter Development](docs/adapters/custom.md) - Parse new artifact formats
 - [Simulator Support](docs/simulator_support.md) - Vendor-specific notes
-- [Deployment Guide](docs/deployment.md) - Production best practices
+- [Deployment Guide](docs/deployment/production.md) - Production best practices
 
 ### Reference
 - [API Documentation](https://yourusername.github.io/sentinel-dv/api/)
@@ -274,7 +274,7 @@ mypy sentinel_dv/
 ## 📊 Project Status
 
 - ✅ **Core schemas** - Stable v1.0
-- ✅ **MCP tools** - 14 tools across 6 categories
+- ✅ **MCP tools** - 15 tools across 5 categories
 - ✅ **Adapters** - UVM, cocotb, assertions, coverage
 - ✅ **Indexing** - DuckDB with efficient querying
 - ✅ **Security** - Redaction, sandboxing, bounding

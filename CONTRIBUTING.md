@@ -294,11 +294,11 @@ When adding support for a new verification tool or format:
 1. **Create adapter module** in `sentinel_dv/adapters/`
 2. **Implement parser functions** that return schema objects
 3. **Add tests** with real-world fixture files
-4. **Document** in `docs/adapters.md`
+4. **Document** in `docs/adapters/custom.md`
 5. **Add config flag** to enable/disable
 6. **Update examples**
 
-See [Adapter Development Guide](docs/adapters.md) for details.
+See [Adapter Development Guide](docs/adapters/custom.md) for details.
 
 ## Commit Messages
 

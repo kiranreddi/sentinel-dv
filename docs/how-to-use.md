@@ -51,10 +51,10 @@ nano config.yaml
 # 3. Index demo artifacts (test the system)
 python -m sentinel_dv.indexing.indexer \
     --config config.yaml \
-    --artifacts demo/
+    --index-all
 
 # 4. Check index was created
-ls -lh sentinel.duckdb
+ls -lh sentinel_dv.db
 ```
 
 ### Start Server (2 minutes)
@@ -124,109 +124,44 @@ python -m sentinel_dv.server --config config.yaml
 ### Configuration File Explained
 
 ```yaml
-# config.yaml - Complete reference
+# config.yaml - Current configuration reference (matches `config.example.yaml`)
 
 # 1. ARTIFACT ROOTS (Required)
-# Where your verification artifacts are located
 artifact_roots:
   - /path/to/nightly/regressions
-  - /path/to/continuous/integration
-  - ~/verification/runs
+  - /path/to/uvm/logs
 
 # 2. INDEX CONFIGURATION
 index:
-  # Database path (created if doesn't exist)
-  db_path: "./sentinel.duckdb"
-  
-  # Incremental indexing (skip unchanged files)
-  incremental: true
-  
-  # Indexing parallelism
-  workers: 4
+  type: duckdb
+  path: ./sentinel_dv.db
 
 # 3. ADAPTER CONFIGURATION
 adapters:
-  # Enable/disable adapters
-  enabled:
-    - uvm
-    - cocotb
-    - coverage
-    - assertions
-    - regression_analytics
-  
-  # Adapter-specific settings
-  uvm:
-    # Vendor-specific parsing
-    vendors:
-      - questa
-      - vcs
-      - xcelium
-    
-    # Extract topology information
-    extract_topology: true
-  
-  cocotb:
-    # JUnit XML locations
-    result_patterns:
-      - "**/results.xml"
-      - "**/cocotb_results.xml"
-  
-  coverage:
-    # Vendor coverage formats
-    formats:
-      - questa_ucdb
-      - vcs_coverage
-      - xcelium_cov
+  uvm: true
+  cocotb: true
+  assertions: true
+  coverage: true
+  waveform_summary: false
 
 # 4. SECURITY SETTINGS
 security:
-  # Maximum response size (bytes)
-  max_response_bytes: 2097152  # 2MB
-  
-  # Maximum page size for pagination
+  max_response_bytes: 2097152
   max_page_size: 200
-  
-  # Maximum evidence references per response
   max_evidence_refs: 10
-  
-  # Maximum excerpt length
   max_excerpt_length: 1024
+  max_message_length: 4096
+  max_tags_per_event: 20
+  max_coverage_metrics: 200
+  max_bins_missed: 50
 
-# 5. REDACTION (PII/Credentials)
+# 5. REDACTION
 redaction:
   enabled: true
-  
-  # Automatic patterns
+  patterns: []
   redact_emails: true
+  redact_ips: false
   redact_paths: true
-  redact_ips: true
-  redact_credentials: true
-  
-  # Custom patterns (regex)
-  custom_patterns:
-    - 'SECRET_\w+'
-    - 'API_KEY_\w+'
-
-# 6. TAXONOMY CUSTOMIZATION
-taxonomy:
-  # Custom failure categories
-  custom_categories:
-    - custom_protocol_x
-  
-  # Custom tags
-  custom_tags:
-    - my_company_protocol
-
-# 7. PERFORMANCE TUNING
-performance:
-  # Query cache size
-  cache_size_mb: 100
-  
-  # DuckDB threads
-  duckdb_threads: 4
-  
-  # Connection pool
-  max_connections: 10
 ```
 
 ### Directory Structure
@@ -278,53 +213,11 @@ python -m sentinel_dv.indexing.indexer \
 # Coverage summaries: 50
 ```
 
-### Incremental Indexing
+### Incremental / Selective Indexing
 
-```bash
-# Only index new/changed files
-python -m sentinel_dv.indexing.indexer \
-    --config config.yaml \
-    --incremental
-
-# Much faster for daily updates!
-```
-
-### Selective Indexing
-
-```bash
-# Index specific directory
-python -m sentinel_dv.indexing.indexer \
-    --config config.yaml \
-    --artifacts /path/to/specific/run
-
-# Index with filters
-python -m sentinel_dv.indexing.indexer \
-    --config config.yaml \
-    --suite nightly \
-    --from-date 2026-01-20
-```
-
-### Monitoring Progress
-
-```bash
-# With verbose output
-python -m sentinel_dv.indexing.indexer \
-    --config config.yaml \
-    --index-all \
-    --verbose
-
-# With progress bar
-python -m sentinel_dv.indexing.indexer \
-    --config config.yaml \
-    --index-all \
-    --progress
-
-# Dry run (see what would be indexed)
-python -m sentinel_dv.indexing.indexer \
-    --config config.yaml \
-    --index-all \
-    --dry-run
-```
+Sentinel DV currently supports **full indexing only**:
+- Update `artifact_roots` in `config.yaml`
+- Re-run: `python -m sentinel_dv.indexing.indexer --config config.yaml --index-all`
 
 ---
 
@@ -332,122 +225,32 @@ python -m sentinel_dv.indexing.indexer \
 
 ### Available Tools
 
-Sentinel DV provides 14 MCP tools across 5 categories:
+Sentinel DV provides **15** MCP tools across 5 categories:
 
 #### 1. Discovery Tools
-
-**runs.list** - List available test runs
-```json
-{
-  "suite": "nightly",
-  "page": 1,
-  "page_size": 50
-}
-```
-
-**tests.list** - List tests with filters
-```json
-{
-  "run_id": "r_abc123",
-  "status": "fail",
-  "framework": "uvm"
-}
-```
-
-**failures.list** - List failures
-```json
-{
-  "run_id": "r_abc123",
-  "category": "assertion",
-  "severity": "error"
-}
-```
+- `runs.list`
+- `tests.list`
+- `assertions.list`
+- `coverage.list`
 
 #### 2. Detail Tools
-
-**runs.get** - Get run details
-```json
-{
-  "run_id": "r_abc123"
-}
-```
-
-**tests.get** - Get test details with topology
-```json
-{
-  "test_id": "t_def456"
-}
-```
-
-**failures.get** - Get failure details
-```json
-{
-  "failure_id": "f_ghi789"
-}
-```
+- `runs.get`
+- `tests.get`
+- `tests.topology`
+- `assertions.get`
 
 #### 3. Analysis Tools
+- `failures.list`
+- `assertions.failures`
+- `coverage.summary`
 
-**regressions.summary** - Get regression analytics
-```json
-{
-  "suite": "nightly",
-  "window_days": 7
-}
-```
+#### 4. Regression Tools
+- `regressions.summary`
+- `runs.diff`
 
-**runs.diff** - Compare two runs
-```json
-{
-  "base_run_id": "r_abc123",
-  "compare_run_id": "r_def456"
-}
-```
-
-**flaky_tests.detect** - Identify flaky tests
-```json
-{
-  "suite": "nightly",
-  "window_days": 30,
-  "min_runs": 10
-}
-```
-
-#### 4. Coverage Tools
-
-**coverage.summary** - Get coverage metrics
-```json
-{
-  "run_id": "r_abc123",
-  "kind": "functional"
-}
-```
-
-**coverage.diff** - Compare coverage
-```json
-{
-  "base_run_id": "r_abc123",
-  "compare_run_id": "r_def456"
-}
-```
-
-#### 5. Assertion Tools
-
-**assertions.list** - List assertion definitions
-```json
-{
-  "scope": "axi_agent",
-  "intent_protocol": "axi4"
-}
-```
-
-**assertions.failures** - Get assertion failures
-```json
-{
-  "run_id": "r_abc123",
-  "assertion_id": "a_jkl012"
-}
-```
+#### 5. Waveform Tools (Experimental)
+- `wave.signals`
+- `wave.summary`
 
 ---
 
@@ -496,7 +299,7 @@ async def query_sentinel_dv():
             await session.initialize()
             
             # List failing tests
-            result = await session.call_tool("tests_list", {
+            result = await session.call_tool("tests.list", {
                 "status": "fail",
                 "page": 1,
                 "page_size": 10
@@ -507,17 +310,7 @@ async def query_sentinel_dv():
 
 ### API Client (HTTP/REST)
 
-```python
-import requests
-
-# Sentinel DV can optionally expose HTTP API
-response = requests.post("http://localhost:8000/mcp/tools/tests_list", json={
-    "status": "fail",
-    "page": 1
-})
-
-tests = response.json()
-```
+Sentinel DV currently exposes tools over **stdio MCP** (no HTTP endpoints are documented).
 
 ---
 
@@ -529,8 +322,7 @@ tests = response.json()
 # 1. Index latest nightly run
 python -m sentinel_dv.indexing.indexer \
     --config config.yaml \
-    --artifacts /nightly/2026-01-25 \
-    --suite nightly
+    --index-all
 
 # 2. Start server
 python -m sentinel_dv.server --config config.yaml
@@ -555,8 +347,7 @@ Then in Claude:
 # Index PR artifacts
 python -m sentinel_dv.indexing.indexer \
     --config config.yaml \
-    --artifacts /ci/pr_123 \
-    --suite pr_validation
+    --index-all
 ```
 
 In Claude:
@@ -566,27 +357,23 @@ In Claude:
 → Uses: runs.diff comparing main vs PR
 
 "What's the coverage impact of this PR?"
-→ Uses: coverage.diff
+→ Uses: coverage.summary
 ```
 
-### Workflow 3: Flaky Test Detection
+### Workflow 3: Top Failure Signatures
 
 ```bash
-# Index historical data
+# Index (update `artifact_roots` in config.yaml to include the historical runs)
 python -m sentinel_dv.indexing.indexer \
     --config config.yaml \
-    --artifacts /historical/past_30_days \
-    --suite nightly
+    --index-all
 ```
 
 In Claude:
 
 ```
-"Which tests are flaky in the nightly suite?"
-→ Uses: flaky_tests.detect
-
-"Show me tests that fail <20% of the time"
-→ Uses: flaky_tests.detect with threshold=0.2
+"Show me the top failure signatures for the nightly suite"
+→ Uses: regressions.summary
 ```
 
 ### Workflow 4: Root Cause Analysis
@@ -635,7 +422,7 @@ pip list | grep duckdb
 python -c "from sentinel_dv.config import load_config; load_config('config.yaml')"
 
 # 4. Check database
-ls -lh sentinel.duckdb
+ls -lh sentinel_dv.db
 ```
 
 ### Issue: No results from queries
@@ -645,7 +432,7 @@ ls -lh sentinel.duckdb
 # 1. Check index contents
 python -c "
 from sentinel_dv.indexing.store import IndexStore
-with IndexStore('sentinel.duckdb') as store:
+with IndexStore('sentinel_dv.db') as store:
     print(f'Runs: {store.count_runs()}')
     print(f'Tests: {store.count_tests()}')
     print(f'Failures: {store.count_failures()}')
@@ -654,9 +441,7 @@ with IndexStore('sentinel.duckdb') as store:
 # 2. Re-index with verbose logging
 python -m sentinel_dv.indexing.indexer \
     --config config.yaml \
-    --index-all \
-    --verbose \
-    --log-level DEBUG
+    --index-all
 ```
 
 ### Issue: Redaction too aggressive
@@ -670,7 +455,7 @@ redaction:
   redact_paths: false   # Keep paths if needed
   
   # Remove aggressive patterns
-  custom_patterns: []
+  patterns: []
 ```
 
 ### Issue: MCP client can't connect
@@ -681,7 +466,7 @@ redaction:
 python -m sentinel_dv.server --config config.yaml
 
 # 2. Check server logs
-python -m sentinel_dv.server --config config.yaml --log-level DEBUG
+python -m sentinel_dv.server --config config.yaml
 
 # 3. Verify MCP protocol version
 python -c "import fastmcp; print(fastmcp.__version__)"
@@ -697,7 +482,7 @@ Schedule daily indexing:
 
 ```bash
 # crontab -e
-0 2 * * * cd /path/to/sentinel-dv && python -m sentinel_dv.indexing.indexer --config config.yaml --incremental --suite nightly
+0 2 * * * cd /path/to/sentinel-dv && python -m sentinel_dv.indexing.indexer --config config.yaml --index-all
 ```
 
 ### 2. Organize Artifacts
@@ -711,26 +496,21 @@ Keep artifacts organized by suite/date:
 └── release/VERSION/
 ```
 
-### 3. Use Incremental Indexing
+### 3. Incremental Indexing
 
-```bash
-# Daily: incremental (fast)
-python -m sentinel_dv.indexing.indexer --config config.yaml --incremental
-
-# Weekly: full re-index (ensures consistency)
-python -m sentinel_dv.indexing.indexer --config config.yaml --index-all
-```
+Incremental indexing flags are not currently exposed. For updates, re-run full indexing:
+`python -m sentinel_dv.indexing.indexer --config config.yaml --index-all`
 
 ### 4. Monitor Index Size
 
 ```bash
 # Check database size
-du -h sentinel.duckdb
+du -h sentinel_dv.db
 
 # Vacuum if needed (reclaim space)
 python -c "
 from sentinel_dv.indexing.store import IndexStore
-with IndexStore('sentinel.duckdb') as store:
+with IndexStore('sentinel_dv.db') as store:
     store._conn.execute('VACUUM')
 "
 ```
@@ -749,7 +529,7 @@ git push
 - ✅ Enable redaction for production
 - ✅ Restrict artifact_roots to necessary paths
 - ✅ Set appropriate max_response_bytes
-- ✅ Review custom_patterns for your environment
+- ✅ Review `redaction.patterns` for your environment
 - ✅ Never commit credentials in config.yaml
 
 ### 7. Performance Tuning
@@ -803,7 +583,7 @@ parser = UVMLogParser()
 result = parser.parse_log("test.log")
 
 # Direct store access
-with IndexStore("sentinel.duckdb") as store:
+with IndexStore("sentinel_dv.db") as store:
     tests, total = store.query_tests(
         status="fail",
         framework="uvm"
