@@ -4,6 +4,16 @@ This guide shows how to configure and run Sentinel DV locally, then connect it t
 
 ## 1. Install
 
+### From MCP Registry (recommended)
+
+Use server name `io.github.kiranreddi/sentinel-dv` in an MCP registry–aware client, or run with `uvx`:
+
+```bash
+uvx --from sentinel-dv sentinel-dv-server --config /absolute/path/to/config.yaml
+```
+
+### From PyPI
+
 ```bash
 pip install sentinel-dv
 ```
