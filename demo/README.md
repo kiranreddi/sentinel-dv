@@ -19,13 +19,13 @@ demo/
 # From repository root
 python -m sentinel_dv.indexing.indexer \
     --config config.example.yaml \
-    --artifacts demo/
+    --index-all
 ```
 
 ### 2. Start the MCP Server
 
 ```bash
-python -m sentinel_dv.server
+python -m sentinel_dv.server --config config.example.yaml
 ```
 
 ### 3. Query with MCP Client
@@ -37,7 +37,7 @@ from mcp.client.stdio import stdio_client
 # Connect to server
 server_params = StdioServerParameters(
     command="python",
-    args=["-m", "sentinel_dv.server"]
+    args=["-m", "sentinel_dv.server", "--config", "config.example.yaml"]
 )
 
 async with stdio_client(server_params) as (read, write):
@@ -46,7 +46,7 @@ async with stdio_client(server_params) as (read, write):
         await session.initialize()
         
         # List tests
-        result = await session.call_tool("tests_list", {"page": 1})
+        result = await session.call_tool("tests.list", {"page": 1, "page_size": 10})
         print(result)
 ```
 
@@ -95,10 +95,11 @@ artifact_roots:
   - "./demo"
 
 adapters:
-  enabled:
-    - uvm
-    - cocotb
-    - coverage
+  uvm: true
+  cocotb: true
+  assertions: true
+  coverage: true
+  waveform_summary: false
 ```
 
 ## Expected Results

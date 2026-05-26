@@ -97,7 +97,7 @@ python -m sentinel_dv.server --config config.yaml
 ```
 Sentinel DV v1.0.0 started
 Schema version: 1.0.0
-Tools registered: 14
+Tools registered: 15
 Index ready: 150 tests indexed
 ```
 
@@ -184,7 +184,7 @@ print(f"Failures indexed: {store.count_failures()}")
 
 ## Next Steps
 
-- [Configure adapters](configuration.md) for your specific simulator
+- [Configure adapters](../configuration.md) for your specific simulator
 - [Explore tools](../tools/overview.md) available for queries
 - [Understand schemas](../architecture/schemas.md) for structured data
 - [Deploy to production](../deployment/production.md) with systemd
@@ -195,7 +195,6 @@ print(f"Failures indexed: {store.count_failures()}")
 
     - Check artifact root paths are correct and readable
     - Ensure logs are in recognized format (UVM, cocotb)
-    - Enable debug logging: `--log-level=DEBUG`
 
 ??? question "Server not starting?"
 
