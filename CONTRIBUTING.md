@@ -361,6 +361,28 @@ Schema versions track separately and must be updated when schema changes.
 4. Push tag: `git push origin v1.0.0`
 5. GitHub Actions will build and publish
 
+## Continuous Integration
+
+All checks run on [GitHub Actions](https://github.com/kiranreddi/sentinel-dv/actions). There is no CircleCI or other external CI for this repository.
+
+| Workflow | File | When it runs |
+|----------|------|----------------|
+| **CI** | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Push and pull requests to `main` and `develop` |
+| **Documentation** | [`.github/workflows/docs.yml`](.github/workflows/docs.yml) | Push and pull requests to `main` |
+| **Release** | [`.github/workflows/release.yml`](.github/workflows/release.yml) | Pushes of version tags (`v*`) |
+
+The **CI** workflow runs on Python 3.10, 3.11, and 3.12: `ruff`, `black --check`, `mypy` (non-blocking), `pytest` with coverage, and a security scan (`pip-audit`, `safety`). Coverage must stay at or above 70%.
+
+Before opening a pull request, run the same checks locally:
+
+```bash
+pip install -e ".[dev]"
+ruff check sentinel_dv/ tests/
+black --check sentinel_dv/ tests/
+pytest --cov=sentinel_dv --cov-report=term
+pip install -e ".[docs]" && mkdocs build
+```
+
 ## Community
 
 - **Discussions:** For questions and ideas
@@ -377,7 +399,7 @@ Contributors will be recognized in:
 ## Questions?
 
 Feel free to:
-- Open a [Discussion](https://github.com/yourusername/sentinel-dv/discussions)
+- Open a [Discussion](https://github.com/kiranreddi/sentinel-dv/discussions)
 - Ask in pull request comments
 - Reach out to maintainers
 
