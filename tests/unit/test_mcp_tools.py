@@ -34,8 +34,12 @@ def indexed_store(tmp_path):
         ci_system="github",
     )
 
-    pass_id, pass_full = generate_test_id(run_id_full=run_id_full, framework="uvm", test_name="passing")
-    fail_id, fail_full = generate_test_id(run_id_full=run_id_full, framework="uvm", test_name="failing")
+    pass_id, pass_full = generate_test_id(
+        run_id_full=run_id_full, framework="uvm", test_name="passing"
+    )
+    fail_id, fail_full = generate_test_id(
+        run_id_full=run_id_full, framework="uvm", test_name="failing"
+    )
 
     store.insert_test(
         test_id=pass_id,
