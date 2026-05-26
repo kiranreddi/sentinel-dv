@@ -1,6 +1,6 @@
 [project]
 name = "sentinel-dv"
-version = "1.0.0"
+version = "1.0.1"
 description = "Security-first MCP server for verification intelligence (SystemVerilog/UVM/cocotb)"
 authors = [{name = "Sentinel DV Team"}]
 license = {text = "Apache-2.0"}
@@ -60,8 +60,9 @@ sentinel-dv-index = "sentinel_dv.indexing.__main__:main"
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["sentinel_dv"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sentinel_dv*"]
 
 [tool.setuptools.package-data]
 sentinel_dv = ["py.typed"]
