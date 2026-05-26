@@ -13,7 +13,7 @@ Get up and running with Sentinel DV in minutes.
 === "PyPI (Recommended)"
 
     ```bash
-    pip install sentinel-dv
+    pip install "sentinel-dv>=1.0.1"
     ```
 
 === "From Source"

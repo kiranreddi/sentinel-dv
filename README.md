@@ -1,11 +1,12 @@
-# 🛡️ Sentinel DV v1.0.0 - Verification Intelligence for AI Agents
+# 🛡️ Sentinel DV v1.0.1 - Verification Intelligence for AI Agents
 
 <!-- mcp-name: io.github.kiranreddi/sentinel-dv -->
 
 <div align="center">
 
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![MCP](https://img.shields.io/badge/MCP-1.0.0-purple.svg)](https://modelcontextprotocol.io)
+[![PyPI](https://img.shields.io/pypi/v/sentinel-dv.svg)](https://pypi.org/project/sentinel-dv/)
+[![MCP](https://img.shields.io/badge/MCP-registry-purple.svg)](https://registry.modelcontextprotocol.io)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![CI](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml)
 [![Documentation](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml)
@@ -128,6 +129,8 @@ sentinel_dv/
 
 ## 🚀 Quick Start
 
+> **PyPI:** Use **`sentinel-dv>=1.0.1`**. Version **1.0.0** was yanked (broken wheel missing Python subpackages). Install flow verified: `pip install` → `sentinel-dv-index` → `sentinel-dv-server` → 15 MCP tools.
+
 ### Install from MCP Registry
 
 Install via [uv](https://docs.astral.sh/uv/) (`uvx`) or your MCP client’s registry UI using server name `io.github.kiranreddi/sentinel-dv`.
@@ -141,7 +144,7 @@ Install via [uv](https://docs.astral.sh/uv/) (`uvx`) or your MCP client’s regi
       "command": "uvx",
       "args": [
         "--from",
-        "sentinel-dv",
+        "sentinel-dv@1.0.1",
         "sentinel-dv-server",
         "--config",
         "/absolute/path/to/config.yaml"
@@ -156,7 +159,7 @@ Alternatively set `SENTINEL_DV_CONFIG` to your config path and omit `--config`.
 **Before querying:** build the artifact index (required once per config):
 
 ```bash
-uvx --from sentinel-dv sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
+uvx --from sentinel-dv@1.0.1 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
 ```
 
 ### Installation
@@ -169,8 +172,8 @@ cd sentinel-dv
 # Install with development dependencies
 pip install -e ".[dev]"
 
-# Or production install
-pip install sentinel-dv
+# Or production install (requires >=1.0.1; do not use 1.0.0)
+pip install "sentinel-dv>=1.0.1"
 ```
 
 ### Configuration
