@@ -47,10 +47,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/sentinel-dv"
-Documentation = "https://yourusername.github.io/sentinel-dv/"
-Repository = "https://github.com/yourusername/sentinel-dv"
-Issues = "https://github.com/yourusername/sentinel-dv/issues"
+Homepage = "https://github.com/kiranreddi/sentinel-dv"
+Documentation = "https://github.com/kiranreddi/sentinel-dv"
+Repository = "https://github.com/kiranreddi/sentinel-dv"
+Issues = "https://github.com/kiranreddi/sentinel-dv/issues"
 
 [project.scripts]
 sentinel-dv-server = "sentinel_dv.server:main"

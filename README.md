@@ -1,5 +1,7 @@
 # 🛡️ Sentinel DV v1.0.0 - Verification Intelligence for AI Agents
 
+<!-- mcp-name: io.github.kiranreddi/sentinel-dv -->
+
 <div align="center">
 
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -126,11 +128,42 @@ sentinel_dv/
 
 ## 🚀 Quick Start
 
+### Install from MCP Registry
+
+Install via [uv](https://docs.astral.sh/uv/) (`uvx`) or your MCP client’s registry UI using server name `io.github.kiranreddi/sentinel-dv`.
+
+**Claude Desktop / MCP client (stdio):**
+
+```json
+{
+  "mcpServers": {
+    "sentinel-dv": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "sentinel-dv",
+        "sentinel-dv-server",
+        "--config",
+        "/absolute/path/to/config.yaml"
+      ]
+    }
+  }
+}
+```
+
+Alternatively set `SENTINEL_DV_CONFIG` to your config path and omit `--config`.
+
+**Before querying:** build the artifact index (required once per config):
+
+```bash
+uvx --from sentinel-dv sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
+```
+
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/sentinel-dv.git
+git clone https://github.com/kiranreddi/sentinel-dv.git
 cd sentinel-dv
 
 # Install with development dependencies
