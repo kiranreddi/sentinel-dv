@@ -83,4 +83,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Coverage parsing currently supports limited vendor formats
 - Assertion intent extraction is heuristic-based
 
-[1.0.0]: https://github.com/yourusername/sentinel-dv/releases/tag/v1.0.0
+[1.0.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.0.1
+[1.0.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.0.0

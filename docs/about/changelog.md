@@ -7,6 +7,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.0.1] - 2026-05-26
+
+### Fixed
+
+- Fixed PyPI packaging to include all Python subpackages (`indexing`, `tools`, `schemas`, `adapters`).
+- Added CI wheel smoke-check to catch packaging regressions before release.
+
+### Changed
+
+- Installation guidance now requires `sentinel-dv>=1.0.1` (do not use 1.0.0).
+- Current MCP surface documented as 15 tools.
+
 ## [1.0.0] - 2026-01-25
 
 ### Added
@@ -73,4 +85,5 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Coverage parsing supports limited vendor formats
 - Assertion intent extraction is heuristic-based
 
-[1.0.0]: https://github.com/yourusername/sentinel-dv/releases/tag/v1.0.0
+[1.0.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.0.1
+[1.0.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.0.0
