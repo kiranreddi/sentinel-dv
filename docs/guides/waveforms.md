@@ -77,11 +77,34 @@ Optional: `framework`, `format`, `end_time_ns`, `highlights`, `metadata`.
 
 `VcdSummaryParser` (`sentinel_dv/adapters/vcd_summary.py`) reads standard VCD files and computes per-signal:
 
-- Toggle counts
-- Last value
-- Simulation end time (`#` timestamps)
+- Toggle counts (full trace at index time, or within a window at query time)
+- `value_at_start` / `value_at_end` when a window is requested
+- `$timescale` conversion so `#` timestamps map to **nanoseconds**
 
 Hierarchical duplicate signal names in the dump are merged by name.
+
+### Time windows (20–30 µs example)
+
+MCP tools accept optional **`start_time_ns`** and **`end_time_ns`** (always **nanoseconds**):
+
+| Human unit | Nanoseconds for API |
+|------------|---------------------|
+| 20 µs | `20000` |
+| 30 µs | `30000` |
+
+Example MCP call (after indexing a VCD):
+
+```json
+{
+  "test_id": "t_…",
+  "start_time_ns": 20000,
+  "end_time_ns": 30000
+}
+```
+
+For indexed **VCD** files, Sentinel DV **re-opens** the source `.vcd` under `artifact_roots` and parses only that window (values + toggles inside the range). Both parameters are required together.
+
+For **JSON** summaries, the window filters `highlights` only; use VCD for per-signal window values.
 
 !!! note "Summary only"
     This is not a waveform viewer. Very large VCDs are read sequentially; only aggregated stats are stored.
@@ -92,8 +115,8 @@ After indexing, query by `test_id`:
 
 | Tool | Returns |
 |------|---------|
-| `wave.signals` | Signal list (name, group, width, toggles, last_value); bounded by `security.max_coverage_metrics` |
-| `wave.summary` | Format, end time, highlights, metadata, source path |
+| `wave.signals` | Signal list (`value_at_start`, `value_at_end`, toggles, …); optional `start_time_ns` / `end_time_ns` |
+| `wave.summary` | Format, highlights, metadata; optional time window |
 
 If no summary exists for a test, tools return `NOT_FOUND` with guidance to enable `waveform_summary` and re-index.
 
