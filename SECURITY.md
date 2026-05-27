@@ -291,9 +291,9 @@ Before deploying to production:
 
 For security concerns: [security@sentinel-dv.org]
 
-For general issues: [GitHub Issues](https://github.com/yourusername/sentinel-dv/issues)
+For general issues: [GitHub Issues](https://github.com/kiranreddi/sentinel-dv/issues)
 
 ---
 
-**Last updated:** 2026-01-25
-**Version:** 1.0.0
+**Last updated:** 2026-05-26
+**Version:** 1.0.1

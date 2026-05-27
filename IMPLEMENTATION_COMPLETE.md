@@ -524,7 +524,7 @@ mypy>=1.5.0             # Type checking
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/sentinel-dv.git
+git clone https://github.com/kiranreddi/sentinel-dv.git
 cd sentinel-dv
 
 # Install with dependencies
