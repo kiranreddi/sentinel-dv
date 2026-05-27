@@ -19,15 +19,9 @@ Get up and running with Sentinel DV in minutes.
 === "From Source"
 
     ```bash
-    git clone https://github.com/yourusername/sentinel-dv.git
+    git clone https://github.com/kiranreddi/sentinel-dv.git
     cd sentinel-dv
     pip install -e ".[dev]"
-    ```
-
-=== "Docker"
-
-    ```bash
-    docker pull yourusername/sentinel-dv:latest
     ```
 
 ## Configuration
@@ -95,7 +89,7 @@ python -m sentinel_dv.server --config config.yaml
 **Server will start on stdio (MCP protocol):**
 
 ```
-Sentinel DV v1.0.0 started
+Sentinel DV v1.0.1 started
 Schema version: 1.0.0
 Tools registered: 15
 Index ready: 150 tests indexed

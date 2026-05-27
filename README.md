@@ -275,7 +275,7 @@ With Claude or any MCP client:
 - [Deployment Guide](docs/deployment/production.md) - Production best practices
 
 ### Reference
-- [API Documentation](https://yourusername.github.io/sentinel-dv/api/)
+- [Documentation Site](https://kiranreddi.github.io/sentinel-dv/)
 - [Configuration Reference](docs/configuration.md)
 - [Examples](examples/) - Demo artifacts and clients
 
@@ -356,9 +356,9 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ## 🔗 Links
 
-- 🌐 [Documentation](https://yourusername.github.io/sentinel-dv/)
-- 💬 [Discussions](https://github.com/yourusername/sentinel-dv/discussions)
-- 🐛 [Issue Tracker](https://github.com/yourusername/sentinel-dv/issues)
+- 🌐 [Documentation](https://kiranreddi.github.io/sentinel-dv/)
+- 💬 [Discussions](https://github.com/kiranreddi/sentinel-dv/discussions)
+- 🐛 [Issue Tracker](https://github.com/kiranreddi/sentinel-dv/issues)
 - 📣 [Changelog](CHANGELOG.md)
 
 ---
