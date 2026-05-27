@@ -8,6 +8,7 @@ from pathlib import Path
 
 from sentinel_dv.adapters.cocotb import CocotbParser
 from sentinel_dv.adapters.uvm_log import UVMLogParser
+from sentinel_dv.adapters.vcd_summary import VcdSummaryParser
 from sentinel_dv.adapters.waveform_summary import WAVEFORM_GLOBS, WaveformSummaryParser
 from sentinel_dv.config import AdaptersConfig
 from sentinel_dv.ids import generate_failure_id, generate_run_id, generate_test_id
@@ -28,7 +29,8 @@ class ArtifactIndexer:
         self.adapters = adapters or AdaptersConfig()
         self.uvm_parser = UVMLogParser()
         self.cocotb_parser = CocotbParser()
-        self.waveform_parser = WaveformSummaryParser()
+        self.waveform_json_parser = WaveformSummaryParser()
+        self.vcd_parser = VcdSummaryParser()
 
     def scan_artifacts(self) -> list[Path]:
         """Collect indexable artifact paths under configured roots."""
@@ -42,14 +44,20 @@ class ArtifactIndexer:
         return sorted(set(found))
 
     def scan_waveform_artifacts(self) -> list[Path]:
-        """Collect precomputed waveform summary JSON files."""
+        """Collect waveform summary JSON and VCD trace files."""
         found: list[Path] = []
         for root in self.artifact_roots:
             if not root.exists():
                 continue
-            for pattern in WAVEFORM_GLOBS:
+            for pattern in (*WAVEFORM_GLOBS, "*.vcd"):
                 found.extend(root.rglob(pattern))
-        return sorted({path for path in found if self.waveform_parser.can_handle(path)})
+        return sorted(
+            {
+                path
+                for path in found
+                if self.waveform_json_parser.can_handle(path) or self.vcd_parser.can_handle(path)
+            }
+        )
 
     def index_all(self) -> dict[str, int]:
         """Index all discovered artifacts into the store."""
@@ -212,10 +220,13 @@ class ArtifactIndexer:
                 stats["failures"] += 1
 
     def _index_waveform_summary(
-        self, store: IndexStore, json_path: Path, stats: dict[str, int]
+        self, store: IndexStore, artifact_path: Path, stats: dict[str, int]
     ) -> None:
         try:
-            parsed = self.waveform_parser.parse(json_path)
+            if self.vcd_parser.can_handle(artifact_path):
+                parsed = self.vcd_parser.parse(artifact_path)
+            else:
+                parsed = self.waveform_json_parser.parse(artifact_path)
         except (OSError, ValueError, json.JSONDecodeError):
             return
 
@@ -225,9 +236,11 @@ class ArtifactIndexer:
 
         test = store.find_test_by_name(parsed["test_name"], framework=framework)
         if not test:
+            test = store.find_test_by_name(parsed["test_name"])
+        if not test:
             return
 
-        rel = self._relative_path(json_path)
+        rel = self._relative_path(artifact_path)
         store.insert_waveform_summary(
             test_id=test["test_id"],
             summary={
