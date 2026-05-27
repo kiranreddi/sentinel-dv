@@ -45,7 +45,9 @@ Or add to an MCP client config with `--config` pointing at this `config.yaml`.
 Use tools on the indexed test (`counter_tb.test_counter_sim`):
 
 - **`wave.signals`** — `clk`, `rst`, `count` with toggle counts from the VCD
-- **`wave.summary`** — `format: vcd-summary`, end time, highlights
+- **`wave.summary`** — `format: vcd-summary`, end time (~10 µs), highlights
+
+**Time window example** (2–3 µs): pass `start_time_ns: 2000` and `end_time_ns: 3000` to `wave.signals` or `wave.summary`.
 
 ## Files
 

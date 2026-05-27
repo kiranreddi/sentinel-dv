@@ -82,4 +82,23 @@ def test_verilator_vcd_indexed_waveform_tools(tmp_path: Path) -> None:
         summary = core.wave_summary(store, test_id)
         assert summary["format"] == "vcd-summary"
         assert summary["end_time_ns"] is not None
+        assert summary["end_time_ns"] >= 5_000  # ~10 µs trace (1ps timescale)
         assert summary["highlights"]
+
+        # 2–3 µs window on real Verilator VCD (nanoseconds)
+        windowed = core.wave_signals(
+            store, test_id, start_time_ns=2_000, end_time_ns=3_000
+        )
+        assert windowed["start_time_ns"] == 2_000
+        assert windowed["end_time_ns"] == 3_000
+        by_name = {s["name"]: s for s in windowed["signals"]}
+        assert by_name["clk"]["toggles"] >= 5
+        assert by_name["clk"]["value_at_start"] in ("0", "1")
+        assert by_name["clk"]["value_at_end"] in ("0", "1")
+
+        win_summary = core.wave_summary(
+            store, test_id, start_time_ns=2_000, end_time_ns=3_000
+        )
+        assert win_summary["start_time_ns"] == 2_000
+        assert win_summary["highlights"]
+        assert any(h.get("note", "").find("window") >= 0 for h in win_summary["highlights"])

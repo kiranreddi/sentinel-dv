@@ -47,7 +47,21 @@ Or add to an MCP client config with `--config` pointing at this `config.yaml`.
 Use tools on the indexed test (`counter_tb.test_counter_sim`):
 
 - **`wave.signals`** — `clk`, `rst`, `count` with toggle counts from the VCD
-- **`wave.summary`** — `format: vcd-summary`, end time, highlights
+- **`wave.summary`** — `format: vcd-summary`, end time (~10 µs for this demo), highlights
+
+### Time window (2–3 µs)
+
+The testbench advances the VCD timestamp by **100 ns** per step (`$timescale 1ps`, `+100_000` per dump). Query a slice in **nanoseconds**:
+
+```json
+{
+  "test_id": "<from tests.list>",
+  "start_time_ns": 2000,
+  "end_time_ns": 3000
+}
+```
+
+Use with **`wave.signals`** or **`wave.summary`** — both parameters are required together.
 
 ## Files in `demo/verilator_counter/`
 
