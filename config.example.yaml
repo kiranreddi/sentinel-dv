@@ -18,7 +18,7 @@ adapters:
   cocotb: true           # Parse cocotb results
   assertions: true       # Parse assertion maps and failures
   coverage: true         # Parse coverage reports
-  waveform_summary: false  # Index precomputed *.wave.json summaries (see demo/waveforms/)
+  waveform_summary: false  # Index *.wave.json and *.vcd summaries (see demo/waveforms/, demo/verilator_counter/)
 
 # Security limits
 security:
