@@ -271,7 +271,7 @@ def runs_diff(
 def wave_signals(
     test_id: str = Field(..., description="Test identifier"),
 ) -> dict[str, Any]:
-    """List waveform signal groups (experimental)."""
+    """List signals from a precomputed waveform summary."""
     return core.wave_signals(get_store(), test_id)
 
 
@@ -280,7 +280,7 @@ def wave_signals(
 def wave_summary(
     test_id: str = Field(..., description="Test identifier"),
 ) -> dict[str, Any]:
-    """Get waveform summary (experimental)."""
+    """Get precomputed waveform summary for a test."""
     return core.wave_summary(get_store(), test_id)
 
 

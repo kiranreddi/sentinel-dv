@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from sentinel_dv.config import get_config
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.schemas.versioning import CURRENT_SCHEMA_VERSION
 from sentinel_dv.tools.errors import ToolError
@@ -231,15 +232,35 @@ def wave_signals(
     store: IndexStore,
     test_id: str,
 ) -> dict[str, Any]:
-    """Experimental waveform signal listing (requires pre-indexed summaries)."""
+    """List signals from a precomputed waveform summary indexed for the test."""
     validate_id(test_id, "test_id")
-    _ = store  # reserved for future index-backed waveform summaries
+    if not store.get_test(test_id):
+        raise ToolError("NOT_FOUND", f"Test not found: {test_id}")
+
+    record = store.get_waveform_summary(test_id)
+    if not record:
+        raise ToolError(
+            "NOT_FOUND",
+            "No waveform summary indexed for this test. "
+            "Enable adapters.waveform_summary and add a *.wave.json file with matching test_name.",
+        )
+
+    summary = record["summary"]
+    signals = summary.get("signals", [])
+    max_signals = get_config().security.max_coverage_metrics
+    truncated = len(signals) > max_signals
+    if truncated:
+        signals = signals[:max_signals]
+
     return {
         "schema_version": CURRENT_SCHEMA_VERSION,
-        "status": "experimental",
         "test_id": test_id,
-        "signals": [],
-        "message": "Waveform summaries are not indexed; enable waveform_summary adapter.",
+        "format": record["format"],
+        "end_time_ns": record["end_time_ns"],
+        "signals": signals,
+        "signal_count": summary.get("signal_count", len(signals)),
+        "truncated": truncated,
+        "source_path": record["source_path"],
     }
 
 
@@ -247,13 +268,28 @@ def wave_summary(
     store: IndexStore,
     test_id: str,
 ) -> dict[str, Any]:
-    """Experimental waveform summary (requires pre-indexed summaries)."""
+    """Get precomputed waveform summary for a test."""
     validate_id(test_id, "test_id")
-    _ = store
+    if not store.get_test(test_id):
+        raise ToolError("NOT_FOUND", f"Test not found: {test_id}")
+
+    record = store.get_waveform_summary(test_id)
+    if not record:
+        raise ToolError(
+            "NOT_FOUND",
+            "No waveform summary indexed for this test. "
+            "Enable adapters.waveform_summary and add a *.wave.json file with matching test_name.",
+        )
+
+    summary = record["summary"]
     return {
         "schema_version": CURRENT_SCHEMA_VERSION,
-        "status": "experimental",
         "test_id": test_id,
-        "summary": None,
-        "message": "Waveform summaries are not indexed; enable waveform_summary adapter.",
+        "format": record["format"],
+        "end_time_ns": record["end_time_ns"],
+        "signal_count": summary.get("signal_count"),
+        "highlights": summary.get("highlights", []),
+        "metadata": summary.get("metadata", {}),
+        "evidence": summary.get("evidence"),
+        "source_path": record["source_path"],
     }

@@ -27,7 +27,11 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(1)
 
     set_config(config)
-    indexer = ArtifactIndexer(config.artifact_roots, Path(config.index.path))
+    indexer = ArtifactIndexer(
+        config.artifact_roots,
+        Path(config.index.path),
+        adapters=config.adapters,
+    )
 
     if not args.index_all:
         print("Nothing to do. Pass --index-all to scan and index artifacts.", file=sys.stderr)
@@ -36,7 +40,8 @@ def main(argv: list[str] | None = None) -> None:
     stats = indexer.index_all()
     print(
         f"Indexed runs={stats['runs']} tests={stats['tests']} "
-        f"failures={stats['failures']} from {stats['artifacts']} artifacts"
+        f"failures={stats['failures']} waveforms={stats.get('waveforms', 0)} "
+        f"from {stats['artifacts']} artifacts"
     )
 
 

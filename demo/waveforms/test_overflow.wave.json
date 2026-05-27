@@ -1,0 +1,23 @@
+{
+  "test_name": "test_counter.test_overflow",
+  "framework": "cocotb",
+  "format": "precomputed-vcd",
+  "end_time_ns": 75000,
+  "signals": [
+    {"name": "clk", "group": "dut", "width": 1, "toggles": 150, "last_value": "1"},
+    {"name": "count", "group": "dut", "width": 8, "toggles": 255, "last_value": "0xFF"},
+    {"name": "overflow_flag", "group": "dut", "width": 1, "toggles": 0, "last_value": "0"}
+  ],
+  "highlights": [
+    {
+      "time_ns": 72000,
+      "signal": "count",
+      "value": "0xFF",
+      "note": "counter saturated before wrap"
+    }
+  ],
+  "metadata": {
+    "source": "demo",
+    "generator": "verilator-vcd-summary"
+  }
+}

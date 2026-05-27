@@ -1,0 +1,23 @@
+{
+  "test_name": "test_counter.test_increment",
+  "framework": "cocotb",
+  "format": "precomputed-vcd",
+  "end_time_ns": 50000,
+  "signal_groups": [
+    {
+      "name": "dut",
+      "signals": [
+        {"name": "clk", "width": 1, "toggles": 100, "last_value": "1"},
+        {"name": "rst_n", "width": 1, "toggles": 1, "last_value": "1"},
+        {"name": "count", "width": 8, "toggles": 8, "last_value": "0x05"}
+      ]
+    }
+  ],
+  "highlights": [
+    {"time_ns": 10000, "signal": "count", "value": "0x01", "note": "first increment"}
+  ],
+  "metadata": {
+    "source": "demo",
+    "generator": "verilator-vcd-summary"
+  }
+}
