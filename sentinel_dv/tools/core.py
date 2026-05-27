@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
+from sentinel_dv.adapters.vcd_summary import VcdSummaryParser
 from sentinel_dv.config import get_config
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.schemas.versioning import CURRENT_SCHEMA_VERSION
@@ -228,23 +230,99 @@ def compare_runs(
     return {"schema_version": CURRENT_SCHEMA_VERSION, **diff}
 
 
-def wave_signals(
+def _resolve_artifact_path(relative_path: str) -> Path:
+    """Resolve a relative artifact path under configured read-only roots."""
+    for root in get_config().artifact_roots:
+        root_path = Path(root).resolve()
+        candidate = (root_path / relative_path).resolve()
+        try:
+            candidate.relative_to(root_path)
+        except ValueError:
+            continue
+        if candidate.is_file():
+            return candidate
+    raise ToolError("NOT_FOUND", f"Waveform artifact not found: {relative_path}")
+
+
+def _load_waveform_summary(
     store: IndexStore,
     test_id: str,
+    start_time_ns: int | None = None,
+    end_time_ns: int | None = None,
 ) -> dict[str, Any]:
-    """List signals from a precomputed waveform summary indexed for the test."""
-    validate_id(test_id, "test_id")
-    if not store.get_test(test_id):
-        raise ToolError("NOT_FOUND", f"Test not found: {test_id}")
+    """Load indexed summary, optionally re-parsing VCD for a time window."""
+    if start_time_ns is not None and end_time_ns is not None and start_time_ns > end_time_ns:
+        raise ToolError("INVALID_ARGUMENT", "start_time_ns must be <= end_time_ns")
+    if (start_time_ns is None) ^ (end_time_ns is None):
+        raise ToolError(
+            "INVALID_ARGUMENT",
+            "Provide both start_time_ns and end_time_ns to query a time window.",
+        )
 
     record = store.get_waveform_summary(test_id)
     if not record:
         raise ToolError(
             "NOT_FOUND",
             "No waveform summary indexed for this test. "
-            "Enable adapters.waveform_summary and add a *.wave.json file with matching test_name.",
+            "Enable adapters.waveform_summary and add a *.wave.json or *.vcd file.",
         )
 
+    if start_time_ns is None and end_time_ns is None:
+        return record
+
+    if record["format"] == "vcd-summary":
+        vcd_path = _resolve_artifact_path(record["source_path"])
+        parsed = VcdSummaryParser().parse(
+            vcd_path,
+            start_time_ns=start_time_ns,
+            end_time_ns=end_time_ns,
+        )
+        return {
+            "test_id": test_id,
+            "format": parsed["format"],
+            "end_time_ns": parsed["end_time_ns"],
+            "source_path": record["source_path"],
+            "summary": parsed,
+        }
+
+    summary = dict(record["summary"])
+    highlights = summary.get("highlights", [])
+    if start_time_ns is not None or end_time_ns is not None:
+        filtered = []
+        for item in highlights:
+            t = item.get("time_ns")
+            if t is None:
+                continue
+            if start_time_ns is not None and t < start_time_ns:
+                continue
+            if end_time_ns is not None and t > end_time_ns:
+                continue
+            filtered.append(item)
+        summary["highlights"] = filtered
+        summary.setdefault("metadata", {})["window"] = {
+            "start_time_ns": start_time_ns,
+            "end_time_ns": end_time_ns,
+            "note": "JSON summaries filter highlights only; use VCD for per-signal window values",
+        }
+    return {
+        **record,
+        "summary": summary,
+        "end_time_ns": end_time_ns if end_time_ns is not None else record["end_time_ns"],
+    }
+
+
+def wave_signals(
+    store: IndexStore,
+    test_id: str,
+    start_time_ns: int | None = None,
+    end_time_ns: int | None = None,
+) -> dict[str, Any]:
+    """List signals from a precomputed waveform summary indexed for the test."""
+    validate_id(test_id, "test_id")
+    if not store.get_test(test_id):
+        raise ToolError("NOT_FOUND", f"Test not found: {test_id}")
+
+    record = _load_waveform_summary(store, test_id, start_time_ns, end_time_ns)
     summary = record["summary"]
     signals = summary.get("signals", [])
     max_signals = get_config().security.max_coverage_metrics
@@ -257,6 +335,8 @@ def wave_signals(
         "test_id": test_id,
         "format": record["format"],
         "end_time_ns": record["end_time_ns"],
+        "start_time_ns": start_time_ns,
+        "end_time_ns_query": end_time_ns,
         "signals": signals,
         "signal_count": summary.get("signal_count", len(signals)),
         "truncated": truncated,
@@ -267,26 +347,23 @@ def wave_signals(
 def wave_summary(
     store: IndexStore,
     test_id: str,
+    start_time_ns: int | None = None,
+    end_time_ns: int | None = None,
 ) -> dict[str, Any]:
     """Get precomputed waveform summary for a test."""
     validate_id(test_id, "test_id")
     if not store.get_test(test_id):
         raise ToolError("NOT_FOUND", f"Test not found: {test_id}")
 
-    record = store.get_waveform_summary(test_id)
-    if not record:
-        raise ToolError(
-            "NOT_FOUND",
-            "No waveform summary indexed for this test. "
-            "Enable adapters.waveform_summary and add a *.wave.json file with matching test_name.",
-        )
-
+    record = _load_waveform_summary(store, test_id, start_time_ns, end_time_ns)
     summary = record["summary"]
     return {
         "schema_version": CURRENT_SCHEMA_VERSION,
         "test_id": test_id,
         "format": record["format"],
         "end_time_ns": record["end_time_ns"],
+        "start_time_ns": start_time_ns,
+        "end_time_ns_query": end_time_ns,
         "signal_count": summary.get("signal_count"),
         "highlights": summary.get("highlights", []),
         "metadata": summary.get("metadata", {}),

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **VCD time windows**: `wave.signals` / `wave.summary` accept `start_time_ns` and `end_time_ns` (nanoseconds); VCD sources are re-parsed for per-signal `value_at_start`, `value_at_end`, and toggles in range.
+- **`$timescale` parsing** in `VcdSummaryParser` (fs/ps/ns/us/ms/s → nanoseconds).
 - Built-in **`VcdSummaryParser`** (`sentinel_dv/adapters/vcd_summary.py`) indexes `*.vcd` when `waveform_summary` is enabled.
 - Shipped **`demo/verilator_counter/`** example (Verilator trace → `wave.signals` / `wave.summary`).
 - Documentation: [Waveform summaries](docs/guides/waveforms.md), [Verilator example](docs/examples/verilator-counter.md).
