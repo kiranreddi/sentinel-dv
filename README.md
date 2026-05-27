@@ -30,7 +30,7 @@ Sentinel DV is an **open-source Model Context Protocol (MCP) server** that provi
 - 🔧 **UVM (Universal Verification Methodology)** - Enterprise verification framework
 - 🐍 **cocotb** - Python-based verification with coroutines  
 - 📊 **SystemVerilog** - Assertions, coverage, and native testbenches
-- 🌊 **Waveform summaries** - Pre-computed signal analysis (no raw FSDB/VCD streaming)
+- 🌊 **Waveform summaries** - `*.wave.json` and `*.vcd` via built-in parsers (no raw FSDB/WLF streaming)
 
 All through a **unified, schema-driven interface** with built-in security, redaction, and deterministic outputs.
 
@@ -70,7 +70,8 @@ sentinel_dv/
 │   ├── cocotb.py         # cocotb result parsing
 │   ├── assertions.py     # Assertion map/failure parsing
 │   ├── coverage.py       # Coverage export parsing
-│   └── waveform_summary.py  # Waveform summary parsing
+│   ├── waveform_summary.py  # Precomputed *.wave.json
+│   └── vcd_summary.py       # VCD → bounded summary (Verilator, etc.)
 ├── normalization/         # Security and determinism
 │   ├── signatures.py     # Stable failure signature hashing
 │   ├── taxonomy.py       # Failure categorization
@@ -199,7 +200,7 @@ adapters:
   cocotb: true
   assertions: true
   coverage: true
-  waveform_summary: false
+  waveform_summary: true   # *.wave.json and *.vcd under artifact_roots
 
 # Security & limits
 security:
@@ -268,7 +269,12 @@ With Claude or any MCP client:
 - [Tool Contracts](docs/tools/overview.md) - Request/response specifications
 - [Security Model](docs/architecture/security.md) - Redaction, bounding, sandboxing
 
+### Examples
+- [Examples overview](examples/README.md) - Shipped demos
+- [Verilator + VCD](demo/verilator_counter/README.md) - Build, index, query wave tools
+
 ### Guides
+- [Waveform summaries](docs/guides/waveforms.md) - JSON + VCD indexing
 - [Getting Started](docs/getting-started/quick-start.md) - Setup and first queries
 - [Adapter Development](docs/adapters/custom.md) - Parse new artifact formats
 - [Simulator Support](docs/simulator_support.md) - Vendor-specific notes
@@ -318,7 +324,7 @@ mypy sentinel_dv/
 - ✅ **Security** - Redaction, sandboxing, bounding
 - ✅ **Test coverage** - 70%+ with unit and integration tests
 - ✅ **Documentation** - Full guides and API reference
-- ✅ **Waveform summaries** - Precomputed `*.wave.json` indexing
+- ✅ **Waveform summaries** - `*.wave.json` + `*.vcd` (`VcdSummaryParser`); [Verilator demo](demo/verilator_counter/)
 - 🚧 **Plugin ecosystem** - Coming soon
 
 ---

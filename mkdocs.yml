@@ -148,7 +148,11 @@ nav:
   - Getting Started:
       - Quick Start: getting-started/quick-start.md
       - Installation: getting-started/installation.md
+      - Configuration: configuration.md
       - How to Use (Complete Guide): how-to-use.md
+  - Examples:
+      - Overview: examples/overview.md
+      - Verilator + VCD: examples/verilator-counter.md
   - Architecture:
       - Overview: architecture/overview.md
       - Security Model: architecture/security.md
@@ -163,6 +167,7 @@ nav:
       - Analysis Tools: tools/analysis.md
       - Regression Tools: tools/regression.md
   - Guides:
+      - Waveform Summaries: guides/waveforms.md
       - Simulator Support: guides/simulator-support.md
       - Performance Optimization: guides/performance.md
   - Adapters:

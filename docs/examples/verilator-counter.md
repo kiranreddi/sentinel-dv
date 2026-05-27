@@ -2,6 +2,8 @@
 
 Minimal SystemVerilog counter with a C++ testbench that writes `waves/test_counter_sim.vcd`. Sentinel DV indexes the VCD with the built-in **`VcdSummaryParser`** and exposes **`wave.signals`** / **`wave.summary`** via MCP.
 
+Source files live in the repository at `demo/verilator_counter/`.
+
 ## Requirements
 
 - [Verilator](https://verilator.org) on your `PATH`
@@ -47,7 +49,7 @@ Use tools on the indexed test (`counter_tb.test_counter_sim`):
 - **`wave.signals`** — `clk`, `rst`, `count` with toggle counts from the VCD
 - **`wave.summary`** — `format: vcd-summary`, end time, highlights
 
-## Files
+## Files in `demo/verilator_counter/`
 
 | File | Role |
 |------|------|
@@ -57,4 +59,4 @@ Use tools on the indexed test (`counter_tb.test_counter_sim`):
 | `results.xml` | JUnit listing `test_counter_sim` |
 | `config.example.yaml` | Indexer/server config for this demo |
 
-See also: [Waveform summaries guide](https://kiranreddi.github.io/sentinel-dv/guides/waveforms/).
+See also: [Waveform summaries](../guides/waveforms.md).

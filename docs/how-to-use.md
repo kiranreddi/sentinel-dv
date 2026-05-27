@@ -248,9 +248,11 @@ Sentinel DV provides **15** MCP tools across 5 categories:
 - `regressions.summary`
 - `runs.diff`
 
-#### 5. Waveform Tools (Experimental)
-- `wave.signals`
-- `wave.summary`
+#### 5. Waveform Tools
+- `wave.signals` — indexed signal list (from `*.wave.json` or `*.vcd`)
+- `wave.summary` — highlights, end time, metadata
+
+Enable `adapters.waveform_summary: true` and re-index. See [Waveform summaries](guides/waveforms.md) and [Verilator + VCD example](examples/verilator-counter.md).
 
 ---
 
