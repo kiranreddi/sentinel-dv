@@ -192,11 +192,11 @@ Read-only Model Context Protocol access to SystemVerilog, UVM, and cocotb artifa
 
 <div class="sdv-panel" markdown>
 
-### Waveforms (experimental)
+### Waveforms
 
-- Pre-computed summaries only
-- Signal toggle analysis and stable windows
-- No raw FSDB/VCD streaming
+- Precomputed `*.wave.json` or Verilator **`*.vcd`** via built-in `VcdSummaryParser`
+- MCP tools `wave.signals` and `wave.summary`
+- [Guide](guides/waveforms.md) · [Verilator example](examples/verilator-counter.md)
 
 </div>
 

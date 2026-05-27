@@ -17,7 +17,7 @@ adapters:
   cocotb: true
   assertions: true
   coverage: true
-  waveform_summary: false
+  waveform_summary: false  # index *.wave.json and *.vcd (see guides/waveforms.md)
 
 security:
   max_response_bytes: 2097152
@@ -44,4 +44,13 @@ You can either pass `--config /path/to/config.yaml` to the server/indexer, or se
 ```bash
 export SENTINEL_DV_CONFIG=/absolute/path/to/config.yaml
 ```
+
+## Waveform summaries
+
+When `adapters.waveform_summary` is `true`, the indexer uses:
+
+- **`WaveformSummaryParser`** — `*.wave.json` precomputed summaries
+- **`VcdSummaryParser`** — Verilator-style `*.vcd` files (toggle counts, last values)
+
+See [Waveform summaries](guides/waveforms.md) and the [Verilator example](examples/verilator-counter.md).
 

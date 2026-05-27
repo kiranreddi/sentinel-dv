@@ -178,6 +178,8 @@ print(f"Failures indexed: {store.count_failures()}")
 
 ## Next Steps
 
+- [Verilator + VCD example](../examples/verilator-counter.md) — end-to-end waveform demo
+- [Waveform summaries](../guides/waveforms.md) — `*.wave.json` and `*.vcd` indexing
 - [Configure adapters](../configuration.md) for your specific simulator
 - [Explore tools](../tools/overview.md) available for queries
 - [Understand schemas](../architecture/schemas.md) for structured data

@@ -6,10 +6,11 @@ This directory contains example verification artifacts for testing and demonstra
 
 ```
 demo/
-├── uvm_logs/          # Example UVM simulation logs
-├── cocotb_results/    # Example cocotb JUnit XML results
-├── waveforms/         # Precomputed waveform summaries (*.wave.json)
-└── README.md          # This file
+├── uvm_logs/              # Example UVM simulation logs
+├── cocotb_results/        # Example cocotb JUnit XML results
+├── waveforms/             # Precomputed waveform summaries (*.wave.json)
+├── verilator_counter/     # Verilator TB → VCD → built-in VcdSummaryParser
+└── README.md              # This file
 ```
 
 ## Usage
@@ -25,7 +26,7 @@ python -m sentinel_dv.indexing.indexer \
     --index-all
 ```
 
-Waveform files are precomputed JSON (not raw FSDB/VCD). Each `*.wave.json` must include `test_name` matching an indexed test plus `signals` or `signal_groups`. See `demo/waveforms/test_increment.wave.json`.
+Waveform files are precomputed JSON (`demo/waveforms/*.wave.json`) or VCD traces from the [Verilator example](verilator_counter/README.md). Each file must include a `test_name` matching an indexed test (see `demo/waveforms/test_increment.wave.json`).
 
 ### 2. Start the MCP Server
 
@@ -104,8 +105,19 @@ adapters:
   cocotb: true
   assertions: true
   coverage: true
-  waveform_summary: false
+  waveform_summary: true   # index demo/waveforms/*.wave.json when true
 ```
+
+### Verilator + VCD (full example)
+
+```bash
+cd demo/verilator_counter
+make run
+cp config.example.yaml config.yaml
+sentinel-dv-index --config config.yaml --index-all
+```
+
+See [verilator_counter/README.md](verilator_counter/README.md).
 
 ## Expected Results
 
