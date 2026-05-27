@@ -23,18 +23,23 @@ int main(int argc, char** argv) {
     }
     tfp->open(vcd_path);
 
+    // VCD uses $timescale 1ps; each dump advances 100_000 ps (= 100 ns).
+    // 100 steps → last timestamp #9_900_000 ps ≈ 9.9 µs (good for MCP window demos).
+    constexpr uint64_t kStepPs = 100000;
+    constexpr int kCycles = 100;
+
     uint64_t sim_time = 0;
     top->rst = 1;
     top->clk = 0;
 
-    for (int cycle = 0; cycle < 32; ++cycle) {
+    for (int cycle = 0; cycle < kCycles; ++cycle) {
         top->clk = !top->clk;
         if (cycle == 2) {
             top->rst = 0;
         }
         top->eval();
         tfp->dump(sim_time);
-        ++sim_time;
+        sim_time += kStepPs;
     }
 
     tfp->close();
