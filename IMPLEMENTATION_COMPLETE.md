@@ -696,7 +696,7 @@ All existing CI checks remain:
 
 **Test it now:**
 ```bash
-cd /Users/kirantathekalva/Projects/sentinel-dv
+cd /path/to/sentinel-dv
 python -m pytest tests/ -v
 python -m sentinel_dv.server
 ```

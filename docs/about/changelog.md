@@ -7,6 +7,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Built-in **VCD indexing** via `VcdSummaryParser` (`*.vcd` under `waveform_summary`).
+- **`wave.signals`** / **`wave.summary`** backed by DuckDB (no longer placeholder responses).
+- Shipped **Verilator counter** example: `demo/verilator_counter/`.
+
 ## [1.0.1] - 2026-05-26
 
 ### Fixed
@@ -44,7 +52,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Detail**: `tests.get`, `tests.topology`, `assertions.get`
 - **Analysis**: `failures.list`, `assertions.failures`, `coverage.summary`
 - **Regression**: `regressions.summary`, `runs.diff`
-- **Experimental**: `wave.summary`, `wave.signals`
+- **Waveform**: `wave.summary`, `wave.signals` (precomputed JSON; VCD added in unreleased)
 
 #### Adapters
 - UVM log parser (UVM_INFO/WARNING/ERROR/FATAL)

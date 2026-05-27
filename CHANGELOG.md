@@ -5,6 +5,13 @@ All notable changes to Sentinel DV will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Built-in **`VcdSummaryParser`** (`sentinel_dv/adapters/vcd_summary.py`) indexes `*.vcd` when `waveform_summary` is enabled.
+- Shipped **`demo/verilator_counter/`** example (Verilator trace → `wave.signals` / `wave.summary`).
+- Documentation: [Waveform summaries](docs/guides/waveforms.md), [Verilator example](docs/examples/verilator-counter.md).
+
 ## [1.0.1] - 2026-05-26
 
 ### Fixed

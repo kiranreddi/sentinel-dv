@@ -47,7 +47,7 @@ Regression analytics and comparisons.
 
 ### 🌊 Waveform Tools
 
-Pre-computed waveform summaries from `*.wave.json` files (no raw FSDB/VCD streaming).
+Pre-computed summaries from **`*.wave.json`** and **`*.vcd`** (built-in `VcdSummaryParser`). No raw FSDB/WLF streaming to clients.
 
 | Tool | Purpose | Status |
 |------|---------|--------|
