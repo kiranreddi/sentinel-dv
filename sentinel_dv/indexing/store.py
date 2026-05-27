@@ -263,6 +263,22 @@ class IndexStore:
             )
         """)
 
+        # Precomputed waveform summaries (per test)
+        self._conn.execute("""
+            CREATE TABLE IF NOT EXISTS waveform_summaries (
+                test_id TEXT PRIMARY KEY,
+                format TEXT NOT NULL,
+                end_time_ns BIGINT,
+                summary_json TEXT NOT NULL,
+                source_path TEXT NOT NULL
+            )
+        """)
+
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_waveform_end_time
+            ON waveform_summaries(end_time_ns)
+        """)
+
         # Evidence table
         self._conn.execute("""
             CREATE TABLE IF NOT EXISTS evidence (
@@ -740,6 +756,86 @@ class IndexStore:
         """,
             [test_id, json.dumps(topology)],
         )
+
+    def find_test_by_name(
+        self,
+        name: str,
+        framework: str | None = None,
+    ) -> dict[str, Any] | None:
+        """Find the most recent test matching name (and optional framework)."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        match_clauses = ["name = ?", "name LIKE ?"]
+        params: list[Any] = [name, f"%.{name}"]
+        framework_clause = ""
+        if framework:
+            framework_clause = "AND framework = ?"
+            params.append(framework)
+
+        result = self._conn.execute(
+            f"""
+            SELECT * FROM tests
+            WHERE ({' OR '.join(match_clauses)}) {framework_clause}
+            ORDER BY created_at DESC, test_id ASC
+            LIMIT 1
+        """,
+            params,
+        ).fetchone()
+        if not result:
+            return None
+        columns = [desc[0] for desc in self._conn.description]
+        return dict(zip(columns, result, strict=False))
+
+    def insert_waveform_summary(
+        self,
+        test_id: str,
+        summary: dict[str, Any],
+        source_path: str,
+    ) -> None:
+        """Insert or replace a precomputed waveform summary for a test."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        self._conn.execute(
+            """
+            INSERT OR REPLACE INTO waveform_summaries
+            (test_id, format, end_time_ns, summary_json, source_path)
+            VALUES (?, ?, ?, ?, ?)
+        """,
+            [
+                test_id,
+                summary.get("format", "precomputed"),
+                summary.get("end_time_ns"),
+                json.dumps(summary),
+                source_path,
+            ],
+        )
+
+    def get_waveform_summary(self, test_id: str) -> dict[str, Any] | None:
+        """Get stored waveform summary for a test."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        result = self._conn.execute(
+            """
+            SELECT format, end_time_ns, summary_json, source_path
+            FROM waveform_summaries
+            WHERE test_id = ?
+        """,
+            [test_id],
+        ).fetchone()
+        if not result:
+            return None
+
+        summary = json.loads(result[2])
+        return {
+            "test_id": test_id,
+            "format": result[0],
+            "end_time_ns": result[1],
+            "source_path": result[3],
+            "summary": summary,
+        }
 
     def query_assertions(
         self,

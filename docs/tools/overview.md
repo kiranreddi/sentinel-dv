@@ -45,14 +45,14 @@ Regression analytics and comparisons.
 | [`regressions.summary`](regression.md#regressionssummary) | Regression summary | Pass rate + top failure signatures |
 | [`runs.diff`](regression.md#runsdiff) | Compare two runs | Structured diff with coverage deltas |
 
-### 🌊 Waveform Tools (Experimental)
+### 🌊 Waveform Tools
 
-Pre-computed waveform summaries (no raw streaming).
+Pre-computed waveform summaries from `*.wave.json` files (no raw FSDB/VCD streaming).
 
 | Tool | Purpose | Status |
 |------|---------|--------|
-| `wave.signals` | List signal groups | Experimental |
-| `wave.summary` | Get waveform summary | Experimental |
+| `wave.signals` | List indexed signals for a test | Stable |
+| `wave.summary` | Get highlights and metadata for a test | Stable |
 
 ---
 
