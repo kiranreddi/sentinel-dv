@@ -270,18 +270,38 @@ def runs_diff(
 @_tool_wrapper
 def wave_signals(
     test_id: str = Field(..., description="Test identifier"),
+    start_time_ns: int | None = Field(
+        None,
+        description="Optional window start in nanoseconds (e.g. 20000 for 20 µs). VCD: re-parses source trace.",
+    ),
+    end_time_ns: int | None = Field(
+        None,
+        description="Optional window end in nanoseconds (e.g. 30000 for 30 µs). Requires start_time_ns.",
+    ),
 ) -> dict[str, Any]:
     """List signals from a precomputed waveform summary."""
-    return core.wave_signals(get_store(), test_id)
+    return core.wave_signals(
+        get_store(), test_id, start_time_ns=start_time_ns, end_time_ns=end_time_ns
+    )
 
 
 @mcp.tool(name="wave.summary")
 @_tool_wrapper
 def wave_summary(
     test_id: str = Field(..., description="Test identifier"),
+    start_time_ns: int | None = Field(
+        None,
+        description="Optional window start in nanoseconds (e.g. 20000 for 20 µs). VCD: re-parses source trace.",
+    ),
+    end_time_ns: int | None = Field(
+        None,
+        description="Optional window end in nanoseconds (e.g. 30000 for 30 µs). Requires start_time_ns.",
+    ),
 ) -> dict[str, Any]:
     """Get precomputed waveform summary for a test."""
-    return core.wave_summary(get_store(), test_id)
+    return core.wave_summary(
+        get_store(), test_id, start_time_ns=start_time_ns, end_time_ns=end_time_ns
+    )
 
 
 def main(argv: list[str] | None = None) -> None:
