@@ -7,7 +7,8 @@ This directory contains example verification artifacts for testing and demonstra
 ```
 demo/
 ├── uvm_logs/          # Example UVM simulation logs
-├── cocotb_results/    # Example cocotb JUnit XML results  
+├── cocotb_results/    # Example cocotb JUnit XML results
+├── waveforms/         # Precomputed waveform summaries (*.wave.json)
 └── README.md          # This file
 ```
 
@@ -15,12 +16,16 @@ demo/
 
 ### 1. Index the Demo Artifacts
 
+Enable waveform summaries in your config (`adapters.waveform_summary: true`), then:
+
 ```bash
 # From repository root
 python -m sentinel_dv.indexing.indexer \
     --config config.example.yaml \
     --index-all
 ```
+
+Waveform files are precomputed JSON (not raw FSDB/VCD). Each `*.wave.json` must include `test_name` matching an indexed test plus `signals` or `signal_groups`. See `demo/waveforms/test_increment.wave.json`.
 
 ### 2. Start the MCP Server
 

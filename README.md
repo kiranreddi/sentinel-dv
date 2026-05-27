@@ -318,7 +318,7 @@ mypy sentinel_dv/
 - ✅ **Security** - Redaction, sandboxing, bounding
 - ✅ **Test coverage** - 70%+ with unit and integration tests
 - ✅ **Documentation** - Full guides and API reference
-- 🚧 **Waveform summaries** - Experimental
+- ✅ **Waveform summaries** - Precomputed `*.wave.json` indexing
 - 🚧 **Plugin ecosystem** - Coming soon
 
 ---

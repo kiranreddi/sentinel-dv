@@ -39,6 +39,7 @@ Edit `config.yaml` to set:
 - `artifact_roots`: directories that contain your verification artifacts (UVM `*.log`, cocotb JUnit XML like `results.xml` / `junit.xml`)
 - `index.path`: where the DuckDB database should be written
 - `adapters`: enable/disable parsers (booleans under `uvm`, `cocotb`, `assertions`, `coverage`, `waveform_summary`)
+- For waveforms: set `waveform_summary: true` and place `*.wave.json` files with a `test_name` matching indexed tests (see `demo/waveforms/`)
 
 ## 3. Index artifacts (required)
 
