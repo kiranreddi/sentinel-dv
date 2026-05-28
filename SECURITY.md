@@ -296,4 +296,4 @@ For general issues: [GitHub Issues](https://github.com/kiranreddi/sentinel-dv/is
 ---
 
 **Last updated:** 2026-05-26
-**Version:** 1.0.1
+**Version:** 1.1.0

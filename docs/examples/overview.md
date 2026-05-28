@@ -1,16 +1,39 @@
 # Examples
 
-Runnable examples ship in the repository:
+Runnable examples ship in the repository. Use **`sentinel-dv>=1.1.0`** and enable **`adapters.waveform_summary: true`** for waveform tools.
 
-| Location | Description |
-|----------|-------------|
-| `demo/` | UVM logs, cocotb JUnit XML, precomputed `*.wave.json` |
-| `demo/verilator_counter/` | Verilator RTL + C++ TB → VCD → built-in `VcdSummaryParser` |
+| Example | Location | Docs |
+|---------|----------|------|
+| **Verilator + VCD** (recommended first) | `demo/verilator_counter/` | [Walkthrough](verilator-counter.md) |
+| **cocotb + JSON waveforms** | `demo/`, `demo/waveforms/` | [cocotb + waveforms](cocotb-waveforms.md) |
+| **UVM logs + failures** | `demo/uvm_logs/` | [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) |
 
-## Verilator + VCD (recommended first)
+## Verilator + VCD
 
-See [Verilator counter demo](verilator-counter.md) for a full walkthrough: build, index, and query `wave.signals` / `wave.summary`.
+Build a counter testbench, write `waves/test_counter_sim.vcd` (~10 µs trace), index with the built-in **`VcdSummaryParser`**, and query **`wave.signals`** / **`wave.summary`**.
 
-## cocotb + JSON waveforms
+Optional **time window** (2–3 µs on the demo trace):
 
-Index the whole `demo/` tree with `waveform_summary: true` to load `demo/waveforms/*.wave.json` alongside `demo/cocotb_results/results.xml`. Details in the repository `demo/README.md`.
+```json
+{
+  "test_id": "<from tests.list>",
+  "start_time_ns": 2000,
+  "end_time_ns": 3000
+}
+```
+
+See [Verilator counter demo](verilator-counter.md).
+
+## cocotb + precomputed waveforms
+
+Index `demo/cocotb_results/results.xml` and `demo/waveforms/*.wave.json` in one pass. See [cocotb + waveforms](cocotb-waveforms.md).
+
+## Combined demo tree
+
+```bash
+cp config.example.yaml config.yaml   # artifact_roots: ./demo
+sentinel-dv-index --config config.yaml --index-all
+sentinel-dv-server --config config.yaml
+```
+
+Details in the repository [`demo/README.md`](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md).
