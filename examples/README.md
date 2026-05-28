@@ -1,10 +1,11 @@
 # Examples
 
-Runnable examples shipped with Sentinel DV:
+Runnable examples shipped with Sentinel DV (**v1.1.0+**):
 
-| Path | Description |
-|------|-------------|
-| [demo/](../demo/) | UVM logs, cocotb JUnit XML, precomputed `*.wave.json` summaries |
-| [demo/verilator_counter/](../demo/verilator_counter/) | Verilator RTL + C++ TB → VCD → `VcdSummaryParser` → `wave.signals` / `wave.summary` |
+| Path | Description | Documentation |
+|------|-------------|---------------|
+| [demo/verilator_counter/](../demo/verilator_counter/) | Verilator RTL + C++ TB → VCD → time-window queries | [Verilator + VCD](https://kiranreddi.github.io/sentinel-dv/examples/verilator-counter/) |
+| [demo/](../demo/) | cocotb JUnit, UVM logs, `*.wave.json` summaries | [cocotb + waveforms](https://kiranreddi.github.io/sentinel-dv/examples/cocotb-waveforms/) |
+| [docs/examples/overview.md](../docs/examples/overview.md) | Index of all examples | [Examples overview](https://kiranreddi.github.io/sentinel-dv/examples/overview/) |
 
-Start with the Verilator walkthrough in [demo/verilator_counter/README.md](../demo/verilator_counter/README.md) or the waveform guide in the [documentation](https://kiranreddi.github.io/sentinel-dv/guides/waveforms/).
+Install: `pip install "sentinel-dv>=1.1.0"`

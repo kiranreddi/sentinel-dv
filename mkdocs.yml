@@ -153,6 +153,7 @@ nav:
   - Examples:
       - Overview: examples/overview.md
       - Verilator + VCD: examples/verilator-counter.md
+      - cocotb + JSON waveforms: examples/cocotb-waveforms.md
   - Architecture:
       - Overview: architecture/overview.md
       - Security Model: architecture/security.md

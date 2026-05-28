@@ -5,7 +5,7 @@ Minimal SystemVerilog counter with a C++ testbench that writes `waves/test_count
 ## Requirements
 
 - [Verilator](https://verilator.org) on your `PATH`
-- `sentinel-dv>=1.0.1` (`pip install "sentinel-dv>=1.0.1"`)
+- `sentinel-dv>=1.1.0` (`pip install "sentinel-dv>=1.1.0"`)
 
 ## 1. Build and simulate
 
