@@ -1,4 +1,4 @@
-# 🛡️ Sentinel DV v1.0.1 - Verification Intelligence for AI Agents
+# 🛡️ Sentinel DV v1.1.0 - Verification Intelligence for AI Agents
 
 <!-- mcp-name: io.github.kiranreddi/sentinel-dv -->
 
@@ -130,7 +130,7 @@ sentinel_dv/
 
 ## 🚀 Quick Start
 
-> **PyPI:** Use **`sentinel-dv>=1.0.1`**. Do **not** use **1.0.0** (broken wheel missing Python subpackages). Install flow verified on **1.0.1**: `pip install` → `sentinel-dv-index` → `sentinel-dv-server` → 15 MCP tools.
+> **PyPI:** Use **`sentinel-dv>=1.1.0`** for VCD/JSON waveform indexing and time windows. Do **not** use **1.0.0** (broken wheel). Install flow: `pip install` → `sentinel-dv-index` → `sentinel-dv-server` → 15 MCP tools.
 >
 > **Maintainers:** [Yank 1.0.0 on PyPI](https://pypi.org/manage/project/sentinel-dv/releases/) (Options → Yank) with reason: *Broken wheel missing subpackages; use >=1.0.1.* PyPI has no public yank API yet.
 
@@ -147,7 +147,7 @@ Install via [uv](https://docs.astral.sh/uv/) (`uvx`) or your MCP client’s regi
       "command": "uvx",
       "args": [
         "--from",
-        "sentinel-dv@1.0.1",
+        "sentinel-dv@1.1.0",
         "sentinel-dv-server",
         "--config",
         "/absolute/path/to/config.yaml"
@@ -162,7 +162,7 @@ Alternatively set `SENTINEL_DV_CONFIG` to your config path and omit `--config`.
 **Before querying:** build the artifact index (required once per config):
 
 ```bash
-uvx --from sentinel-dv@1.0.1 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
+uvx --from sentinel-dv@1.1.0 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
 ```
 
 ### Installation
@@ -175,8 +175,8 @@ cd sentinel-dv
 # Install with development dependencies
 pip install -e ".[dev]"
 
-# Or production install (requires >=1.0.1; do not use 1.0.0)
-pip install "sentinel-dv>=1.0.1"
+# Or production install (requires >=1.1.0 for waveforms; do not use 1.0.0)
+pip install "sentinel-dv>=1.1.0"
 ```
 
 ### Configuration
@@ -270,8 +270,10 @@ With Claude or any MCP client:
 - [Security Model](docs/architecture/security.md) - Redaction, bounding, sandboxing
 
 ### Examples
-- [Examples overview](examples/README.md) - Shipped demos
-- [Verilator + VCD](demo/verilator_counter/README.md) - Build, index, query wave tools
+- [Examples overview](docs/examples/overview.md) — Verilator VCD, cocotb + JSON waveforms, UVM logs
+- [Verilator + VCD](docs/examples/verilator-counter.md) — Build, index, query `wave.*` with time windows
+- [cocotb + waveforms](docs/examples/cocotb-waveforms.md) — Index `demo/` tree
+- [demo/](demo/) — Runnable artifacts
 
 ### Guides
 - [Waveform summaries](docs/guides/waveforms.md) - JSON + VCD indexing
