@@ -9,6 +9,27 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Documentation alignment for assertion/coverage parameter usage and deterministic replay examples.
+
+## [1.2.0] - 2026-05-27
+
+### Added
+
+- Assertion and coverage ingestion from exported JSON/text/XML summaries and simulator logs.
+- Deterministic assertion-failure correlation with synthetic unknown-assertion placeholders.
+- Protocol tagging for assertion intelligence (`AXI`, `AHB`, `APB`, `PCIe`, `USB`, `GPIO`, `JTAG`).
+- Verilator counter demo assertion fixtures for real `assertions.*` outputs.
+
+### Changed
+
+- `assertions.list` adds `protocol` and `tag` filters.
+- `assertions.failures` adds bounded time-window filtering (`start_time_ns`, `end_time_ns`).
+- `coverage.summary` adds `include_evidence` and bounded/truncated summary behavior.
+- `regressions.summary` adds deterministic `as_of` replay support.
+- Release metadata updated to `1.2.0`.
+
 ## [1.1.0] - 2026-05-27
 
 ### Added
