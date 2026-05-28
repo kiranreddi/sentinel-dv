@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Redactor.from_config()`; indexer and server apply YAML redaction settings.
+- `signature_id` populated at index time for failure clustering.
+- `bound_response` / `detail_response` enforce `max_response_bytes`; `LIMIT_EXCEEDED` for oversized payloads and large VCD files.
+- Indexer warnings when `adapters.assertions` or `adapters.coverage` are enabled but not implemented.
+- Security tests (`tests/security/`) and expanded Verilator e2e integration test.
+
+### Changed
+
+- Artifact scan skips symlinks; `max_artifact_bytes` and `max_wave_signals` security limits.
+- `config.example.yaml` defaults assertions/coverage to `false` with accurate comments.
+
 ## [1.1.0] - 2026-05-27
 
 ### Added

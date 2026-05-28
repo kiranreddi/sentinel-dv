@@ -12,6 +12,7 @@ from sentinel_dv.schemas.versioning import CURRENT_SCHEMA_VERSION
 from sentinel_dv.tools.errors import ToolError
 from sentinel_dv.tools.validate import (
     clamp_pagination,
+    detail_response,
     item_response,
     list_response,
     validate_id,
@@ -44,7 +45,7 @@ def get_run_details(store: IndexStore, run_id: str) -> dict[str, Any]:
     run = store.get_run(run_id)
     if not run:
         raise ToolError("NOT_FOUND", f"Run not found: {run_id}")
-    return {"schema_version": CURRENT_SCHEMA_VERSION, "run": run}
+    return detail_response({"run": run})
 
 
 def list_tests(
@@ -196,11 +197,7 @@ def get_coverage_summary(store: IndexStore, run_id: str, kind: str | None = None
     results, total = store.query_coverage_summaries(run_id=run_id, kind=kind, page=1, page_size=50)
     if total == 0:
         raise ToolError("NOT_FOUND", f"No coverage found for run: {run_id}")
-    return {
-        "schema_version": CURRENT_SCHEMA_VERSION,
-        "run_id": run_id,
-        "summaries": results,
-    }
+    return detail_response({"run_id": run_id, "summaries": results})
 
 
 def get_regression_summary(
@@ -212,7 +209,7 @@ def get_regression_summary(
     if window_days < 1 or window_days > 365:
         raise ToolError("INVALID_ARGUMENT", "window_days must be between 1 and 365")
     summary = store.regression_summary(suite=suite, window_days=window_days)
-    return {"schema_version": CURRENT_SCHEMA_VERSION, **summary}
+    return detail_response(summary)
 
 
 def compare_runs(
@@ -227,7 +224,7 @@ def compare_runs(
         diff = store.diff_runs(base_run_id, compare_run_id)
     except ValueError as exc:
         raise ToolError("NOT_FOUND", str(exc)) from exc
-    return {"schema_version": CURRENT_SCHEMA_VERSION, **diff}
+    return detail_response(diff)
 
 
 def _resolve_artifact_path(relative_path: str) -> Path:
@@ -239,7 +236,13 @@ def _resolve_artifact_path(relative_path: str) -> Path:
             candidate.relative_to(root_path)
         except ValueError:
             continue
-        if candidate.is_file():
+        if candidate.is_file() and not candidate.is_symlink():
+            max_bytes = get_config().security.max_artifact_bytes
+            if candidate.stat().st_size > max_bytes:
+                raise ToolError(
+                    "LIMIT_EXCEEDED",
+                    f"Waveform artifact exceeds max_artifact_bytes ({max_bytes}): {relative_path}",
+                )
             return candidate
     raise ToolError("NOT_FOUND", f"Waveform artifact not found: {relative_path}")
 
@@ -325,23 +328,24 @@ def wave_signals(
     record = _load_waveform_summary(store, test_id, start_time_ns, end_time_ns)
     summary = record["summary"]
     signals = summary.get("signals", [])
-    max_signals = get_config().security.max_coverage_metrics
+    max_signals = get_config().security.max_wave_signals
     truncated = len(signals) > max_signals
     if truncated:
         signals = signals[:max_signals]
 
-    return {
-        "schema_version": CURRENT_SCHEMA_VERSION,
-        "test_id": test_id,
-        "format": record["format"],
-        "end_time_ns": record["end_time_ns"],
-        "start_time_ns": start_time_ns,
-        "end_time_ns_query": end_time_ns,
-        "signals": signals,
-        "signal_count": summary.get("signal_count", len(signals)),
-        "truncated": truncated,
-        "source_path": record["source_path"],
-    }
+    return detail_response(
+        {
+            "test_id": test_id,
+            "format": record["format"],
+            "end_time_ns": record["end_time_ns"],
+            "start_time_ns": start_time_ns,
+            "end_time_ns_query": end_time_ns,
+            "signals": signals,
+            "signal_count": summary.get("signal_count", len(signals)),
+            "truncated": truncated,
+            "source_path": record["source_path"],
+        }
+    )
 
 
 def wave_summary(
@@ -357,16 +361,17 @@ def wave_summary(
 
     record = _load_waveform_summary(store, test_id, start_time_ns, end_time_ns)
     summary = record["summary"]
-    return {
-        "schema_version": CURRENT_SCHEMA_VERSION,
-        "test_id": test_id,
-        "format": record["format"],
-        "end_time_ns": record["end_time_ns"],
-        "start_time_ns": start_time_ns,
-        "end_time_ns_query": end_time_ns,
-        "signal_count": summary.get("signal_count"),
-        "highlights": summary.get("highlights", []),
-        "metadata": summary.get("metadata", {}),
-        "evidence": summary.get("evidence"),
-        "source_path": record["source_path"],
-    }
+    return detail_response(
+        {
+            "test_id": test_id,
+            "format": record["format"],
+            "end_time_ns": record["end_time_ns"],
+            "start_time_ns": start_time_ns,
+            "end_time_ns_query": end_time_ns,
+            "signal_count": summary.get("signal_count"),
+            "highlights": summary.get("highlights", []),
+            "metadata": summary.get("metadata", {}),
+            "evidence": summary.get("evidence"),
+            "source_path": record["source_path"],
+        }
+    )

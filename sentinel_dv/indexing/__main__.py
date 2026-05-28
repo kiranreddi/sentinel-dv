@@ -30,7 +30,7 @@ def main(argv: list[str] | None = None) -> None:
     indexer = ArtifactIndexer(
         config.artifact_roots,
         Path(config.index.path),
-        adapters=config.adapters,
+        config=config,
     )
 
     if not args.index_all:
@@ -43,6 +43,8 @@ def main(argv: list[str] | None = None) -> None:
         f"failures={stats['failures']} waveforms={stats.get('waveforms', 0)} "
         f"from {stats['artifacts']} artifacts"
     )
+    for warning in stats.get("warnings", []):
+        print(f"Warning: {warning}", file=sys.stderr)
 
 
 if __name__ == "__main__":

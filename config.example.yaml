@@ -16,9 +16,9 @@ index:
 adapters:
   uvm: true              # Parse UVM logs
   cocotb: true           # Parse cocotb results
-  assertions: true       # Parse assertion maps and failures
-  coverage: true         # Parse coverage reports
-  waveform_summary: false  # Index *.wave.json and *.vcd summaries (see demo/waveforms/, demo/verilator_counter/)
+  assertions: false      # Not indexed yet (MCP tools exist; ingestion coming)
+  coverage: false        # Not indexed yet (enable when coverage adapter is wired)
+  waveform_summary: false  # Index *.wave.json and *.vcd (demo/waveforms/, demo/verilator_counter/)
 
 # Security limits
 security:
@@ -29,6 +29,8 @@ security:
   max_message_length: 4096       # Max failure message length
   max_tags_per_event: 20         # Max tags per failure
   max_coverage_metrics: 200      # Max metrics per coverage summary
+  max_wave_signals: 200          # Max signals returned by wave.signals
+  max_artifact_bytes: 52428800     # Max file size for index / VCD re-parse (50MB)
   max_bins_missed: 50            # Max missed bins listed
 
 # Redaction configuration

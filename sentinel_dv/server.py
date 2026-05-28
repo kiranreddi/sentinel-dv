@@ -17,6 +17,7 @@ from fastmcp import FastMCP
 from pydantic import Field
 
 from sentinel_dv.config import get_config, resolve_config, set_config
+from sentinel_dv.normalization.redaction import Redactor, set_default_redactor
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.tools import core
 from sentinel_dv.tools.errors import ToolError
@@ -45,7 +46,9 @@ def init_server(config_path: Path | str | None = None) -> None:
     if _store is not None:
         _store.close()
         _store = None
-    set_config(resolve_config(config_path))
+    config = resolve_config(config_path)
+    set_config(config)
+    set_default_redactor(Redactor.from_config(config.redaction))
 
 
 def _tool_wrapper(fn: F) -> F:
