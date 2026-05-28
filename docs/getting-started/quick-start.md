@@ -189,6 +189,8 @@ print(f"Failures indexed: {store.count_failures()}")
 
 ## Next Steps
 
+- [MCP tool gallery](../tools/mcp-tool-gallery.md) — visual cards for all 15 tools (real JSON from `demo/`)
+- [Multi-project demo](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) — UVM, cocotb, and Verilator sample projects
 - [Verilator + VCD example](../examples/verilator-counter.md) — end-to-end waveform demo
 - [Waveform summaries](../guides/waveforms.md) — `*.wave.json` and `*.vcd` indexing
 - [Configure adapters](../configuration.md) for your specific simulator

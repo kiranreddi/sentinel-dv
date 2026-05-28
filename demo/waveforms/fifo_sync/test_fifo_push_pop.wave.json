@@ -1,0 +1,16 @@
+{
+  "test_name": "fifo_tb.test_fifo_push_pop",
+  "framework": "cocotb",
+  "format": "precomputed-vcd",
+  "end_time_ns": 40000,
+  "signals": [
+    {"name": "clk", "group": "fifo", "width": 1, "toggles": 80, "last_value": "1"},
+    {"name": "push", "group": "fifo", "width": 1, "toggles": 10, "last_value": "0"},
+    {"name": "pop", "group": "fifo", "width": 1, "toggles": 8, "last_value": "0"},
+    {"name": "full", "group": "fifo", "width": 1, "toggles": 2, "last_value": "0"}
+  ],
+  "highlights": [
+    {"time_ns": 20000, "signal": "full", "value": "1", "note": "FIFO reached full"}
+  ],
+  "metadata": {"source": "demo", "project": "fifo_sync"}
+}

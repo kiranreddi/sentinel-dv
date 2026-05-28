@@ -1,0 +1,27 @@
+# Sentinel DV — multi-project demo (index entire demo/ tree)
+# Usage from repo root:
+#   cd demo/verilator_counter && make run
+#   cd ../.. && cp demo/config.example.yaml demo/config.yaml
+#   sentinel-dv-index --config demo/config.yaml --index-all
+
+artifact_roots:
+  - .
+
+index:
+  type: duckdb
+  path: ./sentinel_dv_demo.db
+
+adapters:
+  uvm: true
+  cocotb: true
+  assertions: true
+  coverage: true
+  waveform_summary: true
+
+security:
+  max_page_size: 200
+  max_response_bytes: 2097152
+
+redaction:
+  enabled: true
+  redact_paths: true

@@ -4,6 +4,12 @@ Sentinel DV exposes **15 read-only MCP tools**. Every tool returns JSON with `sc
 
 **Prerequisites:** `sentinel-dv-index --config config.yaml --index-all` before querying.
 
+**End-to-end examples (all 15 tools):**
+
+- **Multi-project:** index `demo/` (2× UVM, 3× cocotb, Verilator) — `python scripts/verify_all_mcp_tools.py --multi` — see [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md)
+- **Verilator-only:** [Verilator counter walkthrough](../examples/verilator-counter.md) — `python scripts/verify_all_mcp_tools.py --in-place`
+- **Visual gallery:** [MCP Tool Gallery](mcp-tool-gallery.md) — SVG “screenshots” from `python scripts/generate_mcp_tool_gallery.py`
+
 List tools in your client or see [Tool overview](overview.md) for category descriptions. Deep dives: [Discovery](discovery.md), [Detail](detail.md), [Analysis](analysis.md), [Regression](regression.md), [Waveforms](waveforms.md).
 
 ---

@@ -10,7 +10,13 @@ from sentinel_dv.indexing.store import IndexStore
 
 
 def test_cocotb_failure_gets_signature_id(tmp_path: Path) -> None:
-    demo_xml = Path(__file__).resolve().parents[2] / "demo" / "cocotb_results" / "results.xml"
+    demo_xml = (
+        Path(__file__).resolve().parents[2]
+        / "demo"
+        / "cocotb_results"
+        / "counter_block"
+        / "results.xml"
+    )
     if not demo_xml.exists():
         pytest.skip("demo cocotb results missing")
 

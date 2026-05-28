@@ -1,129 +1,73 @@
 # Sentinel DV Demo
 
-This directory contains example verification artifacts for testing and demonstration.
+Multi-project verification artifacts for indexing, MCP queries, and CI.
 
-## Structure
+## Layout
 
 ```
 demo/
-├── uvm_logs/              # Example UVM simulation logs
-├── cocotb_results/        # Example cocotb JUnit XML results
-├── waveforms/             # Precomputed waveform summaries (*.wave.json)
-├── verilator_counter/     # Verilator TB → VCD → built-in VcdSummaryParser
-└── README.md              # This file
+├── config.example.yaml          # Index entire demo/ tree
+├── uvm_logs/
+│   ├── axi_burst/               # AXI scoreboard failure
+│   └── apb_register/           # APB assertion timeout
+├── cocotb_results/
+│   ├── alu_core/                # ALU pass + multiply fail
+│   ├── fifo_sync/               # FIFO pass + underflow fail
+│   └── counter_block/           # Counter pass + overflow fail
+├── waveforms/                   # Precomputed summaries (JSON)
+├── verilator_counter/           # Verilator VCD + assertions + coverage
+└── README.md
 ```
 
-## Usage
+**Suite names** equal the artifact parent directory (for example `alu_core`, `axi_burst`).
 
-### 1. Index the Demo Artifacts
-
-Enable waveform summaries in your config (`adapters.waveform_summary: true`), then:
+## Multi-project quick start
 
 ```bash
-# From repository root
-python -m sentinel_dv.indexing.indexer \
-    --config config.example.yaml \
-    --index-all
+cd demo/verilator_counter && make run && cd ../..
+cp demo/config.example.yaml demo/config.yaml
+sentinel-dv-index --config demo/config.yaml --index-all
+python scripts/verify_all_mcp_tools.py --multi
 ```
 
-Waveform files are precomputed JSON (`demo/waveforms/*.wave.json`) or VCD traces from the [Verilator example](verilator_counter/README.md). Each file must include a `test_name` matching an indexed test (see `demo/waveforms/test_increment.wave.json`).
+Expected index scale: **≥8 runs**, **≥10 tests**, **≥5 failures**, **≥4 waveforms**, assertions/coverage from Verilator project.
 
-### 2. Start the MCP Server
-
-```bash
-python -m sentinel_dv.server --config config.example.yaml
-```
-
-### 3. Query with MCP Client
-
-```python
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-
-# Connect to server
-server_params = StdioServerParameters(
-    command="python",
-    args=["-m", "sentinel_dv.server", "--config", "config.example.yaml"]
-)
-
-async with stdio_client(server_params) as (read, write):
-    async with ClientSession(read, write) as session:
-        # Initialize
-        await session.initialize()
-        
-        # List tests
-        result = await session.call_tool("tests.list", {"page": 1, "page_size": 10})
-        print(result)
-```
-
-## Example Artifacts
-
-### UVM Log (test_axi_basic.log)
-
-Contains:
-- UVM_INFO messages showing transaction flow
-- UVM_ERROR for data mismatch in scoreboard
-- Test failure summary
-
-### cocotb Results (results.xml)
-
-Contains:
-- JUnit XML format test results
-- Passing test (test_increment)
-- Failing test (test_overflow) with assertion error
-
-## Creating Your Own Artifacts
-
-### UVM Logs
-
-Place UVM simulator logs in `uvm_logs/`:
-- Questa: `*.log`
-- VCS: `*.log` 
-- Xcelium: `*.log`
-
-### cocotb Results
-
-Place JUnit XML results in `cocotb_results/`:
-- `results.xml` (standard cocotb output)
-
-### Coverage Reports
-
-Place coverage reports in `coverage/`:
-- Functional coverage summaries
-- Code coverage reports
-
-## Indexing Configuration
-
-Update `config.example.yaml` to point to demo artifacts:
-
-```yaml
-artifact_roots:
-  - "./demo"
-
-adapters:
-  uvm: true
-  cocotb: true
-  assertions: true
-  coverage: true
-  waveform_summary: true   # index demo/waveforms/*.wave.json when true
-```
-
-### Verilator + VCD (full example)
+## Single-project (Verilator only)
 
 ```bash
 cd demo/verilator_counter
-make run
-cp config.example.yaml config.yaml
+make run && cp config.example.yaml config.yaml
 sentinel-dv-index --config config.yaml --index-all
+python ../../scripts/verify_all_mcp_tools.py --in-place
 ```
 
 See [verilator_counter/README.md](verilator_counter/README.md).
 
-## Expected Results
+## Projects at a glance
 
-After indexing, you should see:
-- 1-2 runs indexed
-- 2-3 tests found
-- 1-2 failures catalogued
-- Failure taxonomy applied (scoreboard, assertion categories)
-- Evidence links to original artifacts
+| Suite | Framework | Tests | Failure flavor |
+|-------|-----------|-------|----------------|
+| `axi_burst` | UVM log | `test_axi_burst` | scoreboard |
+| `apb_register` | UVM log | `test_apb_register` | assertion |
+| `alu_core` | cocotb JUnit | `test_alu_add`, `test_alu_mul` | assertion |
+| `fifo_sync` | cocotb JUnit | `test_fifo_push_pop`, `test_fifo_underflow` | assertion |
+| `counter_block` | cocotb JUnit | `test_increment`, `test_overflow` | assertion |
+| `verilator_counter` | cocotb + UVM + VCD | `test_counter_sim`, overflow run, … | mixed |
+
+## Tests
+
+```bash
+pytest tests/integration/test_multi_project_all_mcp_tools.py -q
+pytest tests/integration/test_verilator_all_mcp_tools.py -q
+```
+
+## Documentation screenshots
+
+Generate SVG “screenshots” (real MCP request/response cards) for the docs site:
+
+```bash
+python scripts/generate_mcp_tool_gallery.py
+python scripts/generate_mcp_tool_gallery.py --open   # preview HTML in browser
+```
+
+Outputs: `docs/tools/mcp-tool-gallery.md` and `docs/assets/mcp-tools/*.svg`.

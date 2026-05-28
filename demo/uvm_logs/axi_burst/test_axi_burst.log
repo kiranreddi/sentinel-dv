@@ -1,0 +1,5 @@
+# AXI burst UVM-style log (demo project: axi_burst)
+UVM_INFO @ 0 ns: (uvm_test_top) [TEST] Running test test_axi_burst
+UVM_INFO @ 10ns: uvm_test_top.axi_env.master_agent [SEQ] Starting AXI burst write
+UVM_INFO @ 200ns: uvm_test_top.axi_env.slave_agent.monitor [MON] AW handshake complete
+UVM_ERROR @ 850ns: uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF

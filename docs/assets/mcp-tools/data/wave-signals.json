@@ -1,0 +1,47 @@
+{
+  "tool": "wave.signals",
+  "arguments": {
+    "test_id": "t_dff9c20ec6c4"
+  },
+  "response": {
+    "test_id": "t_dff9c20ec6c4",
+    "format": "precomputed-vcd",
+    "end_time_ns": 30000,
+    "start_time_ns": null,
+    "end_time_ns_query": null,
+    "signals": [
+      {
+        "name": "a",
+        "group": "alu",
+        "width": 16,
+        "toggles": 4,
+        "last_value": "0x000A"
+      },
+      {
+        "name": "b",
+        "group": "alu",
+        "width": 16,
+        "toggles": 4,
+        "last_value": "0x0005"
+      },
+      {
+        "name": "clk",
+        "group": "alu",
+        "width": 1,
+        "toggles": 60,
+        "last_value": "1"
+      },
+      {
+        "name": "sum",
+        "group": "alu",
+        "width": 16,
+        "toggles": 2,
+        "last_value": "0x000F"
+      }
+    ],
+    "signal_count": 4,
+    "truncated": false,
+    "source_path": "waveforms/alu_core/test_alu_add.wave.json",
+    "schema_version": "1.0.0"
+  }
+}

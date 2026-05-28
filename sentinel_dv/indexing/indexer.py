@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from enum import Enum
 from pathlib import Path
 
 from sentinel_dv.adapters.assertion_reports import ASSERTION_GLOBS, AssertionReportParser
@@ -60,15 +61,28 @@ class ArtifactIndexer:
             max_bins_missed=self.security.max_bins_missed,
         )
 
+    @staticmethod
+    def _is_cocotb_junit_xml(path: Path) -> bool:
+        """True for cocotb/Verilator JUnit exports (results.xml, results_*.xml, *junit*.xml)."""
+        name = path.name.lower()
+        if path.suffix != ".xml":
+            return False
+        if name in {"results.xml", "junit.xml"}:
+            return True
+        return "results" in name or "junit" in name
+
     def scan_artifacts(self) -> list[Path]:
         """Collect indexable artifact paths under configured roots."""
-        patterns = ("*.log", "results.xml", "junit.xml")
         found: list[Path] = []
         for root in self.artifact_roots:
             if not root.exists():
                 continue
-            for pattern in patterns:
-                found.extend(p for p in root.rglob(pattern) if not p.is_symlink())
+            found.extend(p for p in root.rglob("*.log") if not p.is_symlink())
+            found.extend(
+                p
+                for p in root.rglob("*.xml")
+                if not p.is_symlink() and self._is_cocotb_junit_xml(p)
+            )
         return sorted(set(found))
 
     def scan_waveform_artifacts(self) -> list[Path]:
@@ -117,7 +131,7 @@ class ArtifactIndexer:
             for path in artifacts:
                 if path.suffix == ".log" and self.adapters.uvm:
                     self._index_uvm_log(store, path, stats)
-                elif path.name in {"results.xml", "junit.xml"} and self.adapters.cocotb:
+                elif self._is_cocotb_junit_xml(path) and self.adapters.cocotb:
                     self._index_cocotb_xml(store, path, stats)
 
             if self.adapters.waveform_summary:
@@ -161,6 +175,15 @@ class ArtifactIndexer:
             return path.stat().st_size <= self.security.max_artifact_bytes
         except OSError:
             return False
+
+    @staticmethod
+    def _coerce_taxonomy_value(value: object, default: str) -> str:
+        """Normalize taxonomy Enum/str values for DuckDB storage."""
+        if value is None:
+            return default
+        if isinstance(value, Enum):
+            return str(value.value)
+        return str(value)
 
     def _index_uvm_log(
         self, store: IndexStore, log_path: Path, stats: dict[str, int | list[str]]
@@ -274,7 +297,8 @@ class ArtifactIndexer:
         run_id: str,
         stats: dict[str, int | list[str]],
     ) -> None:
-        category = failure.get("category") or "unknown"
+        category = self._coerce_taxonomy_value(failure.get("category"), "unknown")
+        severity = self._coerce_taxonomy_value(failure.get("severity", "error"), "error")
         summary = truncate_text(failure.get("summary", ""), 500)
         message = truncate_text(
             failure.get("message", ""),
@@ -287,7 +311,7 @@ class ArtifactIndexer:
         )
         failure_id, failure_id_full = generate_failure_id(
             test_id_full=test_id_full,
-            severity=failure.get("severity", "error"),
+            severity=severity,
             category=category,
             summary=summary,
         )
@@ -302,7 +326,7 @@ class ArtifactIndexer:
             failure_id_full=failure_id_full,
             test_id=test_id,
             run_id=run_id,
-            severity=failure.get("severity", "error"),
+            severity=severity,
             category=category,
             summary=summary,
             message=message,

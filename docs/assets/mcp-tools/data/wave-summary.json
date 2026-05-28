@@ -1,0 +1,39 @@
+{
+  "tool": "wave.summary",
+  "arguments": {
+    "test_id": "t_dff9c20ec6c4",
+    "start_time_ns": 1000,
+    "end_time_ns": 25000
+  },
+  "response": {
+    "test_id": "t_dff9c20ec6c4",
+    "format": "precomputed-vcd",
+    "end_time_ns": 25000,
+    "start_time_ns": 1000,
+    "end_time_ns_query": 25000,
+    "signal_count": 4,
+    "highlights": [
+      {
+        "time_ns": 15000,
+        "signal": "sum",
+        "value": "0x000F",
+        "note": "add result stable"
+      }
+    ],
+    "metadata": {
+      "source": "demo",
+      "project": "alu_core",
+      "window": {
+        "start_time_ns": 1000,
+        "end_time_ns": 25000,
+        "note": "JSON summaries filter highlights only; use VCD for per-signal window values"
+      }
+    },
+    "evidence": {
+      "kind": "waveform_summary",
+      "path": "waveforms/alu_core/test_alu_add.wave.json"
+    },
+    "source_path": "waveforms/alu_core/test_alu_add.wave.json",
+    "schema_version": "1.0.0"
+  }
+}

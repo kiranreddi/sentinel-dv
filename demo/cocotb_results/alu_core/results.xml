@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="alu-core">
+  <testsuite name="alu_tb" tests="2" errors="0" failures="1" skipped="0" time="0.08">
+    <testcase classname="alu_tb" name="test_alu_add" time="0.03"/>
+    <testcase classname="alu_tb" name="test_alu_mul" time="0.05">
+      <failure message="AssertionError: multiply overflow">
+Expected 16-bit result; got value out of range.
+      </failure>
+    </testcase>
+  </testsuite>
+</testsuites>

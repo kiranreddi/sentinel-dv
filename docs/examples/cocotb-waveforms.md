@@ -1,51 +1,49 @@
 # cocotb + precomputed waveform JSON
 
-Index the bundled **`demo/`** tree to exercise UVM logs, cocotb JUnit results, and precomputed **`*.wave.json`** summaries alongside MCP **`wave.signals`** / **`wave.summary`**.
+Index the bundled **`demo/`** tree to exercise multiple cocotb projects, UVM logs, and precomputed **`*.wave.json`** summaries.
 
 ## Requirements
 
-- `sentinel-dv>=1.1.0`
+- `sentinel-dv>=1.2.0`
 - Repository clone (examples live under `demo/`)
 
 ## 1. Configure
 
-From the repository root:
-
 ```bash
-cp config.example.yaml config.yaml
+cp demo/config.example.yaml demo/config.yaml
 ```
 
-Ensure `artifact_roots` includes `./demo` and `adapters.waveform_summary: true` (see `config.example.yaml`).
+This enables all adapters and sets `artifact_roots: [.] ` relative to `demo/`.
 
 ## 2. Index
 
+From `demo/` or pass `--config demo/config.yaml` from the repo root:
+
 ```bash
-sentinel-dv-index --config config.yaml --index-all
+sentinel-dv-index --config demo/config.yaml --index-all
 ```
 
-Expected: cocotb tests from `demo/cocotb_results/results.xml`, plus waveform rows for `demo/waveforms/test_increment.wave.json` and `test_overflow.wave.json`.
+Expected cocotb suites:
+
+| Suite | JUnit | Waveform JSON |
+|-------|-------|----------------|
+| `counter_block` | `cocotb_results/counter_block/results.xml` | `waveforms/test_increment.wave.json`, `test_overflow.wave.json` |
+| `alu_core` | `cocotb_results/alu_core/results.xml` | `waveforms/alu_core/test_alu_add.wave.json` |
+| `fifo_sync` | `cocotb_results/fifo_sync/results.xml` | `waveforms/fifo_sync/test_fifo_push_pop.wave.json` |
 
 ## 3. Query (MCP)
 
-Start the server:
-
 ```bash
-sentinel-dv-server --config config.yaml
+sentinel-dv-server --config demo/config.yaml
 ```
 
-Use **`tests.list`** to find test IDs, then:
+Use **`tests.list`** with `name_pattern` (for example `alu_tb`) to find test IDs, then **`wave.signals`** / **`wave.summary`**.
 
-- **`wave.signals`** — per-signal toggles and last values from JSON summaries
-- **`wave.summary`** — highlights and trace bounds
+## Verify
 
-Precomputed JSON must include a `test_name` matching an indexed test (see `demo/waveforms/test_increment.wave.json`).
+```bash
+python scripts/verify_all_mcp_tools.py --multi
+pytest tests/integration/test_multi_project_all_mcp_tools.py -q
+```
 
-## Files
-
-| Path | Role |
-|------|------|
-| `demo/cocotb_results/results.xml` | JUnit listing `test_increment`, `test_overflow` |
-| `demo/waveforms/*.wave.json` | Bounded summaries linked by `test_name` |
-| `demo/uvm_logs/` | Sample UVM log for failure/triage tools |
-
-See also: [Examples overview](overview.md), [Waveform summaries guide](../guides/waveforms.md).
+See also: [Examples overview](overview.md), [Multi-project demo README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md).

@@ -1,0 +1,51 @@
+{
+  "tool": "failures.list",
+  "arguments": {
+    "category": "scoreboard",
+    "page": 1,
+    "page_size": 50
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "failures": [
+      {
+        "failure_id": "f_f5047a164e15",
+        "failure_id_full": "f5047a164e15479a42931a6ffc6ccb5af290afa266c5536b1ec5c7c4081d8f8a",
+        "test_id": "t_7a0a37762958",
+        "run_id": "r_566fd6e9a21b",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5",
+        "message": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5",
+        "time_ns": 1250,
+        "phase": null,
+        "component": "unknown",
+        "tags_json": "[\"scoreboard\", \"uvm\"]",
+        "tags_flat": "scoreboard uvm",
+        "signature_id": "s_71de94577c0f"
+      },
+      {
+        "failure_id": "f_b1128d5281f7",
+        "failure_id_full": "b1128d5281f7d07f2b569f4a431978bb8d993e7a20be422068d4926fc46826cb",
+        "test_id": "t_7dd03c3d152f",
+        "run_id": "r_2968fa34e74e",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
+        "message": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
+        "time_ns": 850,
+        "phase": null,
+        "component": "unknown",
+        "tags_json": "[\"scoreboard\", \"uvm\", \"axi4\"]",
+        "tags_flat": "scoreboard uvm axi4",
+        "signature_id": "s_accaf1efb76e"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_items": 2,
+      "total_pages": 1
+    }
+  }
+}

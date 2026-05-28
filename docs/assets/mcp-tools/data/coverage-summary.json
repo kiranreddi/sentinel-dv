@@ -1,0 +1,40 @@
+{
+  "tool": "coverage.summary",
+  "arguments": {
+    "run_id": "r_85b1d3f70e48"
+  },
+  "response": {
+    "run_id": "r_85b1d3f70e48",
+    "summaries": [
+      {
+        "id": 1,
+        "run_id": "r_85b1d3f70e48",
+        "test_id": "t_3bb6bfc925aa",
+        "kind": "functional",
+        "metrics": [
+          {
+            "name": "line",
+            "scope": "counter",
+            "covered": 87.5,
+            "hits": 14,
+            "total": 16,
+            "bins_missed": [
+              "line_12",
+              "line_15"
+            ]
+          },
+          {
+            "name": "toggle",
+            "scope": "counter",
+            "covered": 75.0,
+            "hits": 6,
+            "total": 8
+          }
+        ]
+      }
+    ],
+    "total_summaries": 1,
+    "truncated": false,
+    "schema_version": "1.0.0"
+  }
+}

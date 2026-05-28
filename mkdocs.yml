@@ -164,6 +164,7 @@ nav:
   - Tool Reference:
       - Overview: tools/overview.md
       - MCP Tools Reference (all 15): tools/mcp-tools-reference.md
+      - MCP Tool Gallery (screenshots): tools/mcp-tool-gallery.md
       - Discovery Tools: tools/discovery.md
       - Detail Tools: tools/detail.md
       - Analysis Tools: tools/analysis.md

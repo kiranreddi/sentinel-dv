@@ -1,0 +1,4 @@
+# Verilator counter companion UVM-style log (suite: verilator_counter)
+UVM_INFO @ 0 ns: (uvm_test_top) [TEST] Running test test_counter_sim
+UVM_INFO @ 100ns: uvm_test_top.env [ENV] uvm_test_top.env.agent.monitor active
+UVM_ERROR @ 1250ns: uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5

@@ -1,0 +1,4 @@
+# APB register UVM-style log (demo project: apb_register)
+UVM_INFO @ 0 ns: (uvm_test_top) [TEST] Running test test_apb_register
+UVM_INFO @ 5ns: uvm_test_top.apb_env.pagent [DRV] APB read transaction
+UVM_ERROR @ 420ns: uvm_test_top.apb_env.monitor [MON] ASSERTION FAILED: pready_timeout after psel

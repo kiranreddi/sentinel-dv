@@ -1,3 +1,14 @@
+/* MCP tool gallery — responsive SVG cards */
+.md-typeset img[src*="mcp-tools/"] {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: var(--sdv-radius);
+  border: 1px solid var(--sdv-border);
+  box-shadow: var(--sdv-shadow);
+}
+
 /* Sentinel DV — documentation theme */
 
 :root {

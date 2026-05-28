@@ -1,76 +1,180 @@
-# Verilator counter + VCD demo
+# Verilator counter — full MCP tool walkthrough
 
-Minimal SystemVerilog counter with a C++ testbench that writes `waves/test_counter_sim.vcd`. Sentinel DV indexes the VCD with the built-in **`VcdSummaryParser`** and exposes **`wave.signals`** / **`wave.summary`** via MCP.
+This example indexes **all artifact types** needed to exercise **every Sentinel DV MCP tool** (15 read-only tools). Simulation uses **Verilator** for RTL + VCD; companion files model cocotb JUnit, UVM-style logs, assertions, and coverage (typical DV regression layout).
 
-Source files live in the repository at `demo/verilator_counter/`.
+Source: [`demo/verilator_counter/`](https://github.com/kiranreddi/sentinel-dv/tree/main/demo/verilator_counter).
 
 ## Requirements
 
-- [Verilator](https://verilator.org) on your `PATH`
-- `sentinel-dv>=1.1.0` (`pip install "sentinel-dv>=1.1.0"`)
+- [Verilator](https://verilator.org) on `PATH`
+- `sentinel-dv>=1.2.0` (`pip install "sentinel-dv>=1.2.0"`)
 
-## 1. Build and simulate
+## 1. Build and simulate (VCD)
 
 ```bash
 cd demo/verilator_counter
 make run
 ```
 
-Output: `waves/test_counter_sim.vcd`
+Creates `waves/test_counter_sim.vcd` (≈10 µs of activity; 100 ns per dump step).
 
-## 2. Configure Sentinel DV
+## 2. Configure and index
 
 ```bash
 cp config.example.yaml config.yaml
-```
-
-`config.example.yaml` sets `artifact_roots` to the current directory (`.`) and enables `waveform_summary`.
-
-## 3. Index
-
-```bash
 sentinel-dv-index --config config.yaml --index-all
 ```
 
-Expected: `tests=1`, `waveforms=1` (JUnit `results.xml` plus VCD).
+Expected index stats (approximate):
 
-## 4. Query (MCP)
+| Stat | Count | Source |
+|------|-------|--------|
+| `runs` | 3 | `results.xml`, `results_regression_fail.xml`, `counter_tb.uvm.log` |
+| `tests` | 3 | pass cocotb, fail cocotb overflow, UVM-style log |
+| `failures` | 2 | UVM scoreboard + cocotb overflow |
+| `assertions` | 3 | `assertions/*.assert.json` |
+| `assertion_failures` | 1 | `counter_fail.assert.json` |
+| `coverage` | 1 | `coverage/coverage.json` |
+| `waveforms` | 1 | VCD via `VcdSummaryParser` |
 
-Start the server:
+All runs share suite name **`verilator_counter`** (artifact parent directory), which powers `regressions.summary` and `runs.diff`.
+
+## 3. Verify all MCP tools (optional)
+
+From the repository root:
 
 ```bash
+python scripts/verify_all_mcp_tools.py --in-place
+```
+
+Runs FastMCP in-process against `sentinel-dv-server` handlers and prints `OK` for each of the 15 tools.
+
+## 4. Start the MCP server
+
+```bash
+cd demo/verilator_counter
 sentinel-dv-server --config config.yaml
 ```
 
-Or add to an MCP client config with `--config` pointing at this `config.yaml`.
+## 5. Tool-by-tool examples
 
-Use tools on the indexed test (`counter_tb.test_counter_sim`):
+Use IDs from `tests.list` / `runs.list` in your client. Stable **names** below:
 
-- **`wave.signals`** — `clk`, `rst`, `count` with toggle counts from the VCD
-- **`wave.summary`** — `format: vcd-summary`, end time (~10 µs for this demo), highlights
+| Test name | Framework | Use for |
+|-----------|-----------|---------|
+| `counter_tb.test_counter_sim` | cocotb | waves, assertions, coverage |
+| `counter_tb.test_counter_overflow` | cocotb | failing regression run |
+| `test_counter_sim` | uvm | topology, scoreboard failure |
 
-### Time window (2–3 µs)
+### Discovery
 
-The testbench advances the VCD timestamp by **100 ns** per step (`$timescale 1ps`, `+100_000` per dump). Query a slice in **nanoseconds**:
+```json
+{ "suite": "verilator_counter", "page": 1, "page_size": 20 }
+```
+→ **`runs.list`**
+
+```json
+{ "run_id": "<pass run_id>" }
+```
+→ **`runs.get`**
+
+```json
+{ "run_id": "<pass run_id>", "framework": "cocotb" }
+```
+→ **`tests.list`**
+
+```json
+{ "protocol": "axi4", "page": 1, "page_size": 50 }
+```
+→ **`assertions.list`** (demo assertion with `axi4` tag)
+
+```json
+{ "run_id": "<pass run_id>", "kind": "functional" }
+```
+→ **`coverage.list`**
+
+### Detail
+
+```json
+{ "test_id": "<cocotb test_id>" }
+```
+→ **`tests.get`**
+
+```json
+{ "test_id": "<uvm test_id>" }
+```
+→ **`tests.topology`** (UVM hierarchy stub from log)
+
+```json
+{ "assertion_id": "<from assertions.list>" }
+```
+→ **`assertions.get`**
+
+```json
+{ "test_id": "<cocotb test_id>", "include_evidence": true }
+```
+→ **`assertions.failures`**
+
+```json
+{ "run_id": "<pass run_id>" }
+```
+→ **`coverage.summary`**
+
+```json
+{ "category": "scoreboard", "include_evidence": true }
+```
+→ **`failures.list`** (UVM scoreboard mismatch)
+
+### Analysis
+
+```json
+{ "suite": "verilator_counter", "window_days": 30, "as_of": "2026-05-28T12:00:00Z" }
+```
+→ **`regressions.summary`**
+
+```json
+{ "base_run_id": "<fail run_id>", "compare_run_id": "<pass run_id>" }
+```
+→ **`runs.diff`**
+
+### Waveforms
+
+```json
+{ "test_id": "<cocotb test_id for test_counter_sim>" }
+```
+→ **`wave.signals`** (`clk`, `rst`, `count` + toggles)
 
 ```json
 {
-  "test_id": "<from tests.list>",
+  "test_id": "<cocotb test_id>",
   "start_time_ns": 2000,
   "end_time_ns": 3000
 }
 ```
+→ **`wave.summary`** (re-parses VCD for 2–3 µs window)
 
-Use with **`wave.signals`** or **`wave.summary`** — both parameters are required together.
+## Artifact layout
 
-## Files in `demo/verilator_counter/`
+```
+demo/verilator_counter/
+├── counter.sv
+├── sim_main.cpp
+├── Makefile
+├── results.xml                      # cocotb JUnit — pass
+├── results_regression_fail.xml      # cocotb JUnit — fail (overflow)
+├── counter_tb.uvm.log               # UVM-style log — topology + scoreboard
+├── assertions/
+│   ├── counter.assert.json
+│   └── counter_fail.assert.json
+├── coverage/coverage.json
+├── waves/test_counter_sim.vcd       # after make run
+└── config.example.yaml
+```
 
-| File | Role |
-|------|------|
-| `counter.sv` | 4-bit counter RTL |
-| `sim_main.cpp` | Clock/reset stimulus + VCD dump |
-| `Makefile` | `verilator --trace` build |
-| `results.xml` | JUnit listing `test_counter_sim` |
-| `config.example.yaml` | Indexer/server config for this demo |
+## CI / automation
 
-See also: [Waveform summaries](../guides/waveforms.md).
+```bash
+pytest tests/integration/test_verilator_all_mcp_tools.py -q
+```
+
+See also: [MCP tools reference](../tools/mcp-tools-reference.md), [MCP tool gallery](../tools/mcp-tool-gallery.md), [Waveform summaries](../guides/waveforms.md).
