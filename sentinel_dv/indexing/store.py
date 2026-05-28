@@ -187,7 +187,9 @@ class IndexStore:
                 line INTEGER NOT NULL,
                 intent_protocol TEXT,
                 intent_requirement TEXT,
-                signals_json TEXT NOT NULL
+                signals_json TEXT NOT NULL,
+                tags_json TEXT NOT NULL DEFAULT '[]',
+                tags_flat TEXT NOT NULL DEFAULT ''
             )
         """)
 
@@ -501,6 +503,89 @@ class IndexStore:
             raise RuntimeError("Not connected to database")
 
         result = self._conn.execute("SELECT COUNT(*) FROM failures").fetchone()
+        return result[0] if result else 0
+
+    def insert_assertion(
+        self,
+        assertion_id: str,
+        assertion_id_full: str,
+        language: str,
+        name: str,
+        scope: str,
+        file: str,
+        line: int,
+        signals: list[str],
+        intent_protocol: str | None = None,
+        intent_requirement: str | None = None,
+        tags: list[str] | None = None,
+    ) -> None:
+        """Insert or replace an assertion definition."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+        tag_list = tags or []
+        self._conn.execute(
+            """
+            INSERT INTO assertions (
+                assertion_id, assertion_id_full, language, name, scope, file, line,
+                intent_protocol, intent_requirement, signals_json, tags_json, tags_flat
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (assertion_id) DO UPDATE SET
+                assertion_id_full=excluded.assertion_id_full,
+                language=excluded.language,
+                name=excluded.name,
+                scope=excluded.scope,
+                file=excluded.file,
+                line=excluded.line,
+                intent_protocol=excluded.intent_protocol,
+                intent_requirement=excluded.intent_requirement,
+                signals_json=excluded.signals_json,
+                tags_json=excluded.tags_json,
+                tags_flat=excluded.tags_flat
+        """,
+            [
+                assertion_id,
+                assertion_id_full,
+                language,
+                name,
+                scope,
+                file,
+                line,
+                intent_protocol,
+                intent_requirement,
+                json.dumps(signals),
+                json.dumps(tag_list),
+                " ".join(t.lower() for t in tag_list),
+            ],
+        )
+
+    def insert_assertion_failure(
+        self,
+        assertion_id: str,
+        test_id: str,
+        run_id: str,
+        message: str,
+        time_ns: int | None = None,
+    ) -> None:
+        """Insert a runtime assertion failure."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+        next_id_result = self._conn.execute(
+            "SELECT COALESCE(MAX(id), 0) + 1 FROM assertion_failures"
+        ).fetchone()
+        next_id = next_id_result[0] if next_id_result else 1
+        self._conn.execute(
+            """
+            INSERT INTO assertion_failures (
+                id, assertion_id, test_id, run_id, time_ns, message
+            ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+            [next_id, assertion_id, test_id, run_id, time_ns, message],
+        )
+
+    def count_assertions(self) -> int:
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+        result = self._conn.execute("SELECT COUNT(*) FROM assertions").fetchone()
         return result[0] if result else 0
 
     # ========================================================================
@@ -841,6 +926,8 @@ class IndexStore:
         self,
         scope: str | None = None,
         name_pattern: str | None = None,
+        protocol: str | None = None,
+        tag: str | None = None,
         page: int = 1,
         page_size: int = 100,
     ) -> tuple[list[dict[str, Any]], int]:
@@ -857,6 +944,12 @@ class IndexStore:
         if name_pattern:
             where_clauses.append("name LIKE ?")
             params.append(f"%{name_pattern}%")
+        if protocol:
+            where_clauses.append("intent_protocol = ?")
+            params.append(protocol.lower())
+        if tag:
+            where_clauses.append("tags_flat LIKE ?")
+            params.append(f"%{tag.lower()}%")
 
         where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
 
@@ -876,8 +969,41 @@ class IndexStore:
             params + [page_size, offset],
         ).fetchall()
 
-        columns = [desc[0] for desc in self._conn.description]
-        return [dict(zip(columns, row, strict=False)) for row in results], total
+        return [self._format_assertion_row(row) for row in results], total
+
+    @staticmethod
+    def _format_assertion_row(row: tuple[Any, ...]) -> dict[str, Any]:
+        """Map DB row to MCP-friendly assertion dict."""
+        (
+            assertion_id,
+            _full,
+            language,
+            name,
+            scope,
+            file,
+            line,
+            intent_protocol,
+            intent_requirement,
+            signals_json,
+            tags_json,
+            _tags_flat,
+        ) = row
+        signals = json.loads(signals_json) if signals_json else []
+        tags = json.loads(tags_json) if tags_json else []
+        return {
+            "assertion_id": assertion_id,
+            "language": language,
+            "name": name,
+            "scope": scope,
+            "file": file,
+            "line": line,
+            "signals": signals,
+            "tags": tags,
+            "intent": {
+                "protocol": intent_protocol,
+                "requirement": intent_requirement,
+            },
+        }
 
     def get_assertion(self, assertion_id: str) -> dict[str, Any] | None:
         """Get assertion definition by ID."""
@@ -889,14 +1015,15 @@ class IndexStore:
         ).fetchone()
         if not result:
             return None
-        columns = [desc[0] for desc in self._conn.description]
-        return dict(zip(columns, result, strict=False))
+        return self._format_assertion_row(result)
 
     def query_assertion_failures(
         self,
         run_id: str | None = None,
         test_id: str | None = None,
         assertion_id: str | None = None,
+        start_time_ns: int | None = None,
+        end_time_ns: int | None = None,
         page: int = 1,
         page_size: int = 100,
     ) -> tuple[list[dict[str, Any]], int]:
@@ -916,6 +1043,12 @@ class IndexStore:
         if assertion_id:
             where_clauses.append("assertion_id = ?")
             params.append(assertion_id)
+        if start_time_ns is not None:
+            where_clauses.append("(time_ns IS NULL OR time_ns >= ?)")
+            params.append(start_time_ns)
+        if end_time_ns is not None:
+            where_clauses.append("(time_ns IS NULL OR time_ns <= ?)")
+            params.append(end_time_ns)
 
         where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
 
@@ -927,16 +1060,27 @@ class IndexStore:
         offset = (page - 1) * page_size
         results = self._conn.execute(
             f"""
-            SELECT * FROM assertion_failures
+            SELECT id, assertion_id, test_id, run_id, time_ns, message
+            FROM assertion_failures
             WHERE {where_sql}
-            ORDER BY time_ns DESC, id ASC
+            ORDER BY COALESCE(time_ns, -1) DESC, id ASC
             LIMIT ? OFFSET ?
         """,
             params + [page_size, offset],
         ).fetchall()
 
-        columns = [desc[0] for desc in self._conn.description]
-        return [dict(zip(columns, row, strict=False)) for row in results], total
+        items = [
+            {
+                "id": row[0],
+                "assertion_id": row[1],
+                "test_id": row[2],
+                "run_id": row[3],
+                "time_ns": row[4],
+                "message": row[5],
+            }
+            for row in results
+        ]
+        return items, total
 
     def query_coverage_summaries(
         self,
@@ -996,7 +1140,7 @@ class IndexStore:
         self,
         run_id: str,
         kind: str,
-        metrics: dict[str, Any],
+        metrics: list[dict[str, Any]] | dict[str, Any],
         test_id: str | None = None,
         evidence: dict[str, Any] | None = None,
     ) -> None:
@@ -1004,16 +1148,22 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
+        payload = metrics if isinstance(metrics, list) else metrics.get("metrics", metrics)
+        next_id_result = self._conn.execute(
+            "SELECT COALESCE(MAX(id), 0) + 1 FROM coverage_summaries"
+        ).fetchone()
+        next_id = next_id_result[0] if next_id_result else 1
         self._conn.execute(
             """
-            INSERT INTO coverage_summaries (run_id, test_id, kind, metrics_json, evidence_json)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO coverage_summaries (id, run_id, test_id, kind, metrics_json, evidence_json)
+            VALUES (?, ?, ?, ?, ?, ?)
         """,
             [
+                next_id,
                 run_id,
                 test_id,
                 kind,
-                json.dumps(metrics),
+                json.dumps(payload),
                 json.dumps(evidence) if evidence else None,
             ],
         )
@@ -1094,27 +1244,34 @@ class IndexStore:
         ).fetchall()
         return {row[0]: row[1] for row in rows}
 
-    def regression_summary(self, suite: str, window_days: int) -> dict[str, Any]:
+    def regression_summary(
+        self,
+        suite: str,
+        window_days: int,
+        as_of: str | None = None,
+    ) -> dict[str, Any]:
         """Compute regression summary for a suite over a time window."""
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
         from datetime import datetime, timedelta, timezone
 
-        cutoff = (
-            (datetime.now(timezone.utc) - timedelta(days=window_days))
-            .isoformat()
-            .replace("+00:00", "Z")
-        )
+        if as_of:
+            end_dt = datetime.fromisoformat(as_of.replace("Z", "+00:00"))
+        else:
+            end_dt = datetime.now(timezone.utc)
+        cutoff_dt = end_dt - timedelta(days=window_days)
+        cutoff = cutoff_dt.isoformat().replace("+00:00", "Z")
+        as_of_iso = end_dt.isoformat().replace("+00:00", "Z")
 
         runs = self._conn.execute(
             """
             SELECT run_id, suite, status, created_at
             FROM runs
-            WHERE suite = ? AND created_at >= ?
-            ORDER BY created_at DESC
+            WHERE suite = ? AND created_at >= ? AND created_at <= ?
+            ORDER BY created_at DESC, run_id ASC
         """,
-            [suite, cutoff],
+            [suite, cutoff, as_of_iso],
         ).fetchall()
 
         run_ids = [r[0] for r in runs]
@@ -1122,6 +1279,7 @@ class IndexStore:
             return {
                 "suite": suite,
                 "window_days": window_days,
+                "as_of": as_of_iso,
                 "pass_rate": 0.0,
                 "runs": [],
                 "top_signatures": [],
@@ -1149,7 +1307,7 @@ class IndexStore:
             FROM failures
             WHERE run_id IN ({placeholders})
             GROUP BY sig, category, summary
-            ORDER BY cnt DESC
+            ORDER BY cnt DESC, sig ASC
             LIMIT 20
         """,
             run_ids,
@@ -1168,6 +1326,7 @@ class IndexStore:
         return {
             "suite": suite,
             "window_days": window_days,
+            "as_of": as_of_iso,
             "pass_rate": round(pass_rate, 2),
             "runs": [
                 {"run_id": r[0], "suite": r[1], "status": r[2], "created_at": r[3]} for r in runs
