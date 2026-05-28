@@ -6,9 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-_VAR_RE = re.compile(
-    r"^\$var\s+(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+.*\$end\s*$"
-)
+_VAR_RE = re.compile(r"^\$var\s+(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+.*\$end\s*$")
 _TIMESCALE_RE = re.compile(
     r"^\$timescale\s+(\d+)\s*(s|ms|us|ns|ps|fs)\s+\$end\s*$",
     re.IGNORECASE,

@@ -223,36 +223,19 @@ Sentinel DV currently supports **full indexing only**:
 
 ## Using MCP Tools
 
-### Available Tools
+Sentinel DV provides **15** read-only MCP tools. The canonical reference—with parameters, JSON examples, and suggested tool chains—is **[MCP tools reference](tools/mcp-tools-reference.md)**.
 
-Sentinel DV provides **15** MCP tools across 5 categories:
+| Category | Tools |
+|----------|--------|
+| Discovery | `runs.list`, `tests.list`, `assertions.list`, `coverage.list` |
+| Detail | `runs.get`, `tests.get`, `tests.topology`, `assertions.get` |
+| Analysis | `failures.list`, `assertions.failures`, `coverage.summary` |
+| Regression | `regressions.summary`, `runs.diff` |
+| Waveforms | `wave.signals`, `wave.summary` |
 
-#### 1. Discovery Tools
-- `runs.list`
-- `tests.list`
-- `assertions.list`
-- `coverage.list`
+Category guides: [Discovery](tools/discovery.md) · [Detail](tools/detail.md) · [Analysis](tools/analysis.md) · [Regression](tools/regression.md) · [Waveforms](tools/waveforms.md)
 
-#### 2. Detail Tools
-- `runs.get`
-- `tests.get`
-- `tests.topology`
-- `assertions.get`
-
-#### 3. Analysis Tools
-- `failures.list`
-- `assertions.failures`
-- `coverage.summary`
-
-#### 4. Regression Tools
-- `regressions.summary`
-- `runs.diff`
-
-#### 5. Waveform Tools
-- `wave.signals` — indexed signal list (from `*.wave.json` or `*.vcd`)
-- `wave.summary` — highlights, end time, metadata
-
-Enable `adapters.waveform_summary: true` and re-index. See [Waveform summaries](guides/waveforms.md) and [Verilator + VCD example](examples/verilator-counter.md).
+**Waveform tools:** enable `adapters.waveform_summary: true`, index `*.wave.json` and/or `*.vcd`, then call `wave.signals` / `wave.summary` with optional `start_time_ns` / `end_time_ns` (nanoseconds). See [Waveform summaries](guides/waveforms.md) and [Verilator + VCD](examples/verilator-counter.md).
 
 ---
 
@@ -392,6 +375,17 @@ In Claude:
 "What assertions failed during this test?"
 → Uses: assertions.failures
 ```
+
+### Workflow 5: Waveform time window
+
+Index with waveforms enabled, then in your MCP client:
+
+```
+"List signals for test_counter_sim between 2 and 3 microseconds"
+→ Uses: tests.list → wave.signals with start_time_ns: 2000, end_time_ns: 3000
+```
+
+See [MCP tools reference — Waveforms](tools/mcp-tools-reference.md#waveforms) and [Verilator example](examples/verilator-counter.md).
 
 ---
 

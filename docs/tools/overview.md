@@ -51,8 +51,10 @@ Pre-computed summaries from **`*.wave.json`** and **`*.vcd`** (built-in `VcdSumm
 
 | Tool | Purpose | Status |
 |------|---------|--------|
-| `wave.signals` | List indexed signals for a test | Stable |
-| `wave.summary` | Get highlights and metadata for a test | Stable |
+| [`wave.signals`](waveforms.md#wavesignals) | List signals; optional `start_time_ns` / `end_time_ns` window | Stable |
+| [`wave.summary`](waveforms.md#wavesummary) | Highlights and metadata; same time window | Stable |
+
+Full parameter reference: [MCP tools reference](mcp-tools-reference.md).
 
 ---
 

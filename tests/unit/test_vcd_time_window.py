@@ -70,9 +70,7 @@ $enddefinitions $end
 
 def test_vcd_window_20_30us_in_ns(us_scale_vcd: Path) -> None:
     # 20 µs = 20_000 ns, 30 µs = 30_000 ns (with $timescale 1 us)
-    parsed = VcdSummaryParser().parse(
-        us_scale_vcd, start_time_ns=20_000, end_time_ns=30_000
-    )
+    parsed = VcdSummaryParser().parse(us_scale_vcd, start_time_ns=20_000, end_time_ns=30_000)
     clk = parsed["signals"][0]
     assert clk["value_at_start"] == "0"
     assert clk["value_at_end"] == "0"

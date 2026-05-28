@@ -159,6 +159,17 @@ Try these queries with Claude:
     - `regressions.summary` for suite-level stats
     - `runs.list` to enumerate runs
 
+!!! example "Waveform window (1.1.0+)"
+    ```
+    "Show clk toggles for test_counter_sim between 2 and 3 microseconds"
+    ```
+    
+    Claude will use:
+    - `tests.list` to resolve `test_id`
+    - `wave.signals` with `start_time_ns: 2000`, `end_time_ns: 3000`
+    
+    Requires `waveform_summary: true` and an indexed VCD or `*.wave.json`. See [MCP tools reference](../tools/mcp-tools-reference.md).
+
 ## Verify It Works
 
 Check that tools are accessible:
