@@ -225,6 +225,8 @@ Sentinel DV currently supports **full indexing only**:
 
 Sentinel DV provides **15** read-only MCP tools. The canonical reference—with parameters, JSON examples, and suggested tool chains—is **[MCP tools reference](tools/mcp-tools-reference.md)**.
 
+For a **visual walkthrough** (SVG cards with real request/response payloads from the bundled `demo/` index), see **[MCP tool gallery](tools/mcp-tool-gallery.md)**. Regenerate with `python scripts/generate_mcp_tool_gallery.py`.
+
 | Category | Tools |
 |----------|--------|
 | Discovery | `runs.list`, `tests.list`, `assertions.list`, `coverage.list` |

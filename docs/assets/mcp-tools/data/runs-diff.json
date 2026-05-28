@@ -1,0 +1,31 @@
+{
+  "tool": "runs.diff",
+  "arguments": {
+    "base_run_id": "r_d39bb5009606",
+    "compare_run_id": "r_85b1d3f70e48"
+  },
+  "response": {
+    "base_run_id": "r_d39bb5009606",
+    "compare_run_id": "r_85b1d3f70e48",
+    "test_changes": [
+      {
+        "kind": "test_removed",
+        "name": "counter_tb.test_counter_overflow",
+        "base_status": "fail"
+      },
+      {
+        "kind": "test_added",
+        "name": "counter_tb.test_counter_sim",
+        "compare_status": "pass"
+      }
+    ],
+    "new_failures": [],
+    "resolved_failures": [
+      {
+        "signature_id": "s_ea51e615c938",
+        "count": 1
+      }
+    ],
+    "schema_version": "1.0.0"
+  }
+}

@@ -1,38 +1,23 @@
-# Verilator counter + VCD demo
+# Verilator counter — full MCP walkthrough
 
-Minimal SystemVerilog counter with a C++ testbench that writes `waves/test_counter_sim.vcd`. Sentinel DV indexes the VCD with the built-in **`VcdSummaryParser`** and exposes **`wave.signals`** / **`wave.summary`** via MCP.
+SystemVerilog counter + C++ testbench (**Verilator**) that emits a VCD trace. The directory also ships **cocotb JUnit**, a **UVM-style log**, **assertion JSON**, and **coverage JSON** so a single `sentinel-dv-index` run exercises **all 15 MCP tools**.
 
-## Requirements
-
-- [Verilator](https://verilator.org) on your `PATH`
-- `sentinel-dv>=1.1.0` (`pip install "sentinel-dv>=1.1.0"`)
-
-## 1. Build and simulate
+## Quick start
 
 ```bash
 cd demo/verilator_counter
 make run
-```
-
-Output: `waves/test_counter_sim.vcd`
-
-## 2. Configure Sentinel DV
-
-```bash
 cp config.example.yaml config.yaml
-```
-
-`config.example.yaml` sets `artifact_roots` to the current directory (`.`) and enables `waveform_summary`.
-
-## 3. Index
-
-```bash
 sentinel-dv-index --config config.yaml --index-all
 ```
 
-Expected: `tests=1`, `waveforms=1` (JUnit `results.xml` plus VCD).
+Expected: `runs≥3`, `tests≥3`, `failures≥2`, `assertions≥2`, `assertion_failures≥1`, `coverage≥1`, `waveforms=1`.
 
-## 4. Query (MCP)
+Verify every MCP tool (from repo root):
+
+```bash
+python scripts/verify_all_mcp_tools.py --in-place
+```
 
 Start the server:
 
@@ -40,23 +25,36 @@ Start the server:
 sentinel-dv-server --config config.yaml
 ```
 
-Or add to an MCP client config with `--config` pointing at this `config.yaml`.
+## MCP tools covered
 
-Use tools on the indexed test (`counter_tb.test_counter_sim`):
+| Tool | Demo data |
+|------|-----------|
+| `runs.list` / `runs.get` | Pass + fail cocotb runs, UVM log run |
+| `tests.list` / `tests.get` | `counter_tb.test_counter_sim`, overflow fail, UVM `test_counter_sim` |
+| `tests.topology` | `counter_tb.uvm.log` |
+| `assertions.list` / `assertions.get` / `assertions.failures` | `assertions/*.assert.json` |
+| `coverage.list` / `coverage.summary` | `coverage/coverage.json` |
+| `failures.list` | UVM scoreboard + cocotb overflow |
+| `regressions.summary` | Suite `verilator_counter`, multiple runs |
+| `runs.diff` | Fail run vs pass run |
+| `wave.signals` / `wave.summary` | `waves/test_counter_sim.vcd` |
 
-- **`wave.signals`** — `clk`, `rst`, `count` with toggle counts from the VCD
-- **`wave.summary`** — `format: vcd-summary`, end time (~10 µs), highlights
-
-**Time window example** (2–3 µs): pass `start_time_ns: 2000` and `end_time_ns: 3000` to `wave.signals` or `wave.summary`.
+Full parameter examples: [docs/examples/verilator-counter.md](../../docs/examples/verilator-counter.md).
 
 ## Files
 
 | File | Role |
 |------|------|
 | `counter.sv` | 4-bit counter RTL |
-| `sim_main.cpp` | Clock/reset stimulus + VCD dump |
+| `sim_main.cpp` | Clock/reset + VCD dump |
 | `Makefile` | `verilator --trace` build |
-| `results.xml` | JUnit listing `test_counter_sim` |
-| `config.example.yaml` | Indexer/server config for this demo |
+| `results.xml` | JUnit pass (`test_counter_sim`) |
+| `results_regression_fail.xml` | JUnit fail (`test_counter_overflow`) |
+| `counter_tb.uvm.log` | Illustrative UVM log (topology + scoreboard error) |
+| `assertions/` | SVA assertion reports |
+| `coverage/coverage.json` | Functional coverage summary |
+| `config.example.yaml` | All adapters enabled |
 
-See also: [Waveform summaries guide](https://kiranreddi.github.io/sentinel-dv/guides/waveforms/).
+## Time window (wave tools)
+
+VCD timescale is 1 ps; each step adds 100 ns. Query **2000–3000 ns** on `wave.signals` / `wave.summary` (both `start_time_ns` and `end_time_ns` required).

@@ -45,6 +45,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 coverage.json
+!demo/**/coverage.json
 
 # Virtual environments
 venv/
@@ -70,6 +71,10 @@ sentinel_dv.db
 config.yaml
 config.local.yaml
 *.log
+# Demo fixture logs (checked in for indexing examples)
+!demo/uvm_logs/
+!demo/uvm_logs/**
+!demo/verilator_counter/counter_tb.uvm.log
 
 # Temporary files
 *.tmp

@@ -1,0 +1,37 @@
+{
+  "tool": "assertions.list",
+  "arguments": {
+    "protocol": "axi4",
+    "page": 1,
+    "page_size": 50
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "assertions": [
+      {
+        "assertion_id": "a_1288a531c038",
+        "language": "sva",
+        "name": "axi_awvalid_stable_chk",
+        "scope": "counter_tb",
+        "file": "counter.sv",
+        "line": 20,
+        "signals": [
+          "clk"
+        ],
+        "tags": [
+          "axi4"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "Demo protocol tag (illustrative)"
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_items": 1,
+      "total_pages": 1
+    }
+  }
+}

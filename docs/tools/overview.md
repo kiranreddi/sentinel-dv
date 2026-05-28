@@ -56,6 +56,19 @@ Pre-computed summaries from **`*.wave.json`** and **`*.vcd`** (built-in `VcdSumm
 
 Full parameter reference: [MCP tools reference](mcp-tools-reference.md).
 
+### MCP tool gallery (visual)
+
+Auto-generated **SVG cards** show real request/response JSON for every tool (from the multi-project `demo/` index):
+
+- **[Browse all 15 tools in the gallery](mcp-tool-gallery.md)** — embedded screenshots + full JSON
+- [Interactive HTML preview](../assets/mcp-tools/gallery.html) — open in a new tab
+
+Regenerate after demo or API changes:
+
+```bash
+python scripts/generate_mcp_tool_gallery.py
+```
+
 ---
 
 ## Common Request Patterns

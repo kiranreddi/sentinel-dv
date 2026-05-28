@@ -23,6 +23,7 @@ Read-only Model Context Protocol access to SystemVerilog, UVM, and cocotb artifa
 <div class="sdv-hero__actions" markdown>
 
 [Get started](getting-started/quick-start.md){ .md-button .md-button--primary }
+[MCP tool gallery](tools/mcp-tool-gallery.md){ .md-button }
 [View on GitHub](https://github.com/kiranreddi/sentinel-dv){ .md-button .sdv-btn-outline target=_blank }
 
 </div>
@@ -196,7 +197,7 @@ Read-only Model Context Protocol access to SystemVerilog, UVM, and cocotb artifa
 
 - Precomputed `*.wave.json` or Verilator **`*.vcd`** via built-in `VcdSummaryParser`
 - MCP tools `wave.signals` and `wave.summary` ([all 15 tools](tools/mcp-tools-reference.md))
-- [Guide](guides/waveforms.md) · [Verilator example](examples/verilator-counter.md)
+- [Guide](guides/waveforms.md) · [Verilator example](examples/verilator-counter.md) · [Tool gallery (screenshots)](tools/mcp-tool-gallery.md)
 
 </div>
 

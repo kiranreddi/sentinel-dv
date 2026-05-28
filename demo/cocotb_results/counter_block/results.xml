@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<testsuites name="cocotb-results">
+<testsuites name="counter-block">
   <testsuite name="test_counter" tests="2" errors="0" failures="1" skipped="0" time="0.125">
     <testcase classname="test_counter" name="test_increment" time="0.05">
       <system-out>Counter incremented successfully</system-out>

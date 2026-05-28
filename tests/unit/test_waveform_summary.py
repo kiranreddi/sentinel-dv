@@ -45,7 +45,7 @@ def test_parser_normalizes_flat_signals(waveform_json: Path) -> None:
 def test_indexer_links_waveform_to_test(tmp_path: Path) -> None:
     repo = Path(__file__).resolve().parents[2]
     demo = repo / "demo"
-    if not (demo / "cocotb_results" / "results.xml").exists():
+    if not (demo / "cocotb_results" / "counter_block" / "results.xml").exists():
         pytest.skip("demo artifacts missing")
 
     db_path = tmp_path / "wave.duckdb"

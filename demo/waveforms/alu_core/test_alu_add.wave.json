@@ -1,0 +1,16 @@
+{
+  "test_name": "alu_tb.test_alu_add",
+  "framework": "cocotb",
+  "format": "precomputed-vcd",
+  "end_time_ns": 30000,
+  "signals": [
+    {"name": "clk", "group": "alu", "width": 1, "toggles": 60, "last_value": "1"},
+    {"name": "a", "group": "alu", "width": 16, "toggles": 4, "last_value": "0x000A"},
+    {"name": "b", "group": "alu", "width": 16, "toggles": 4, "last_value": "0x0005"},
+    {"name": "sum", "group": "alu", "width": 16, "toggles": 2, "last_value": "0x000F"}
+  ],
+  "highlights": [
+    {"time_ns": 15000, "signal": "sum", "value": "0x000F", "note": "add result stable"}
+  ],
+  "metadata": {"source": "demo", "project": "alu_core"}
+}

@@ -1,0 +1,36 @@
+{
+  "tool": "assertions.failures",
+  "arguments": {
+    "include_evidence": true,
+    "page": 1,
+    "page_size": 50
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "assertion_failures": [
+      {
+        "id": 1,
+        "assertion_id": "a_c00ae0788840",
+        "test_id": "t_3bb6bfc925aa",
+        "run_id": "r_85b1d3f70e48",
+        "time_ns": 2500,
+        "message": "count changed while rst asserted",
+        "evidence": [
+          {
+            "kind": "log",
+            "path": "verilator_counter/assertions/counter_fail.assert.json",
+            "span": {},
+            "extract": "count changed while rst asserted",
+            "hash": null
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_items": 1,
+      "total_pages": 1
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "test_name": "test_counter_sim",
+  "kind": "functional",
+  "metrics": [
+    {
+      "name": "line",
+      "scope": "counter",
+      "covered": 87.5,
+      "hits": 14,
+      "total": 16,
+      "bins_missed": ["line_12", "line_15"]
+    },
+    {
+      "name": "toggle",
+      "scope": "counter",
+      "covered": 75.0,
+      "hits": 6,
+      "total": 8
+    }
+  ]
+}

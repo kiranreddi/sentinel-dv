@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="fifo-sync">
+  <testsuite name="fifo_tb" tests="2" errors="0" failures="1" skipped="0" time="0.06">
+    <testcase classname="fifo_tb" name="test_fifo_push_pop" time="0.02"/>
+    <testcase classname="fifo_tb" name="test_fifo_underflow" time="0.04">
+      <failure message="AssertionError: FIFO underflow not flagged">
+pop while empty: empty flag was 0
+      </failure>
+    </testcase>
+  </testsuite>
+</testsuites>

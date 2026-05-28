@@ -9,7 +9,7 @@ index:
   path: ./sentinel_dv.db
 
 adapters:
-  uvm: false
+  uvm: true
   cocotb: true
   assertions: true
   coverage: true

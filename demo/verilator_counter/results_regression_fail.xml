@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="verilator-counter-regression">
+  <testsuite name="counter_tb" tests="1" errors="0" failures="1" skipped="0" time="0.02">
+    <testcase classname="counter_tb" name="test_counter_overflow" time="0.02">
+      <failure message="Counter overflow not handled">
+Expected count to wrap at 15; observed 16 without wrap.
+      </failure>
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -272,9 +272,10 @@ With Claude or any MCP client:
 
 ### Examples
 - [Examples overview](docs/examples/overview.md) — Verilator VCD, cocotb + JSON waveforms, UVM logs
+- [MCP tool gallery](https://kiranreddi.github.io/sentinel-dv/tools/mcp-tool-gallery/) — SVG “screenshots” for all 15 tools
 - [Verilator + VCD](docs/examples/verilator-counter.md) — Build, index, query `wave.*` with time windows
 - [cocotb + waveforms](docs/examples/cocotb-waveforms.md) — Index `demo/` tree
-- [demo/](demo/) — Runnable artifacts
+- [demo/](demo/) — Runnable artifacts (multi-project UVM, cocotb, Verilator)
 
 ### Guides
 - [Waveform summaries](docs/guides/waveforms.md) - JSON + VCD indexing

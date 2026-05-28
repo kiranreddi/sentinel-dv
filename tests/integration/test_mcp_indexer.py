@@ -15,7 +15,7 @@ from sentinel_dv.tools import core
 def demo_index(tmp_path):
     repo = Path(__file__).resolve().parents[2]
     demo = repo / "demo"
-    if not (demo / "cocotb_results" / "results.xml").exists():
+    if not (demo / "cocotb_results" / "counter_block" / "results.xml").exists():
         pytest.skip("demo artifacts missing")
 
     db_path = tmp_path / "demo.duckdb"
