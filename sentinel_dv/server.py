@@ -127,12 +127,20 @@ def tests_list(
 def assertions_list(
     scope: str | None = Field(None, description="Filter by scope"),
     name_pattern: str | None = Field(None, description="Filter by assertion name"),
+    protocol: str | None = Field(None, description="Filter by intent.protocol (e.g. axi4)"),
+    tag: str | None = Field(None, description="Filter by tag substring in tags_flat"),
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
     """List assertion definitions."""
     return core.list_assertions(
-        get_store(), scope=scope, name_pattern=name_pattern, page=page, page_size=page_size
+        get_store(),
+        scope=scope,
+        name_pattern=name_pattern,
+        protocol=protocol,
+        tag=tag,
+        page=page,
+        page_size=page_size,
     )
 
 
@@ -215,6 +223,8 @@ def assertions_failures(
     run_id: str | None = Field(None, description="Filter by run ID"),
     test_id: str | None = Field(None, description="Filter by test ID"),
     assertion_id: str | None = Field(None, description="Filter by assertion ID"),
+    start_time_ns: int | None = Field(None, description="Window start (nanoseconds)"),
+    end_time_ns: int | None = Field(None, description="Window end (nanoseconds)"),
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
@@ -224,6 +234,8 @@ def assertions_failures(
         run_id=run_id,
         test_id=test_id,
         assertion_id=assertion_id,
+        start_time_ns=start_time_ns,
+        end_time_ns=end_time_ns,
         page=page,
         page_size=page_size,
     )
@@ -234,9 +246,14 @@ def assertions_failures(
 def coverage_summary(
     run_id: str = Field(..., description="Run identifier"),
     kind: str | None = Field(None, description="Optional coverage kind filter"),
+    include_evidence: bool = Field(
+        False, description="Include evidence refs in coverage summaries"
+    ),
 ) -> dict[str, Any]:
     """Get coverage summaries for a run."""
-    return core.get_coverage_summary(get_store(), run_id, kind=kind)
+    return core.get_coverage_summary(
+        get_store(), run_id, kind=kind, include_evidence=include_evidence
+    )
 
 
 # ============================================================================
@@ -249,9 +266,15 @@ def coverage_summary(
 def regressions_summary(
     suite: str = Field(..., description="Suite name"),
     window_days: int = Field(7, description="Time window in days"),
+    as_of: str | None = Field(
+        None,
+        description="RFC3339 end timestamp for reproducible window (default: now UTC)",
+    ),
 ) -> dict[str, Any]:
     """Regression pass rate and top failure signatures."""
-    return core.get_regression_summary(get_store(), suite=suite, window_days=window_days)
+    return core.get_regression_summary(
+        get_store(), suite=suite, window_days=window_days, as_of=as_of
+    )
 
 
 @mcp.tool(name="runs.diff")

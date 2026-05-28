@@ -11,8 +11,8 @@ index:
 adapters:
   uvm: false
   cocotb: true
-  assertions: false
-  coverage: false
+  assertions: true
+  coverage: true
   waveform_summary: true
 
 security:
