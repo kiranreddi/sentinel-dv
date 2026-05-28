@@ -195,7 +195,7 @@ Read-only Model Context Protocol access to SystemVerilog, UVM, and cocotb artifa
 ### Waveforms
 
 - Precomputed `*.wave.json` or Verilator **`*.vcd`** via built-in `VcdSummaryParser`
-- MCP tools `wave.signals` and `wave.summary`
+- MCP tools `wave.signals` and `wave.summary` ([all 15 tools](tools/mcp-tools-reference.md))
 - [Guide](guides/waveforms.md) · [Verilator example](examples/verilator-counter.md)
 
 </div>

@@ -62,7 +62,9 @@ class ArtifactIndexer:
     def index_all(self) -> dict[str, int]:
         """Index all discovered artifacts into the store."""
         artifacts = self.scan_artifacts()
-        waveform_artifacts = self.scan_waveform_artifacts() if self.adapters.waveform_summary else []
+        waveform_artifacts = (
+            self.scan_waveform_artifacts() if self.adapters.waveform_summary else []
+        )
         stats = {
             "artifacts": len(artifacts) + len(waveform_artifacts),
             "runs": 0,

@@ -163,10 +163,12 @@ nav:
       - Index Store: index-store.md
   - Tool Reference:
       - Overview: tools/overview.md
+      - MCP Tools Reference (all 15): tools/mcp-tools-reference.md
       - Discovery Tools: tools/discovery.md
       - Detail Tools: tools/detail.md
       - Analysis Tools: tools/analysis.md
       - Regression Tools: tools/regression.md
+      - Waveform Tools: tools/waveforms.md
   - Guides:
       - Waveform Summaries: guides/waveforms.md
       - Simulator Support: guides/simulator-support.md
