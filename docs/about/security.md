@@ -6,9 +6,9 @@ If you discover a security vulnerability in Sentinel DV, please report it respon
 
 **DO NOT** open a public GitHub issue for security vulnerabilities.
 
-Instead, please email security reports to:
-- **Email**: [security@sentinel-dv.example.com] (placeholder - update with actual contact)
-- **Subject**: "Security Vulnerability: [Brief Description]"
+Instead, please use GitHub Security Advisories:
+- **Private report**: https://github.com/kiranreddi/sentinel-dv/security/advisories/new
+- **Security center**: https://github.com/kiranreddi/sentinel-dv/security
 
 Include:
 - Description of the vulnerability
@@ -92,8 +92,7 @@ pip install --upgrade sentinel-dv
 
 **4. Monitor Logs**
 ```bash
-# Enable audit logging
-export SENTINEL_AUDIT_LOG=/var/log/sentinel-dv/audit.log
+# Run under your process manager and collect stdout/stderr logs.
 python -m sentinel_dv.server --config config.yaml
 ```
 
@@ -170,7 +169,7 @@ docker run -v ./verification:/data:ro sentinel-dv:latest
 
 ### 2. Database Access
 
-**Risk**: SQLite database contains indexed data
+**Risk**: Index database contains indexed data
 **Mitigation**:
 - Restrict database file permissions (chmod 600)
 - Store in secure directory
@@ -275,9 +274,9 @@ We follow responsible disclosure practices and will work with reporters to coord
 
 ## Security Contacts
 
-- **Security Issues**: [security@example.com] (placeholder)
-- **GitHub Security Advisories**: https://github.com/kiranreddi/sentinel-dv/security/advisories
-- **General Issues**: https://github.com/kiranreddi/sentinel-dv/issues
+- **Private security reports**: https://github.com/kiranreddi/sentinel-dv/security/advisories/new
+- **Security advisories**: https://github.com/kiranreddi/sentinel-dv/security/advisories
+- **General issues**: https://github.com/kiranreddi/sentinel-dv/issues
 
 ---
 

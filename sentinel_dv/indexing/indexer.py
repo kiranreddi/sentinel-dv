@@ -296,6 +296,7 @@ class ArtifactIndexer:
             summary=summary,
             protocol=protocol,
         )
+        evidence_refs = self._normalize_evidence_refs(failure.get("evidence", []))
         store.insert_failure(
             failure_id=failure_id,
             failure_id_full=failure_id_full,
@@ -310,6 +311,7 @@ class ArtifactIndexer:
             phase=failure.get("phase"),
             component=failure.get("component"),
             signature_id=signature_id,
+            evidence_refs=evidence_refs,
         )
         stats["failures"] += 1
 
@@ -382,7 +384,15 @@ class ArtifactIndexer:
         if not ctx:
             return
         test_id, run_id, test_id_full = ctx
-        self._persist_assertion_bundle(store, parsed, test_id, run_id, test_id_full, stats)
+        self._persist_assertion_bundle(
+            store,
+            parsed,
+            test_id,
+            run_id,
+            test_id_full,
+            stats,
+            source_rel=self._relative_path(path),
+        )
 
     def _persist_assertion_bundle(
         self,
@@ -392,6 +402,7 @@ class ArtifactIndexer:
         run_id: str,
         test_id_full: str,
         stats: dict[str, int | list[str]],
+        source_rel: str = "unknown.log",
     ) -> None:
         name_to_id: dict[str, str] = {}
         for adef in parsed.get("assertions", []):
@@ -446,6 +457,9 @@ class ArtifactIndexer:
                 run_id=run_id,
                 message=fail.get("message", ""),
                 time_ns=fail.get("time_ns"),
+                evidence_refs=self._normalize_evidence_refs(
+                    [{"kind": "log", "path": source_rel, "extract": fail.get("message", "")}]
+                ),
             )
             stats["assertion_failures"] += 1
 
@@ -465,7 +479,9 @@ class ArtifactIndexer:
         if not ctx:
             return
         parsed["assertions"] = []
-        self._persist_assertion_bundle(store, parsed, *ctx, stats)
+        self._persist_assertion_bundle(
+            store, parsed, *ctx, stats, source_rel=self._relative_path(log_path)
+        )
 
     def _index_coverage_artifact(
         self, store: IndexStore, path: Path, stats: dict[str, int | list[str]]
@@ -511,6 +527,39 @@ class ArtifactIndexer:
             evidence={"kind": "coverage", "path": rel},
         )
         stats["coverage"] += 1
+
+    def _normalize_evidence_refs(self, refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Normalize evidence refs to bounded, relative-path-only payloads."""
+        normalized: list[dict[str, Any]] = []
+        max_refs = self.security.max_evidence_refs
+        max_extract = self.security.max_excerpt_length
+        for ref in refs[:max_refs]:
+            path_value = str(ref.get("path", "")).strip()
+            if not path_value:
+                continue
+            p = Path(path_value)
+            if p.is_absolute():
+                try:
+                    path_value = self._relative_path(p)
+                except ValueError:
+                    continue
+            if path_value.startswith("/"):
+                continue
+            span = ref.get("span") or {}
+            item: dict[str, Any] = {
+                "kind": str(ref.get("kind", "log")),
+                "path": path_value,
+                "span": {
+                    k: span.get(k)
+                    for k in ("start_line", "end_line", "start_time_ns", "end_time_ns")
+                    if span.get(k) is not None
+                },
+                "extract": truncate_text(str(ref.get("extract", "")), max_extract)
+                if ref.get("extract")
+                else None,
+            }
+            normalized.append(item)
+        return normalized
 
     def _relative_path(self, path: Path) -> str:
         for root in self.artifact_roots:

@@ -145,7 +145,7 @@ failure: FailureEvent = {
 ```
 Artifact Roots → Adapters → Normalization → Index Store
                     ↓           ↓              ↓
-                Raw Parse   Redact &      DuckDB/SQLite
+                Raw Parse   Redact &      DuckDB
                             Categorize
 ```
 

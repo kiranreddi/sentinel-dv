@@ -6,7 +6,7 @@ Implements the schema documented in docs/index-store.md.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -343,7 +343,7 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
-        index_built_at = datetime.utcnow().isoformat() + "Z"
+        index_built_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
         self._conn.execute(
             """
@@ -352,6 +352,16 @@ class IndexStore:
                 ci_system, ci_build_id, ci_job_url,
                 artifact_manifest_hash, index_built_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (run_id) DO UPDATE SET
+                run_id_full=excluded.run_id_full,
+                suite=excluded.suite,
+                created_at=excluded.created_at,
+                status=excluded.status,
+                ci_system=excluded.ci_system,
+                ci_build_id=excluded.ci_build_id,
+                ci_job_url=excluded.ci_job_url,
+                artifact_manifest_hash=excluded.artifact_manifest_hash,
+                index_built_at=excluded.index_built_at
         """,
             [
                 run_id,
@@ -418,6 +428,18 @@ class IndexStore:
                 status, duration_ms, sim_vendor, sim_version, dut_top,
                 created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (test_id) DO UPDATE SET
+                test_id_full=excluded.test_id_full,
+                run_id=excluded.run_id,
+                framework=excluded.framework,
+                name=excluded.name,
+                seed=excluded.seed,
+                status=excluded.status,
+                duration_ms=excluded.duration_ms,
+                sim_vendor=excluded.sim_vendor,
+                sim_version=excluded.sim_version,
+                dut_top=excluded.dut_top,
+                created_at=excluded.created_at
         """,
             [
                 test_id,
@@ -462,6 +484,7 @@ class IndexStore:
         phase: str | None = None,
         component: str | None = None,
         signature_id: str | None = None,
+        evidence_refs: list[dict[str, Any]] | None = None,
     ) -> None:
         """Insert a new failure record."""
         if not self._conn:
@@ -478,6 +501,20 @@ class IndexStore:
                 time_ns, phase, component,
                 tags_json, tags_flat, signature_id
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (failure_id) DO UPDATE SET
+                failure_id_full=excluded.failure_id_full,
+                test_id=excluded.test_id,
+                run_id=excluded.run_id,
+                severity=excluded.severity,
+                category=excluded.category,
+                summary=excluded.summary,
+                message=excluded.message,
+                time_ns=excluded.time_ns,
+                phase=excluded.phase,
+                component=excluded.component,
+                tags_json=excluded.tags_json,
+                tags_flat=excluded.tags_flat,
+                signature_id=excluded.signature_id
         """,
             [
                 failure_id,
@@ -496,6 +533,22 @@ class IndexStore:
                 signature_id,
             ],
         )
+        self._conn.execute(
+            "DELETE FROM evidence WHERE owner_kind = ? AND owner_id = ?",
+            ["failure", failure_id],
+        )
+        for ref in evidence_refs or []:
+            self.insert_evidence(
+                owner_kind="failure",
+                owner_id=failure_id,
+                kind=str(ref.get("kind", "log")),
+                path=str(ref.get("path", "")),
+                start_line=(ref.get("span") or {}).get("start_line"),
+                end_line=(ref.get("span") or {}).get("end_line"),
+                start_time_ns=(ref.get("span") or {}).get("start_time_ns"),
+                end_time_ns=(ref.get("span") or {}).get("end_time_ns"),
+                extract=ref.get("extract"),
+            )
 
     def count_failures(self) -> int:
         """Get total number of indexed failures."""
@@ -565,6 +618,7 @@ class IndexStore:
         run_id: str,
         message: str,
         time_ns: int | None = None,
+        evidence_refs: list[dict[str, Any]] | None = None,
     ) -> None:
         """Insert a runtime assertion failure."""
         if not self._conn:
@@ -581,6 +635,96 @@ class IndexStore:
         """,
             [next_id, assertion_id, test_id, run_id, time_ns, message],
         )
+        self._conn.execute(
+            "DELETE FROM evidence WHERE owner_kind = ? AND owner_id = ?",
+            ["assertion_failure", str(next_id)],
+        )
+        for ref in evidence_refs or []:
+            self.insert_evidence(
+                owner_kind="assertion_failure",
+                owner_id=str(next_id),
+                kind=str(ref.get("kind", "log")),
+                path=str(ref.get("path", "")),
+                start_line=(ref.get("span") or {}).get("start_line"),
+                end_line=(ref.get("span") or {}).get("end_line"),
+                start_time_ns=(ref.get("span") or {}).get("start_time_ns"),
+                end_time_ns=(ref.get("span") or {}).get("end_time_ns"),
+                extract=ref.get("extract"),
+            )
+
+    def insert_evidence(
+        self,
+        owner_kind: str,
+        owner_id: str,
+        kind: str,
+        path: str,
+        start_line: int | None = None,
+        end_line: int | None = None,
+        start_time_ns: int | None = None,
+        end_time_ns: int | None = None,
+        extract: str | None = None,
+        hash_value: str | None = None,
+    ) -> None:
+        """Insert normalized evidence row."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+        next_id_result = self._conn.execute(
+            "SELECT COALESCE(MAX(id), 0) + 1 FROM evidence"
+        ).fetchone()
+        next_id = next_id_result[0] if next_id_result else 1
+        self._conn.execute(
+            """
+            INSERT INTO evidence (
+                id, owner_kind, owner_id, kind, path,
+                start_line, end_line, start_time_ns, end_time_ns, extract, hash
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            [
+                next_id,
+                owner_kind,
+                owner_id,
+                kind,
+                path,
+                start_line,
+                end_line,
+                start_time_ns,
+                end_time_ns,
+                extract,
+                hash_value,
+            ],
+        )
+
+    def get_evidence(self, owner_kind: str, owner_id: str) -> list[dict[str, Any]]:
+        """Get evidence rows for an owner."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+        rows = self._conn.execute(
+            """
+            SELECT kind, path, start_line, end_line, start_time_ns, end_time_ns, extract, hash
+            FROM evidence
+            WHERE owner_kind = ? AND owner_id = ?
+            ORDER BY id ASC
+        """,
+            [owner_kind, owner_id],
+        ).fetchall()
+        items: list[dict[str, Any]] = []
+        for row in rows:
+            span = {
+                "start_line": row[2],
+                "end_line": row[3],
+                "start_time_ns": row[4],
+                "end_time_ns": row[5],
+            }
+            items.append(
+                {
+                    "kind": row[0],
+                    "path": row[1],
+                    "span": {k: v for k, v in span.items() if v is not None},
+                    "extract": row[6],
+                    "hash": row[7],
+                }
+            )
+        return items
 
     def count_assertions(self) -> int:
         if not self._conn:
@@ -675,6 +819,7 @@ class IndexStore:
         severity: str | None = None,
         component_pattern: str | None = None,
         tags_any: list[str] | None = None,
+        include_evidence: bool = False,
         page: int = 1,
         page_size: int = 100,
     ) -> tuple[list[dict[str, Any]], int]:
@@ -738,7 +883,11 @@ class IndexStore:
         ).fetchall()
 
         columns = [desc[0] for desc in self._conn.description]
-        return [dict(zip(columns, row, strict=False)) for row in results], total
+        items = [dict(zip(columns, row, strict=False)) for row in results]
+        if include_evidence:
+            for item in items:
+                item["evidence"] = self.get_evidence("failure", item["failure_id"])
+        return items, total
 
     _RUNS_SORT_COLUMNS = frozenset({"created_at", "suite", "status", "run_id"})
 
@@ -1024,6 +1173,7 @@ class IndexStore:
         assertion_id: str | None = None,
         start_time_ns: int | None = None,
         end_time_ns: int | None = None,
+        include_evidence: bool = False,
         page: int = 1,
         page_size: int = 100,
     ) -> tuple[list[dict[str, Any]], int]:
@@ -1080,6 +1230,9 @@ class IndexStore:
             }
             for row in results
         ]
+        if include_evidence:
+            for item in items:
+                item["evidence"] = self.get_evidence("assertion_failure", str(item["id"]))
         return items, total
 
     def query_coverage_summaries(
@@ -1167,6 +1320,22 @@ class IndexStore:
                 json.dumps(evidence) if evidence else None,
             ],
         )
+        self._conn.execute(
+            "DELETE FROM evidence WHERE owner_kind = ? AND owner_id = ?",
+            ["coverage", str(next_id)],
+        )
+        if evidence:
+            self.insert_evidence(
+                owner_kind="coverage",
+                owner_id=str(next_id),
+                kind=str(evidence.get("kind", "coverage")),
+                path=str(evidence.get("path", "")),
+                start_line=(evidence.get("span") or {}).get("start_line"),
+                end_line=(evidence.get("span") or {}).get("end_line"),
+                start_time_ns=(evidence.get("span") or {}).get("start_time_ns"),
+                end_time_ns=(evidence.get("span") or {}).get("end_time_ns"),
+                extract=evidence.get("extract"),
+            )
 
     def diff_runs(self, base_run_id: str, compare_run_id: str) -> dict[str, Any]:
         """Compute structured diff between two runs."""

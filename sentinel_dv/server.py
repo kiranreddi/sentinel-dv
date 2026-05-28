@@ -201,6 +201,7 @@ def failures_list(
     category: str | None = Field(None, description="Failure category"),
     severity: str | None = Field(None, description="Severity"),
     tags_any: list[str] | None = Field(None, description="Match any of these tags"),
+    include_evidence: bool = Field(False, description="Include bounded evidence refs"),
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
@@ -212,6 +213,7 @@ def failures_list(
         category=category,
         severity=severity,
         tags_any=tags_any,
+        include_evidence=include_evidence,
         page=page,
         page_size=page_size,
     )
@@ -225,6 +227,7 @@ def assertions_failures(
     assertion_id: str | None = Field(None, description="Filter by assertion ID"),
     start_time_ns: int | None = Field(None, description="Window start (nanoseconds)"),
     end_time_ns: int | None = Field(None, description="Window end (nanoseconds)"),
+    include_evidence: bool = Field(False, description="Include bounded evidence refs"),
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
@@ -236,6 +239,7 @@ def assertions_failures(
         assertion_id=assertion_id,
         start_time_ns=start_time_ns,
         end_time_ns=end_time_ns,
+        include_evidence=include_evidence,
         page=page,
         page_size=page_size,
     )
