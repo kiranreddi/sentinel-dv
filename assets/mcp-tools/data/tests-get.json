@@ -1,0 +1,23 @@
+{
+  "tool": "tests.get",
+  "arguments": {
+    "test_id": "t_dff9c20ec6c4"
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "item": {
+      "test_id": "t_dff9c20ec6c4",
+      "test_id_full": "dff9c20ec6c48140d5a82bda6df56b434e33a43f442676e7bdb3d4dd8faed46d",
+      "run_id": "r_26595f0640e8",
+      "framework": "cocotb",
+      "name": "alu_tb.test_alu_add",
+      "seed": null,
+      "status": "pass",
+      "duration_ms": 30,
+      "sim_vendor": null,
+      "sim_version": null,
+      "dut_top": null,
+      "created_at": "2026-05-28T04:47:53.110987Z"
+    }
+  }
+}

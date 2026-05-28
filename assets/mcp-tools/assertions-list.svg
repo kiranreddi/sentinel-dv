@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="635" viewBox="0 0 920 635">
+  <rect width="100%" height="100%" fill="#0f1419" rx="8"/>
+  <rect x="1" y="1" width="918" height="50" fill="#1a2332" rx="8"/>
+  <circle cx="24" cy="26" r="6" fill="#ef4444"/>
+  <circle cx="44" cy="26" r="6" fill="#eab308"/>
+  <circle cx="64" cy="26" r="6" fill="#22c55e"/>
+  <text x="88" y="30" fill="#e2e8f0" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600">Sentinel DV — assertions.list</text>
+  <text x="904" y="30" fill="#14b8a6" font-family="Inter, system-ui, sans-serif" font-size="12" text-anchor="end">ok</text>
+  <rect x="16" y="52" width="888" height="122" fill="#1a2332" stroke="#2d3a4f" rx="6"/>
+  <text x="20" y="82" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">Request</text>
+<text x="20" y="97" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">{</text>
+<text x="20" y="112" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;protocol&quot;: &quot;axi4&quot;,</text>
+<text x="20" y="127" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;page&quot;: 1,</text>
+<text x="20" y="142" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;page_size&quot;: 50</text>
+<text x="20" y="157" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">}</text>
+  <rect x="16" y="182" width="888" height="437" fill="#1a2332" stroke="#2d3a4f" rx="6"/>
+  <text x="20" y="204" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">Response</text>
+<text x="20" y="219" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">{</text>
+<text x="20" y="234" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;schema_version&quot;: &quot;1.0.0&quot;,</text>
+<text x="20" y="249" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;assertions&quot;: [</text>
+<text x="20" y="264" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    {</text>
+<text x="20" y="279" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;assertion_id&quot;: &quot;a_1288a531c038&quot;,</text>
+<text x="20" y="294" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;language&quot;: &quot;sva&quot;,</text>
+<text x="20" y="309" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;name&quot;: &quot;axi_awvalid_stable_chk&quot;,</text>
+<text x="20" y="324" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;scope&quot;: &quot;counter_tb&quot;,</text>
+<text x="20" y="339" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;file&quot;: &quot;counter.sv&quot;,</text>
+<text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;line&quot;: 20,</text>
+<text x="20" y="369" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;signals&quot;: [</text>
+<text x="20" y="384" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;clk&quot;</text>
+<text x="20" y="399" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      ],</text>
+<text x="20" y="414" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;tags&quot;: [</text>
+<text x="20" y="429" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;axi4&quot;</text>
+<text x="20" y="444" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      ],</text>
+<text x="20" y="459" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;intent&quot;: {</text>
+<text x="20" y="474" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;protocol&quot;: &quot;axi4&quot;,</text>
+<text x="20" y="489" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;requirement&quot;: &quot;Demo protocol tag (illustrative)&quot;</text>
+<text x="20" y="504" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      }</text>
+<text x="20" y="519" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    }</text>
+<text x="20" y="534" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  ],</text>
+<text x="20" y="549" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;pagination&quot;: {</text>
+<text x="20" y="564" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;page&quot;: 1,</text>
+<text x="20" y="579" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;page_size&quot;: 50,</text>
+<text x="20" y="594" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  …</text>
+</svg>

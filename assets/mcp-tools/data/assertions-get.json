@@ -1,0 +1,27 @@
+{
+  "tool": "assertions.get",
+  "arguments": {
+    "assertion_id": "a_1288a531c038"
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "item": {
+      "assertion_id": "a_1288a531c038",
+      "language": "sva",
+      "name": "axi_awvalid_stable_chk",
+      "scope": "counter_tb",
+      "file": "counter.sv",
+      "line": 20,
+      "signals": [
+        "clk"
+      ],
+      "tags": [
+        "axi4"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "Demo protocol tag (illustrative)"
+      }
+    }
+  }
+}

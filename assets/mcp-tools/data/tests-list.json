@@ -1,0 +1,131 @@
+{
+  "tool": "tests.list",
+  "arguments": {
+    "framework": "cocotb",
+    "page": 1,
+    "page_size": 100
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "tests": [
+      {
+        "test_id": "t_5b4ce57ba531",
+        "test_id_full": "5b4ce57ba531ee67f628689f59aed7abf5d62399fc9b72274c231bc8c823a28a",
+        "run_id": "r_d39bb5009606",
+        "framework": "cocotb",
+        "name": "counter_tb.test_counter_overflow",
+        "seed": null,
+        "status": "fail",
+        "duration_ms": 20,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.171676Z"
+      },
+      {
+        "test_id": "t_3bb6bfc925aa",
+        "test_id_full": "3bb6bfc925aae6acf97f11e409203ddc88654087de1717626f929993e218be86",
+        "run_id": "r_85b1d3f70e48",
+        "framework": "cocotb",
+        "name": "counter_tb.test_counter_sim",
+        "seed": null,
+        "status": "pass",
+        "duration_ms": 10,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.168145Z"
+      },
+      {
+        "test_id": "t_03ef102d00d0",
+        "test_id_full": "03ef102d00d082f71282874371281d6572e81a5fdeb8609113608177d4513bc7",
+        "run_id": "r_c6f691e1ad14",
+        "framework": "cocotb",
+        "name": "fifo_tb.test_fifo_push_pop",
+        "seed": null,
+        "status": "pass",
+        "duration_ms": 20,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.137064Z"
+      },
+      {
+        "test_id": "t_cf16259fcc9e",
+        "test_id_full": "cf16259fcc9ec9ad6cd0b3d90ba008eef3993c296dc3b8a7643bf19aa848e645",
+        "run_id": "r_c6f691e1ad14",
+        "framework": "cocotb",
+        "name": "fifo_tb.test_fifo_underflow",
+        "seed": null,
+        "status": "fail",
+        "duration_ms": 40,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.137064Z"
+      },
+      {
+        "test_id": "t_ce337fb0bfda",
+        "test_id_full": "ce337fb0bfdaf2a1107f57cf190f51510e80976250f8ac03ab9d53fcd47c470d",
+        "run_id": "r_0fb765971a20",
+        "framework": "cocotb",
+        "name": "test_counter.test_overflow",
+        "seed": null,
+        "status": "fail",
+        "duration_ms": 75,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.125239Z"
+      },
+      {
+        "test_id": "t_f38bc388c919",
+        "test_id_full": "f38bc388c91927c789a8da06454e7a551a19605edfe2b09855bd6b72d437189a",
+        "run_id": "r_0fb765971a20",
+        "framework": "cocotb",
+        "name": "test_counter.test_increment",
+        "seed": null,
+        "status": "pass",
+        "duration_ms": 50,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.125239Z"
+      },
+      {
+        "test_id": "t_dff9c20ec6c4",
+        "test_id_full": "dff9c20ec6c48140d5a82bda6df56b434e33a43f442676e7bdb3d4dd8faed46d",
+        "run_id": "r_26595f0640e8",
+        "framework": "cocotb",
+        "name": "alu_tb.test_alu_add",
+        "seed": null,
+        "status": "pass",
+        "duration_ms": 30,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.110987Z"
+      },
+      {
+        "test_id": "t_fed229b40a64",
+        "test_id_full": "fed229b40a64bd312385fc346e521d946382181b8656b4c9f9e742b4425eb074",
+        "run_id": "r_26595f0640e8",
+        "framework": "cocotb",
+        "name": "alu_tb.test_alu_mul",
+        "seed": null,
+        "status": "fail",
+        "duration_ms": 50,
+        "sim_vendor": null,
+        "sim_version": null,
+        "dut_top": null,
+        "created_at": "2026-05-28T04:47:53.110987Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 100,
+      "total_items": 8,
+      "total_pages": 1
+    }
+  }
+}

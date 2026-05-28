@@ -1,0 +1,51 @@
+{
+  "tool": "coverage.list",
+  "arguments": {
+    "run_id": "r_85b1d3f70e48",
+    "page": 1,
+    "page_size": 50
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "coverage": [
+      {
+        "id": 1,
+        "run_id": "r_85b1d3f70e48",
+        "test_id": "t_3bb6bfc925aa",
+        "kind": "functional",
+        "metrics": [
+          {
+            "name": "line",
+            "scope": "counter",
+            "covered": 87.5,
+            "hits": 14,
+            "total": 16,
+            "bins_missed": [
+              "line_12",
+              "line_15"
+            ]
+          },
+          {
+            "name": "toggle",
+            "scope": "counter",
+            "covered": 75.0,
+            "hits": 6,
+            "total": 8
+          }
+        ],
+        "evidence": [
+          {
+            "kind": "coverage",
+            "path": "verilator_counter/coverage/coverage.json"
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_items": 1,
+      "total_pages": 1
+    }
+  }
+}
