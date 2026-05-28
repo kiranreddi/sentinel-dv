@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 
 from sentinel_dv.config import get_config
@@ -39,15 +40,42 @@ def pagination_dict(page: int, page_size: int, total: int) -> dict:
     ).model_dump()
 
 
-def list_response(key: str, items: list, page: int, page_size: int, total: int) -> dict:
-    """Standard list tool response envelope."""
+def bound_response(payload: dict) -> dict:
+    """Truncate oversized MCP payloads to configured max_response_bytes."""
+    max_bytes = get_config().security.max_response_bytes
+    encoded = json.dumps(payload, separators=(",", ":"), default=str).encode("utf-8")
+    if len(encoded) <= max_bytes:
+        return payload
     return {
         "schema_version": CURRENT_SCHEMA_VERSION,
-        key: items,
-        "pagination": pagination_dict(page, page_size, total),
+        "error": {
+            "code": "LIMIT_EXCEEDED",
+            "message": (
+                f"Response exceeds max_response_bytes ({max_bytes}); "
+                "narrow filters or reduce page_size."
+            ),
+            "details": {"bytes": len(encoded), "max_bytes": max_bytes},
+        },
     }
+
+
+def list_response(key: str, items: list, page: int, page_size: int, total: int) -> dict:
+    """Standard list tool response envelope."""
+    return bound_response(
+        {
+            "schema_version": CURRENT_SCHEMA_VERSION,
+            key: items,
+            "pagination": pagination_dict(page, page_size, total),
+        }
+    )
 
 
 def item_response(item: dict) -> dict:
     """Standard get/detail tool response envelope."""
-    return {"schema_version": CURRENT_SCHEMA_VERSION, "item": item}
+    return bound_response({"schema_version": CURRENT_SCHEMA_VERSION, "item": item})
+
+
+def detail_response(payload: dict) -> dict:
+    """Non-item detail response (e.g. runs.get, runs.diff)."""
+    payload.setdefault("schema_version", CURRENT_SCHEMA_VERSION)
+    return bound_response(payload)

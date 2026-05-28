@@ -33,6 +33,18 @@ class SecurityLimits(BaseModel):
     max_bins_missed: int = Field(
         default=50, ge=1, le=200, description="Maximum missed bins listed per metric"
     )
+    max_wave_signals: int = Field(
+        default=200,
+        ge=1,
+        le=1000,
+        description="Maximum signals returned by wave.signals",
+    )
+    max_artifact_bytes: int = Field(
+        default=52_428_800,
+        ge=1_048_576,
+        le=536_870_912,
+        description="Maximum artifact file size read during index or VCD re-parse (50MB default)",
+    )
 
 
 class RedactionConfig(BaseModel):

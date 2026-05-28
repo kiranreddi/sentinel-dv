@@ -5,6 +5,11 @@ Removes sensitive information from logs and messages before exposure.
 
 import re
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sentinel_dv.config import RedactionConfig
+
 
 class Redactor:
     """Automatic PII and credential redaction."""
@@ -80,6 +85,19 @@ class Redactor:
             (re.compile(pattern, re.IGNORECASE), replacement)
             for pattern, replacement in self.patterns
         ]
+
+    @classmethod
+    def from_config(cls, config: "RedactionConfig") -> "Redactor":
+        """Build a redactor from Sentinel DV YAML settings."""
+        if not config.enabled:
+            return cls(redact_emails=False, redact_ips=False, redact_paths=False)
+        custom: list[tuple[str, str]] = [(p, "<REDACTED>") for p in config.patterns]
+        return cls(
+            custom_patterns=custom or None,
+            redact_emails=config.redact_emails,
+            redact_ips=config.redact_ips,
+            redact_paths=config.redact_paths,
+        )
 
     def redact(self, text: str) -> str:
         """Redact sensitive information from text.

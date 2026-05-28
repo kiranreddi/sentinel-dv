@@ -87,7 +87,7 @@ class CocotbParser:
                             "kind": "artifact",
                             "path": xml_path.name,  # Use relative path (just filename)
                             "span": None,
-                            "extract": truncate_text(details, 1000),
+                            "extract": self.redactor.redact(truncate_text(details, 1000)),
                             "hash": None,
                         }
                     ],
