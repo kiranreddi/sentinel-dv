@@ -17,8 +17,8 @@ from fastmcp import FastMCP
 from pydantic import Field
 
 from sentinel_dv.config import get_config, resolve_config, set_config
-from sentinel_dv.normalization.redaction import Redactor, set_default_redactor
 from sentinel_dv.indexing.store import IndexStore
+from sentinel_dv.normalization.redaction import Redactor, set_default_redactor
 from sentinel_dv.tools import core
 from sentinel_dv.tools.errors import ToolError
 

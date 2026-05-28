@@ -4,7 +4,6 @@ Removes sensitive information from logs and messages before exposure.
 """
 
 import re
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

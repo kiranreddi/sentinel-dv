@@ -8,7 +8,6 @@ from typing import Any
 from sentinel_dv.adapters.vcd_summary import VcdSummaryParser
 from sentinel_dv.config import get_config
 from sentinel_dv.indexing.store import IndexStore
-from sentinel_dv.schemas.versioning import CURRENT_SCHEMA_VERSION
 from sentinel_dv.tools.errors import ToolError
 from sentinel_dv.tools.validate import (
     clamp_pagination,
