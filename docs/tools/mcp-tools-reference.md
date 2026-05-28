@@ -122,12 +122,14 @@ Failure events with taxonomy and evidence.
 | `category` | string? | e.g. `assertion`, `scoreboard` |
 | `severity` | string? | Severity filter |
 | `tags_any` | string[]? | Match any tag |
+| `include_evidence` | bool | Include bounded evidence refs |
 | `page`, `page_size` | int | Pagination |
 
 ```json
 {
   "test_id": "t_abc",
   "category": "scoreboard",
+  "include_evidence": true,
   "page": 1,
   "page_size": 25
 }
@@ -141,6 +143,7 @@ Runtime assertion failures linked to definitions.
 |-----------|------|-------------|
 | `run_id`, `test_id`, `assertion_id` | string? | Filters |
 | `start_time_ns`, `end_time_ns` | int? | Optional bounded time window (both required together) |
+| `include_evidence` | bool | Include bounded evidence refs |
 | `page`, `page_size` | int | Pagination |
 
 ```json
@@ -148,6 +151,7 @@ Runtime assertion failures linked to definitions.
   "test_id": "t_abc",
   "start_time_ns": 2000,
   "end_time_ns": 3000,
+  "include_evidence": true,
   "page": 1,
   "page_size": 50
 }

@@ -14,10 +14,7 @@ Sentinel DV uses an index store to serve MCP tools efficiently and deterministic
 - Excellent for analytical workloads (100k–100M rows)
 - Built-in support for complex aggregations
 
-**Alternative backends** (later):
-
-- SQLite for simpler deployments
-- JSON-only for very small demos (not recommended for production)
+`v1.x` supports DuckDB only.
 
 ---
 
@@ -220,7 +217,7 @@ CREATE TABLE evidence (
 CREATE INDEX idx_evidence_owner ON evidence(owner_kind, owner_id);
 ```
 
-**Note**: If you embed evidence JSON in each record, you can omit this table initially. For large deployments, the normalized table is better.
+**Note**: Sentinel DV now writes normalized evidence rows for failures, assertion failures, and coverage summaries. Tool-level `include_evidence` flags read from this table with bounded payloads.
 
 ---
 

@@ -60,7 +60,7 @@ class RedactionConfig(BaseModel):
 class IndexConfig(BaseModel):
     """Index storage configuration."""
 
-    type: str = Field(default="duckdb", pattern=r"^(duckdb|sqlite|json)$")
+    type: str = Field(default="duckdb", pattern=r"^duckdb$")
     path: str = Field(default="./sentinel_dv.db", description="Index database path")
 
 

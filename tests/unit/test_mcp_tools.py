@@ -77,6 +77,14 @@ def indexed_store(tmp_path):
         message="expected 1 got 0",
         tags=["scoreboard"],
         signature_id="sig_scoreboard",
+        evidence_refs=[
+            {
+                "kind": "log",
+                "path": "demo/failing.log",
+                "span": {"start_line": 10, "end_line": 12},
+                "extract": "expected 1 got 0",
+            }
+        ],
     )
 
     store.insert_topology(fail_id, {"components": [{"name": "env", "type": "uvm_env"}]})
@@ -102,6 +110,11 @@ class TestMcpTools:
         result = core.list_tests(indexed_store, status="fail")
         assert result["pagination"]["total_items"] == 1
         assert result["tests"][0]["name"] == "failing"
+
+    def test_list_failures_include_evidence(self, indexed_store):
+        result = core.list_failures(indexed_store, include_evidence=True)
+        assert result["pagination"]["total_items"] == 1
+        assert result["failures"][0]["evidence"][0]["path"] == "demo/failing.log"
 
     def test_get_test_topology(self, indexed_store):
         test_id = core.list_tests(indexed_store, status="fail")["tests"][0]["test_id"]
@@ -129,3 +142,108 @@ class TestMcpTools:
     def test_invalid_page_size(self, indexed_store):
         with pytest.raises(ValueError, match="page_size"):
             core.list_runs(indexed_store, page_size=5000)
+
+
+def test_coverage_summary_limit_exceeded(tmp_path):
+    set_config(
+        SentinelDVConfig(
+            artifact_roots=[str(tmp_path)],
+            index={"type": "duckdb", "path": str(tmp_path / "limit_test.db")},
+            security={"max_coverage_metrics": 1},
+        )
+    )
+    db_path = tmp_path / "limit_test.db"
+    store = IndexStore(db_path)
+    store.connect()
+    try:
+        run_id, run_id_full = generate_run_id(
+            suite="nightly", ci_system="github", ci_build_id="coverage-limit"
+        )
+        store.insert_run(
+            run_id=run_id,
+            run_id_full=run_id_full,
+            suite="nightly",
+            created_at="2026-05-20T10:00:00Z",
+            status="pass",
+        )
+        store.insert_coverage_summary(
+            run_id=run_id,
+            kind="functional",
+            metrics=[{"name": "line", "scope": "top", "covered": 0.8}],
+        )
+        store.insert_coverage_summary(
+            run_id=run_id,
+            kind="assertion",
+            metrics=[{"name": "assert", "scope": "top", "covered": 0.9}],
+        )
+
+        with pytest.raises(ToolError) as exc:
+            core.get_coverage_summary(store, run_id)
+        assert exc.value.code == "LIMIT_EXCEEDED"
+    finally:
+        store.close()
+
+
+def test_assertion_failures_include_evidence(tmp_path):
+    set_config(
+        SentinelDVConfig(
+            artifact_roots=[str(tmp_path)],
+            index={"type": "duckdb", "path": str(tmp_path / "assert_fail.db")},
+        )
+    )
+    db_path = tmp_path / "assert_fail.db"
+    store = IndexStore(db_path)
+    store.connect()
+    try:
+        run_id, run_id_full = generate_run_id(
+            suite="nightly", ci_system="github", ci_build_id="assert-fail"
+        )
+        store.insert_run(
+            run_id=run_id,
+            run_id_full=run_id_full,
+            suite="nightly",
+            created_at="2026-05-20T10:00:00Z",
+            status="fail",
+        )
+        test_id, test_id_full = generate_test_id(
+            run_id_full=run_id_full, framework="uvm", test_name="assert_test"
+        )
+        store.insert_test(
+            test_id=test_id,
+            test_id_full=test_id_full,
+            run_id=run_id,
+            framework="uvm",
+            name="assert_test",
+            status="fail",
+            created_at="2026-05-20T10:01:00Z",
+        )
+        store.insert_assertion(
+            assertion_id="a_assert",
+            assertion_id_full="full_assert",
+            language="sva",
+            name="assert_name",
+            scope="tb",
+            file="tb/assert.sv",
+            line=12,
+            signals=[],
+        )
+        store.insert_assertion_failure(
+            assertion_id="a_assert",
+            test_id=test_id,
+            run_id=run_id,
+            message="assertion failed",
+            time_ns=100,
+            evidence_refs=[
+                {
+                    "kind": "log",
+                    "path": "logs/sim.log",
+                    "span": {"start_line": 99, "end_line": 101},
+                    "extract": "assertion failed",
+                }
+            ],
+        )
+        result = core.list_assertion_failures(store, include_evidence=True)
+        assert result["pagination"]["total_items"] == 1
+        assert result["assertion_failures"][0]["evidence"][0]["path"] == "logs/sim.log"
+    finally:
+        store.close()

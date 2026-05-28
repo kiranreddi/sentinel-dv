@@ -192,7 +192,7 @@ artifact_roots:
 
 # Index storage
 index:
-  type: duckdb  # or sqlite, json
+  type: duckdb
   path: ./sentinel_dv.db
 
 # Adapters (enable/disable)

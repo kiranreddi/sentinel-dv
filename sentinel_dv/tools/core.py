@@ -5,9 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
 from sentinel_dv.adapters.vcd_summary import VcdSummaryParser
 from sentinel_dv.config import get_config
+from sentinel_dv.indexing import query as index_query
 from sentinel_dv.indexing.store import IndexStore
+from sentinel_dv.schemas.assertions import AssertionFailure, AssertionInfo
+from sentinel_dv.schemas.coverage import CoverageSummary
 from sentinel_dv.tools.errors import ToolError
 from sentinel_dv.tools.validate import (
     clamp_pagination,
@@ -16,6 +21,56 @@ from sentinel_dv.tools.validate import (
     list_response,
     validate_id,
 )
+
+
+def _validate_assertion_payload(assertion: dict[str, Any]) -> None:
+    """Validate stored assertion rows against AssertionInfo schema."""
+    try:
+        AssertionInfo(
+            id=assertion["assertion_id"],
+            language=assertion["language"],
+            name=assertion["name"],
+            scope=assertion["scope"],
+            file=assertion["file"],
+            line=assertion["line"],
+            intent=assertion.get("intent"),
+            signals=assertion.get("signals", []),
+        )
+    except ValidationError as exc:
+        raise ToolError("INTERNAL", f"Invalid assertion payload in index: {exc}") from exc
+
+
+def _validate_assertion_failure_payload(failure: dict[str, Any]) -> None:
+    """Validate stored assertion failure rows against AssertionFailure schema."""
+    try:
+        AssertionFailure(
+            assertion_id=failure["assertion_id"],
+            test_id=failure["test_id"],
+            time_ns=failure.get("time_ns"),
+            message=failure.get("message", ""),
+            evidence=[],
+        )
+    except ValidationError as exc:
+        raise ToolError("INTERNAL", f"Invalid assertion failure payload in index: {exc}") from exc
+
+
+def _validate_coverage_summary_payload(summary: dict[str, Any]) -> dict[str, Any]:
+    """Validate and normalize coverage summary rows."""
+    evidence = summary.get("evidence")
+    normalized_evidence = [] if evidence is None else [evidence] if isinstance(evidence, dict) else evidence
+    try:
+        CoverageSummary(
+            run_id=summary["run_id"],
+            test_id=summary.get("test_id"),
+            kind=summary["kind"],
+            metrics=summary.get("metrics", []),
+            evidence=normalized_evidence,
+        )
+    except ValidationError as exc:
+        raise ToolError("INTERNAL", f"Invalid coverage payload in index: {exc}") from exc
+    normalized = dict(summary)
+    normalized["evidence"] = normalized_evidence
+    return normalized
 
 
 def list_runs(
@@ -28,7 +83,8 @@ def list_runs(
 ) -> dict[str, Any]:
     """List verification runs with pagination."""
     page, page_size = clamp_pagination(page, page_size)
-    results, total = store.query_runs(
+    results, total = index_query.query_runs(
+        store,
         suite=suite,
         status=status,
         ci_system=ci_system,
@@ -60,7 +116,8 @@ def list_tests(
     if run_id:
         validate_id(run_id, "run_id")
     page, page_size = clamp_pagination(page, page_size)
-    results, total = store.query_tests(
+    results, total = index_query.query_tests(
+        store,
         run_id=run_id,
         framework=framework,
         status=status,
@@ -96,6 +153,7 @@ def list_failures(
     category: str | None = None,
     severity: str | None = None,
     tags_any: list[str] | None = None,
+    include_evidence: bool = False,
     page: int = 1,
     page_size: int = 100,
 ) -> dict[str, Any]:
@@ -105,12 +163,14 @@ def list_failures(
     if run_id:
         validate_id(run_id, "run_id")
     page, page_size = clamp_pagination(page, page_size)
-    results, total = store.query_failures(
+    results, total = index_query.query_failures(
+        store,
         test_id=test_id,
         run_id=run_id,
         category=category,
         severity=severity,
         tags_any=tags_any,
+        include_evidence=include_evidence,
         page=page,
         page_size=page_size,
     )
@@ -128,7 +188,8 @@ def list_assertions(
 ) -> dict[str, Any]:
     """List assertion definitions."""
     page, page_size = clamp_pagination(page, page_size)
-    results, total = store.query_assertions(
+    results, total = index_query.query_assertions(
+        store,
         scope=scope,
         name_pattern=name_pattern,
         protocol=protocol,
@@ -136,6 +197,8 @@ def list_assertions(
         page=page,
         page_size=page_size,
     )
+    for row in results:
+        _validate_assertion_payload(row)
     return list_response("assertions", results, page, page_size, total)
 
 
@@ -145,6 +208,7 @@ def get_assertion_details(store: IndexStore, assertion_id: str) -> dict[str, Any
     assertion = store.get_assertion(assertion_id)
     if not assertion:
         raise ToolError("NOT_FOUND", f"Assertion not found: {assertion_id}")
+    _validate_assertion_payload(assertion)
     return item_response(assertion)
 
 
@@ -155,6 +219,7 @@ def list_assertion_failures(
     assertion_id: str | None = None,
     start_time_ns: int | None = None,
     end_time_ns: int | None = None,
+    include_evidence: bool = False,
     page: int = 1,
     page_size: int = 100,
 ) -> dict[str, Any]:
@@ -173,15 +238,19 @@ def list_assertion_failures(
             "Provide both start_time_ns and end_time_ns for a time window.",
         )
     page, page_size = clamp_pagination(page, page_size)
-    results, total = store.query_assertion_failures(
+    results, total = index_query.query_assertion_failures(
+        store,
         run_id=run_id,
         test_id=test_id,
         assertion_id=assertion_id,
         start_time_ns=start_time_ns,
         end_time_ns=end_time_ns,
+        include_evidence=include_evidence,
         page=page,
         page_size=page_size,
     )
+    for row in results:
+        _validate_assertion_failure_payload(row)
     return list_response("assertion_failures", results, page, page_size, total)
 
 
@@ -196,13 +265,15 @@ def list_coverage(
     if run_id:
         validate_id(run_id, "run_id")
     page, page_size = clamp_pagination(page, page_size)
-    results, total = store.query_coverage_summaries(
+    results, total = index_query.query_coverage_summaries(
+        store,
         run_id=run_id,
         kind=kind,
         page=page,
         page_size=page_size,
     )
-    return list_response("coverage", results, page, page_size, total)
+    normalized = [_validate_coverage_summary_payload(row) for row in results]
+    return list_response("coverage", normalized, page, page_size, total)
 
 
 def get_coverage_summary(
@@ -214,21 +285,29 @@ def get_coverage_summary(
     """Get bounded coverage summaries for a run."""
     validate_id(run_id, "run_id")
     max_rows = get_config().security.max_coverage_metrics
-    results, total = store.query_coverage_summaries(
-        run_id=run_id, kind=kind, page=1, page_size=max_rows
+    results, total = index_query.query_coverage_summaries(
+        store, run_id=run_id, kind=kind, page=1, page_size=max_rows
     )
     if total == 0:
         raise ToolError("NOT_FOUND", f"No coverage found for run: {run_id}")
+    if total > max_rows:
+        raise ToolError(
+            "LIMIT_EXCEEDED",
+            (
+                f"coverage.summary matched {total} summaries, exceeding max_coverage_metrics "
+                f"({max_rows}). Refine with kind or increase security.max_coverage_metrics."
+            ),
+        )
+    normalized = [_validate_coverage_summary_payload(row) for row in results]
     if not include_evidence:
-        for row in results:
+        for row in normalized:
             row.pop("evidence", None)
-    truncated = total > len(results)
     return detail_response(
         {
             "run_id": run_id,
-            "summaries": results,
+            "summaries": normalized,
             "total_summaries": total,
-            "truncated": truncated,
+            "truncated": False,
         }
     )
 

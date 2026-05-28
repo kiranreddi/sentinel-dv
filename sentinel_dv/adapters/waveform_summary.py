@@ -52,7 +52,8 @@ class WaveformSummaryParser:
     def _normalize_signals(self, data: dict[str, Any]) -> list[dict[str, Any]]:
         """Flatten signal_groups or top-level signals into a uniform list."""
         if isinstance(data.get("signals"), list):
-            return [self._normalize_signal(entry, group=None) for entry in data["signals"]]
+            normalized = [self._normalize_signal(entry, group=None) for entry in data["signals"]]
+            return sorted(normalized, key=lambda s: s["name"])
 
         groups = data.get("signal_groups")
         if not isinstance(groups, list):
@@ -68,7 +69,7 @@ class WaveformSummaryParser:
                 continue
             for entry in group_signals:
                 flattened.append(self._normalize_signal(entry, group=str(group_name)))
-        return flattened
+        return sorted(flattened, key=lambda s: s["name"])
 
     @staticmethod
     def _normalize_signal(entry: Any, group: str | None) -> dict[str, Any]:
