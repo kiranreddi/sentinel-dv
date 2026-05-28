@@ -105,11 +105,19 @@
          <lastmod>2026-05-28</lastmod>
     </url>
     <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/tools/mcp-tools-reference/</loc>
+         <lastmod>2026-05-28</lastmod>
+    </url>
+    <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/tools/overview/</loc>
          <lastmod>2026-05-28</lastmod>
     </url>
     <url>
          <loc>https://kiranreddi.github.io/sentinel-dv/tools/regression/</loc>
+         <lastmod>2026-05-28</lastmod>
+    </url>
+    <url>
+         <loc>https://kiranreddi.github.io/sentinel-dv/tools/waveforms/</loc>
          <lastmod>2026-05-28</lastmod>
     </url>
 </urlset>
