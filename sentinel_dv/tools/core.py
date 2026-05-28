@@ -121,6 +121,8 @@ def list_assertions(
     store: IndexStore,
     scope: str | None = None,
     name_pattern: str | None = None,
+    protocol: str | None = None,
+    tag: str | None = None,
     page: int = 1,
     page_size: int = 100,
 ) -> dict[str, Any]:
@@ -129,6 +131,8 @@ def list_assertions(
     results, total = store.query_assertions(
         scope=scope,
         name_pattern=name_pattern,
+        protocol=protocol,
+        tag=tag,
         page=page,
         page_size=page_size,
     )
@@ -149,6 +153,8 @@ def list_assertion_failures(
     run_id: str | None = None,
     test_id: str | None = None,
     assertion_id: str | None = None,
+    start_time_ns: int | None = None,
+    end_time_ns: int | None = None,
     page: int = 1,
     page_size: int = 100,
 ) -> dict[str, Any]:
@@ -159,11 +165,20 @@ def list_assertion_failures(
         validate_id(test_id, "test_id")
     if assertion_id:
         validate_id(assertion_id, "assertion_id")
+    if start_time_ns is not None and end_time_ns is not None and start_time_ns > end_time_ns:
+        raise ToolError("INVALID_ARGUMENT", "start_time_ns must be <= end_time_ns")
+    if (start_time_ns is None) ^ (end_time_ns is None):
+        raise ToolError(
+            "INVALID_ARGUMENT",
+            "Provide both start_time_ns and end_time_ns for a time window.",
+        )
     page, page_size = clamp_pagination(page, page_size)
     results, total = store.query_assertion_failures(
         run_id=run_id,
         test_id=test_id,
         assertion_id=assertion_id,
+        start_time_ns=start_time_ns,
+        end_time_ns=end_time_ns,
         page=page,
         page_size=page_size,
     )
@@ -190,24 +205,44 @@ def list_coverage(
     return list_response("coverage", results, page, page_size, total)
 
 
-def get_coverage_summary(store: IndexStore, run_id: str, kind: str | None = None) -> dict[str, Any]:
-    """Get aggregated coverage for a run (first matching summary)."""
+def get_coverage_summary(
+    store: IndexStore,
+    run_id: str,
+    kind: str | None = None,
+    include_evidence: bool = False,
+) -> dict[str, Any]:
+    """Get bounded coverage summaries for a run."""
     validate_id(run_id, "run_id")
-    results, total = store.query_coverage_summaries(run_id=run_id, kind=kind, page=1, page_size=50)
+    max_rows = get_config().security.max_coverage_metrics
+    results, total = store.query_coverage_summaries(
+        run_id=run_id, kind=kind, page=1, page_size=max_rows
+    )
     if total == 0:
         raise ToolError("NOT_FOUND", f"No coverage found for run: {run_id}")
-    return detail_response({"run_id": run_id, "summaries": results})
+    if not include_evidence:
+        for row in results:
+            row.pop("evidence", None)
+    truncated = total > len(results)
+    return detail_response(
+        {
+            "run_id": run_id,
+            "summaries": results,
+            "total_summaries": total,
+            "truncated": truncated,
+        }
+    )
 
 
 def get_regression_summary(
     store: IndexStore,
     suite: str,
     window_days: int = 7,
+    as_of: str | None = None,
 ) -> dict[str, Any]:
     """Regression analytics for a suite."""
     if window_days < 1 or window_days > 365:
         raise ToolError("INVALID_ARGUMENT", "window_days must be between 1 and 365")
-    summary = store.regression_summary(suite=suite, window_days=window_days)
+    summary = store.regression_summary(suite=suite, window_days=window_days, as_of=as_of)
     return detail_response(summary)
 
 

@@ -1,0 +1,21 @@
+{
+  "test_name": "test_counter_sim",
+  "assertions": [
+    {
+      "name": "count_stable_after_reset",
+      "language": "sva",
+      "scope": "counter",
+      "file": "counter.sv",
+      "line": 18,
+      "signals": ["count", "rst"],
+      "intent": { "protocol": null, "requirement": "Reset behavior" }
+    }
+  ],
+  "failures": [
+    {
+      "name": "count_stable_after_reset",
+      "time_ns": 2500,
+      "message": "count changed while rst asserted"
+    }
+  ]
+}

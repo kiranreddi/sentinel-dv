@@ -41,6 +41,9 @@ def main(argv: list[str] | None = None) -> None:
     print(
         f"Indexed runs={stats['runs']} tests={stats['tests']} "
         f"failures={stats['failures']} waveforms={stats.get('waveforms', 0)} "
+        f"assertions={stats.get('assertions', 0)} "
+        f"assertion_failures={stats.get('assertion_failures', 0)} "
+        f"coverage={stats.get('coverage', 0)} "
         f"from {stats['artifacts']} artifacts"
     )
     for warning in stats.get("warnings", []):

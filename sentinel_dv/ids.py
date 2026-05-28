@@ -254,6 +254,41 @@ def generate_test_id(
 
 
 # ============================================================================
+# assertion_id generation
+# ============================================================================
+
+
+def generate_assertion_id(
+    name: str,
+    scope: str,
+    file: str,
+    line: int,
+    language: str = "sva",
+) -> tuple[str, str]:
+    """Generate deterministic assertion_id for a definition."""
+    inputs: dict[str, Any] = {
+        "name": normalize_string(name),
+        "scope": normalize_string(scope),
+        "file": normalize_string(file),
+        "line": line,
+        "language": normalize_string(language, case_sensitive=False),
+    }
+    assertion_id_full = sha256_hex(canonical_json(inputs))
+    return short_id("a", assertion_id_full), assertion_id_full
+
+
+def generate_unknown_assertion_id(test_id_full: str, failure_message: str) -> tuple[str, str]:
+    """Synthetic assertion for uncorrelated failures (deterministic)."""
+    inputs = {
+        "unknown": True,
+        "test_id_full": test_id_full,
+        "message_norm": strip_volatile(normalize_string(failure_message))[:200],
+    }
+    assertion_id_full = sha256_hex(canonical_json(inputs))
+    return short_id("a", assertion_id_full), assertion_id_full
+
+
+# ============================================================================
 # failure_id generation
 # ============================================================================
 

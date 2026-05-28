@@ -16,8 +16,8 @@ index:
 adapters:
   uvm: true              # Parse UVM logs
   cocotb: true           # Parse cocotb results
-  assertions: false      # Not indexed yet (MCP tools exist; ingestion coming)
-  coverage: false        # Not indexed yet (enable when coverage adapter is wired)
+  assertions: true       # *.assert.json, assertions*.rpt, sim log SVA patterns
+  coverage: true         # coverage.json, coverage.txt, coverage.xml, *.cov.json
   waveform_summary: false  # Index *.wave.json and *.vcd (demo/waveforms/, demo/verilator_counter/)
 
 # Security limits

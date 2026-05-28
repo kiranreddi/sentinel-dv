@@ -1,0 +1,32 @@
+{
+  "test_name": "test_counter_sim",
+  "assertions": [
+    {
+      "name": "count_never_exceeds_fifteen",
+      "language": "sva",
+      "scope": "counter",
+      "file": "counter.sv",
+      "line": 14,
+      "signals": ["count"],
+      "tags": ["functional"],
+      "intent": {
+        "protocol": null,
+        "requirement": "4-bit counter must wrap at 15"
+      }
+    },
+    {
+      "name": "axi_awvalid_stable_chk",
+      "language": "sva",
+      "scope": "counter_tb",
+      "file": "counter.sv",
+      "line": 20,
+      "signals": ["clk"],
+      "tags": ["axi4"],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "Demo protocol tag (illustrative)"
+      }
+    }
+  ],
+  "failures": []
+}
