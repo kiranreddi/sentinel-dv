@@ -50,10 +50,12 @@ List assertion definitions in the index.
 |-----------|------|-------------|
 | `scope` | string? | Hierarchy scope |
 | `name_pattern` | string? | Name substring |
+| `protocol` | string? | Filter by `intent.protocol` (for example `axi4`, `apb`) |
+| `tag` | string? | Substring filter over assertion tags |
 | `page`, `page_size` | int | Pagination |
 
 ```json
-{ "scope": "axi_agent", "page": 1, "page_size": 50 }
+{ "scope": "axi_agent", "protocol": "axi4", "tag": "handshake", "page": 1, "page_size": 50 }
 ```
 
 ### coverage.list
@@ -138,18 +140,31 @@ Runtime assertion failures linked to definitions.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `run_id`, `test_id`, `assertion_id` | string? | Filters |
+| `start_time_ns`, `end_time_ns` | int? | Optional bounded time window (both required together) |
 | `page`, `page_size` | int | Pagination |
 
 ```json
-{ "test_id": "t_abc", "page": 1, "page_size": 50 }
+{
+  "test_id": "t_abc",
+  "start_time_ns": 2000,
+  "end_time_ns": 3000,
+  "page": 1,
+  "page_size": 50
+}
 ```
 
 ### coverage.summary
 
-Aggregated coverage metrics for a run.
+Aggregated, bounded coverage metrics for a run.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `run_id` | string | Run identifier |
+| `kind` | string? | Optional coverage kind filter |
+| `include_evidence` | bool | Include bounded evidence refs in each summary |
 
 ```json
-{ "run_id": "r_xyz", "kind": "functional" }
+{ "run_id": "r_xyz", "kind": "functional", "include_evidence": true }
 ```
 
 ---
@@ -160,8 +175,14 @@ Aggregated coverage metrics for a run.
 
 Pass rate and top failure signatures for a suite over a time window.
 
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `suite` | string | Regression suite name |
+| `window_days` | int | Window size in days (`1..365`) |
+| `as_of` | string? | RFC3339 end timestamp for deterministic replay |
+
 ```json
-{ "suite": "nightly", "window_days": 7 }
+{ "suite": "nightly", "window_days": 7, "as_of": "2026-05-27T23:00:00Z" }
 ```
 
 ### runs.diff

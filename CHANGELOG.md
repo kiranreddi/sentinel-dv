@@ -9,16 +9,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Redactor.from_config()`; indexer and server apply YAML redaction settings.
-- `signature_id` populated at index time for failure clustering.
-- `bound_response` / `detail_response` enforce `max_response_bytes`; `LIMIT_EXCEEDED` for oversized payloads and large VCD files.
-- Indexer warnings when `adapters.assertions` or `adapters.coverage` are enabled but not implemented.
-- Security tests (`tests/security/`) and expanded Verilator e2e integration test.
+- Documentation alignment for assertion/coverage MCP parameters (`protocol`, `tag`, `start_time_ns`, `end_time_ns`, `include_evidence`, `as_of`) and deterministic replay guidance.
 
 ### Changed
 
-- Artifact scan skips symlinks; `max_artifact_bytes` and `max_wave_signals` security limits.
-- `config.example.yaml` defaults assertions/coverage to `false` with accurate comments.
+- No unreleased code changes currently tracked.
+
+## [1.2.0] - 2026-05-27
+
+### Added
+
+- **Assertion ingestion pipeline** via `AssertionReportParser` for JSON/text/exported reports and log-derived failures.
+- **Coverage ingestion pipeline** via `CoverageReportParser` for JSON/text/XML summaries with deterministic normalization.
+- **Protocol tagging** (`AXI`, `AHB`, `APB`, `PCIe`, `USB`, `GPIO`, `JTAG`) from assertion names/scopes/messages.
+- **Assertion failure correlation** with deterministic synthetic fallbacks (`unknown_assertion_<stablehash>`) to avoid orphaned failures.
+- **New adapters and extension points**:
+  - `sentinel_dv/adapters/assertion_reports.py`
+  - `sentinel_dv/adapters/coverage_reports.py`
+  - `sentinel_dv/adapters/protocol_tags.py`
+  - `sentinel_dv/indexing/query.py`
+  - `sentinel_dv/registry.py`
+- **Demo artifacts** for Verilator assertion and coverage outputs:
+  - `demo/verilator_counter/assertions/counter.assert.json`
+  - `demo/verilator_counter/assertions/counter_fail.assert.json`
+
+### Changed
+
+- `assertions.list` now supports protocol/tag filtering with deterministic pagination.
+- `assertions.failures` now supports deterministic bounded time-window filtering (`start_time_ns`, `end_time_ns`).
+- `coverage.summary` now supports bounded summaries with optional evidence (`include_evidence`) and truncation metadata.
+- `regressions.summary` now supports deterministic replay windows via `as_of=<RFC3339>`.
+- Indexer now ingests assertions and coverage when adapters are enabled (previous "not implemented" warnings removed).
+- Version bumped to `1.2.0` in package metadata and MCP registry manifest.
+
+### Migration Notes
+
+- No schema-breaking wire-format changes for existing tool names.
+- To consume new assertion/coverage behavior, re-run indexing:
+  - `sentinel-dv-index --config config.yaml --index-all`
+- For reproducible regression analytics, provide `as_of` explicitly in `regressions.summary`.
 
 ## [1.1.0] - 2026-05-27
 

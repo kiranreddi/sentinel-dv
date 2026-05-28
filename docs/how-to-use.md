@@ -326,6 +326,12 @@ Then in Claude:
 → Uses: runs.diff
 ```
 
+For deterministic replay across reruns, pass `as_of` (RFC3339):
+
+```json
+{ "suite": "nightly", "window_days": 7, "as_of": "2026-05-27T23:00:00Z" }
+```
+
 ### Workflow 2: PR Validation
 
 ```bash
@@ -376,7 +382,24 @@ In Claude:
 → Uses: assertions.failures
 ```
 
-### Workflow 5: Waveform time window
+### Workflow 5: Assertion and coverage intelligence
+
+In Claude:
+
+```
+"List APB assertions and show failures in this run between 2us and 3us"
+→ Uses: assertions.list with protocol/tag filters, then assertions.failures with start_time_ns/end_time_ns
+
+"Show bounded functional coverage with evidence for latest run"
+→ Uses: coverage.list, then coverage.summary with include_evidence=true
+```
+
+Tips:
+- `assertions.list` supports deterministic filtering by `scope`, `name_pattern`, `protocol`, and `tag`.
+- `coverage.summary` is bounded by `security.max_coverage_metrics` and `security.max_bins_missed`.
+- `assertions.failures` time windows require both `start_time_ns` and `end_time_ns`.
+
+### Workflow 6: Waveform time window
 
 Index with waveforms enabled, then in your MCP client:
 
