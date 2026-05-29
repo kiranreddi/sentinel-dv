@@ -75,6 +75,7 @@ config.local.yaml
 !demo/uvm_logs/
 !demo/uvm_logs/**
 !demo/verilator_counter/counter_tb.uvm.log
+!demo/*/*.uvm.log
 
 # Temporary files
 *.tmp

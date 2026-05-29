@@ -1,0 +1,5 @@
+VCS simulator transcript
+UVM_INFO @ 0 ns [TEST] counter_tb.sv:(42) @ 0 Running test test_vcs_counter
+UVM_INFO @ 100 ns [ENV] counter_tb.sv:(55) @ 100 uvm_test_top.env.agent.monitor active
+UVM_ERROR @ 1250 ns [SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5
+UVM_FATAL @ 1300 ns [TEST] counter_tb.sv:(92) @ 1300 TEST FAILED

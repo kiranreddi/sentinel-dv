@@ -119,12 +119,32 @@ class SentinelDVConfig(BaseModel):
             FileNotFoundError: If config file doesn't exist.
             ValueError: If config is invalid.
         """
-        config_path = Path(path)
+        config_path = Path(path).resolve()
         if not config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {path}")
 
         with open(config_path) as f:
             data = yaml.safe_load(f)
+        if not isinstance(data, dict):
+            raise ValueError(f"Configuration must be a YAML mapping: {path}")
+
+        base_dir = config_path.parent
+        roots = data.get("artifact_roots")
+        if isinstance(roots, list):
+            data["artifact_roots"] = [
+                (
+                    str((base_dir / root).resolve())
+                    if not Path(str(root)).is_absolute()
+                    else str(Path(str(root)).resolve())
+                )
+                for root in roots
+            ]
+
+        index = data.get("index")
+        if isinstance(index, dict) and index.get("path"):
+            index_path = Path(str(index["path"]))
+            if not index_path.is_absolute():
+                data["index"] = {**index, "path": str((base_dir / index_path).resolve())}
 
         return cls(**data)
 

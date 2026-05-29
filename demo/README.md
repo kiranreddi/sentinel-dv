@@ -15,7 +15,10 @@ demo/
 │   ├── fifo_sync/               # FIFO pass + underflow fail
 │   └── counter_block/           # Counter pass + overflow fail
 ├── waveforms/                   # Precomputed summaries (JSON)
-├── verilator_counter/           # Verilator VCD + assertions + coverage
+├── verilator_counter/           # Verilator artifacts + waveform summary
+├── vcs_counter/                  # VCS-style exported artifacts
+├── questa_counter/               # Questa-style exported artifacts
+├── cadence_counter/              # Cadence Xcelium-style exported artifacts
 └── README.md
 ```
 
@@ -24,24 +27,22 @@ demo/
 ## Multi-project quick start
 
 ```bash
-cd demo/verilator_counter && make run && cd ../..
 cp demo/config.example.yaml demo/config.yaml
 sentinel-dv-index --config demo/config.yaml --index-all
-python scripts/verify_all_mcp_tools.py --multi
+python scripts/verify_all_mcp_tools.py
 ```
 
-Expected index scale: **≥8 runs**, **≥10 tests**, **≥5 failures**, **≥4 waveforms**, assertions/coverage from Verilator project.
+Expected index scale: **≥17 runs**, **≥19 tests**, **≥11 failures**, **≥8 waveforms**, with assertion and coverage artifacts across Verilator, VCS, Questa, and Cadence examples.
 
-## Single-project (Verilator only)
+## Single-project simulator fixtures
 
 ```bash
-cd demo/verilator_counter
-make run && cp config.example.yaml config.yaml
-sentinel-dv-index --config config.yaml --index-all
-python ../../scripts/verify_all_mcp_tools.py --in-place
+python scripts/verify_all_mcp_tools.py --sim vcs
+python scripts/verify_all_mcp_tools.py --sim questa
+python scripts/verify_all_mcp_tools.py --sim cadence
 ```
 
-See [verilator_counter/README.md](verilator_counter/README.md).
+The checked-in fixtures are exported artifacts. The MCP server remains read-only and does not invoke simulators. If you regenerate artifacts from a simulator, preserve this layout and rerun the indexer.
 
 ## Projects at a glance
 
@@ -53,12 +54,16 @@ See [verilator_counter/README.md](verilator_counter/README.md).
 | `fifo_sync` | cocotb JUnit | `test_fifo_push_pop`, `test_fifo_underflow` | assertion |
 | `counter_block` | cocotb JUnit | `test_increment`, `test_overflow` | assertion |
 | `verilator_counter` | cocotb + UVM + VCD | `test_counter_sim`, overflow run, … | mixed |
+| `vcs_counter` | VCS-style artifacts | `test_vcs_counter`, overflow run, … | mixed |
+| `questa_counter` | Questa-style artifacts | `test_questa_counter`, overflow run, … | mixed |
+| `cadence_counter` | Xcelium-style artifacts | `test_cadence_counter`, overflow run, … | mixed |
 
 ## Tests
 
 ```bash
 pytest tests/integration/test_multi_project_all_mcp_tools.py -q
 pytest tests/integration/test_verilator_all_mcp_tools.py -q
+pytest tests/integration/test_simulator_examples_all_mcp_tools.py -q
 ```
 
 ## Documentation screenshots

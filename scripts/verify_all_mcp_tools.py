@@ -21,25 +21,20 @@ sys.path.insert(0, str(REPO_ROOT))
 from fastmcp import Client  # noqa: E402
 
 from sentinel_dv import server  # noqa: E402
-from sentinel_dv.indexing.store import IndexStore  # noqa: E402
-from sentinel_dv.tools import core  # noqa: E402
-from tests.integration.multi_project_demo import (  # noqa: E402
+from sentinel_dv.demo_fixtures import (  # noqa: E402  # noqa: E402
     DEMO_ROOT,
+    build_demo_config,
     build_multi_config,
     discover_fixtures,
-    index_demo_tree,
-    tool_call_matrix,
-)
-from tests.integration.verilator_mcp_demo import (  # noqa: E402
-    DEMO_DIR,
-    assert_tool_ok,
-    build_demo_config,
     expected_tool_names,
     index_demo,
+    index_demo_tree,
     mcp_payload,
     prepare_work_dir,
-    verilator_available,
+    simulator_demo_dir,
+    tool_call_matrix,
 )
+from sentinel_dv.indexing.store import IndexStore  # noqa: E402
 
 
 def _print_ok(msg: str) -> None:
@@ -55,40 +50,9 @@ async def _run_single_project_mcp(config_path: Path, db_path: Path, suite: str) 
     failures = 0
 
     with IndexStore(db_path) as store:
-        runs = core.list_runs(store, suite=suite)
-        if runs["pagination"]["total_items"] < 3:
-            _print_fail(f"expected >=3 runs for suite={suite!r}, got {runs['pagination']}")
-            return 1
+        fix = discover_fixtures(store, suite=suite)
 
-        pass_run = next(r for r in runs["runs"] if r["status"] == "pass")
-        fail_run = next(r for r in runs["runs"] if r["status"] == "fail")
-        wave_test = core.list_tests(store, run_id=pass_run["run_id"])["tests"][0]
-        uvm_test = core.list_tests(store, framework="uvm")["tests"][0]
-        assertion_id = core.list_assertions(store, protocol="axi4")["assertions"][0]["assertion_id"]
-
-    calls: list[tuple[str, dict]] = [
-        ("runs.list", {"suite": suite, "page": 1, "page_size": 50}),
-        ("runs.get", {"run_id": pass_run["run_id"]}),
-        ("tests.list", {"run_id": pass_run["run_id"]}),
-        ("tests.get", {"test_id": wave_test["test_id"]}),
-        ("tests.topology", {"test_id": uvm_test["test_id"]}),
-        ("assertions.list", {"protocol": "axi4"}),
-        ("assertions.get", {"assertion_id": assertion_id}),
-        ("assertions.failures", {"test_id": wave_test["test_id"], "include_evidence": True}),
-        ("coverage.list", {"run_id": pass_run["run_id"]}),
-        ("coverage.summary", {"run_id": pass_run["run_id"]}),
-        ("failures.list", {"category": "scoreboard"}),
-        (
-            "regressions.summary",
-            {"suite": suite, "window_days": 30, "as_of": "2026-05-28T12:00:00Z"},
-        ),
-        ("runs.diff", {"base_run_id": fail_run["run_id"], "compare_run_id": pass_run["run_id"]}),
-        ("wave.signals", {"test_id": wave_test["test_id"]}),
-        (
-            "wave.summary",
-            {"test_id": wave_test["test_id"], "start_time_ns": 2000, "end_time_ns": 3000},
-        ),
-    ]
+    calls = tool_call_matrix(fix)
 
     async with Client(server.mcp) as client:
         for tool_name, arguments in calls:
@@ -127,13 +91,19 @@ def main() -> int:
     parser.add_argument(
         "--multi",
         action="store_true",
-        help="Index entire demo/ tree (UVM + cocotb + Verilator projects)",
+        help="Index entire demo/ tree (default; kept for compatibility)",
+    )
+    parser.add_argument(
+        "--sim",
+        choices=("all", "verilator", "vcs", "questa", "cadence"),
+        default="all",
+        help="Demo simulator fixture to verify, or all checked-in fixtures",
     )
     parser.add_argument(
         "--demo-dir",
         type=Path,
-        default=DEMO_DIR,
-        help="Single-project Verilator demo directory",
+        default=None,
+        help="Custom single-project demo directory",
     )
     parser.add_argument(
         "--in-place",
@@ -146,7 +116,7 @@ def main() -> int:
         tmp_path = Path(tmp)
         db = tmp_path / "verify.duckdb"
 
-        if args.multi:
+        if args.multi or args.sim == "all":
             stats = index_demo_tree(DEMO_ROOT, db)
             print("Index stats:", stats)
             cfg = build_multi_config(DEMO_ROOT, db)
@@ -154,19 +124,11 @@ def main() -> int:
             cfg.to_yaml(str(config_path))
             failures = asyncio.run(_run_multi_project_mcp(config_path, db))
         else:
-            demo_dir = args.demo_dir.resolve()
-            if not verilator_available():
-                vcd = demo_dir / "waves" / "test_counter_sim.vcd"
-                if not vcd.is_file():
-                    _print_fail("Verilator not on PATH and no prebuilt VCD")
-                    return 1
-            if args.in_place:
-                from tests.integration.verilator_mcp_demo import ensure_vcd
-
-                ensure_vcd(demo_dir)
+            demo_dir = (args.demo_dir or simulator_demo_dir(args.sim)).resolve()
+            if args.demo_dir is not None or args.in_place:
                 work = demo_dir
             else:
-                work = prepare_work_dir(tmp_path)
+                work = prepare_work_dir(tmp_path, simulator=args.sim)
             stats = index_demo(work, db)
             print("Index stats:", stats)
             cfg = build_demo_config(work, db)

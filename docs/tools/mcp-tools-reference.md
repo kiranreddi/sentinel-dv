@@ -6,8 +6,9 @@ Sentinel DV exposes **15 read-only MCP tools**. Every tool returns JSON with `sc
 
 **End-to-end examples (all 15 tools):**
 
-- **Multi-project:** index `demo/` (2× UVM, 3× cocotb, Verilator) — `python scripts/verify_all_mcp_tools.py --multi` — see [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md)
-- **Verilator-only:** [Verilator counter walkthrough](../examples/verilator-counter.md) — `python scripts/verify_all_mcp_tools.py --in-place`
+- **Multi-project:** index `demo/` (UVM, cocotb, Verilator, VCS, Questa, Cadence) — `python scripts/verify_all_mcp_tools.py` — see [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md)
+- **Simulator fixtures:** [VCS, Questa, and Cadence examples](../examples/commercial-simulators.md) — `python examples/simulator_matrix.py --sim all`
+- **Verilator:** [Verilator counter walkthrough](../examples/verilator-counter.md) — `python scripts/verify_all_mcp_tools.py --sim verilator`
 - **Visual gallery:** [MCP Tool Gallery](mcp-tool-gallery.md) — SVG “screenshots” from `python scripts/generate_mcp_tool_gallery.py`
 
 List tools in your client or see [Tool overview](overview.md) for category descriptions. Deep dives: [Discovery](discovery.md), [Detail](detail.md), [Analysis](analysis.md), [Regression](regression.md), [Waveforms](waveforms.md).
@@ -39,7 +40,7 @@ List tests with filters.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `run_id` | string? | Scope to one run |
-| `framework` | string? | `uvm`, `cocotb`, `verilator`, … |
+| `framework` | string? | `uvm`, `cocotb`, `unknown`, … |
 | `status` | string? | `pass`, `fail`, `error` |
 | `name_pattern` | string? | Substring match on test name |
 | `page`, `page_size` | int | Pagination |

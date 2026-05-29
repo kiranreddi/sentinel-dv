@@ -6,8 +6,6 @@ This demo showcases all features of Sentinel DV with mock data.
 No actual verification artifacts required!
 """
 
-import json
-
 
 def print_header(title: str):
     """Print formatted header"""
@@ -31,7 +29,7 @@ def demo_discovery_tools():
     print("\n  Example query:")
     print('    {"suite": "nightly", "status": "fail", "page": 1, "page_size": 10}')
     print("\n  📊 Results (3 runs found):")
-    
+
     runs = [
         {
             "run_id": "R20260125_143000",
@@ -39,7 +37,7 @@ def demo_discovery_tools():
             "status": "fail",
             "total_tests": 150,
             "failed_tests": 12,
-            "created_at": "2026-01-25T14:30:00Z"
+            "created_at": "2026-01-25T14:30:00Z",
         },
         {
             "run_id": "R20260125_120000",
@@ -47,7 +45,7 @@ def demo_discovery_tools():
             "status": "pass",
             "total_tests": 50,
             "failed_tests": 0,
-            "created_at": "2026-01-25T12:00:00Z"
+            "created_at": "2026-01-25T12:00:00Z",
         },
         {
             "run_id": "R20260124_220000",
@@ -55,48 +53,51 @@ def demo_discovery_tools():
             "status": "fail",
             "total_tests": 150,
             "failed_tests": 8,
-            "created_at": "2026-01-24T22:00:00Z"
-        }
+            "created_at": "2026-01-24T22:00:00Z",
+        },
     ]
-    
+
     for run in runs:
         status_icon = "❌" if run["status"] == "fail" else "✅"
-        print(f"  {status_icon} {run['run_id']:<25} [{run['suite']:<10}] "
-              f"{run['failed_tests']}/{run['total_tests']} failures")
+        print(
+            f"  {status_icon} {run['run_id']:<25} [{run['suite']:<10}] "
+            f"{run['failed_tests']}/{run['total_tests']} failures"
+        )
 
     print_tool("tests.list")
     print("  Purpose: List tests from a run")
     print("\n  Example query:")
     print('    {"run_id": "R20260125_143000", "status": "fail", "framework": "uvm"}')
     print("\n  📊 Results (5 failed tests):")
-    
+
     tests = [
         {
             "test_id": "T20260125_143000_axi_burst",
             "name": "axi_burst_test",
             "framework": "uvm",
             "status": "fail",
-            "duration_ms": 15420
+            "duration_ms": 15420,
         },
         {
             "test_id": "T20260125_143000_axi_interleave",
             "name": "axi_interleave_test",
             "framework": "uvm",
             "status": "fail",
-            "duration_ms": 18930
+            "duration_ms": 18930,
         },
         {
             "test_id": "T20260125_143000_protocol_check",
             "name": "protocol_violation_test",
             "framework": "uvm",
             "status": "fail",
-            "duration_ms": 12100
-        }
+            "duration_ms": 12100,
+        },
     ]
-    
+
     for test in tests:
-        print(f"  ❌ {test['name']:<30} [{test['framework']:<8}] "
-              f"{test['duration_ms']/1000:.2f}s")
+        print(
+            f"  ❌ {test['name']:<30} [{test['framework']:<8}] " f"{test['duration_ms']/1000:.2f}s"
+        )
 
 
 def demo_detail_tools():
@@ -151,7 +152,7 @@ def demo_analysis_tools():
     print("\n  Example query:")
     print('    {"run_id": "R20260125_143000", "severity": "error", "category": "scoreboard"}')
     print("\n  📋 Failures (3 found):")
-    
+
     failures = [
         {
             "severity": "error",
@@ -159,7 +160,7 @@ def demo_analysis_tools():
             "summary": "DATA MISMATCH: Expected 0xDEAD, Got 0xBEEF",
             "component": "uvm_test_top.env.scoreboard",
             "time_ns": 100000,
-            "tags": ["scoreboard", "data-integrity"]
+            "tags": ["scoreboard", "data-integrity"],
         },
         {
             "severity": "error",
@@ -167,7 +168,7 @@ def demo_analysis_tools():
             "summary": "AXI PROTOCOL VIOLATION: AWVALID without AWREADY",
             "component": "uvm_test_top.env.master_agent.monitor",
             "time_ns": 250000,
-            "tags": ["protocol", "axi4", "handshake"]
+            "tags": ["protocol", "axi4", "handshake"],
         },
         {
             "severity": "fatal",
@@ -175,10 +176,10 @@ def demo_analysis_tools():
             "summary": "TIMEOUT: Objection timeout in run phase",
             "component": "uvm_test_top",
             "time_ns": 1000000000,
-            "tags": ["timeout", "objection"]
-        }
+            "tags": ["timeout", "objection"],
+        },
     ]
-    
+
     for f in failures:
         severity_icon = "🔴" if f["severity"] == "fatal" else "🟠"
         print(f"  {severity_icon} [{f['category']:<12}] {f['summary'][:60]}")
@@ -200,7 +201,7 @@ def demo_analysis_tools():
         ("axi_transaction.burst_len[12-15]", "33.3%"),
         ("corner_cases.unaligned_access", "12.5%"),
         ("power_modes.low_power_wakeup", "25.0%"),
-        ("reset_scenarios.async_reset", "40.0%")
+        ("reset_scenarios.async_reset", "40.0%"),
     ]
     for name, coverage in missed:
         print(f"    • {name:<40} {coverage:>6}")
@@ -223,7 +224,7 @@ def demo_regression_tools():
     signatures = [
         ("Scoreboard data mismatch in AXI write", 8, ["axi_burst_test", "axi_write_test"]),
         ("Protocol violation: AWVALID/AWREADY", 5, ["protocol_test", "handshake_test"]),
-        ("Timeout in run phase objection", 3, ["long_test", "stress_test"])
+        ("Timeout in run phase objection", 3, ["long_test", "stress_test"]),
     ]
     for sig, count, tests in signatures:
         print(f"    [{count:2d}] {sig}")
@@ -341,7 +342,7 @@ def main():
     for num, name, _ in demos:
         if num != "0":
             print(f"   {num}. {name}")
-    print(f"   0. Run All Demos")
+    print("   0. Run All Demos")
 
     print("\n" + "─" * 80)
     choice = input("\n🎮 Select demo (0-6, or press Enter for all): ").strip()

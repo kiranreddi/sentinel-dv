@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="cadence-counter">
+  <testsuite name="counter_tb" tests="1" errors="0" failures="0" skipped="0" time="0.013">
+    <testcase classname="counter_tb" name="test_cadence_counter" time="0.013"/>
+  </testsuite>
+</testsuites>

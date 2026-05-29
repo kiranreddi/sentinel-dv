@@ -42,7 +42,7 @@ Use **`tests.list`** with `name_pattern` (for example `alu_tb`) to find test IDs
 ## Verify
 
 ```bash
-python scripts/verify_all_mcp_tools.py --multi
+python scripts/verify_all_mcp_tools.py
 pytest tests/integration/test_multi_project_all_mcp_tools.py -q
 ```
 

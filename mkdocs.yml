@@ -11,7 +11,7 @@ theme:
   name: material
   custom_dir: docs/overrides
   logo: assets/logo.svg
-  favicon: assets/favicon.png
+  favicon: assets/logo.svg
   palette:
     # Light mode
     - media: "(prefers-color-scheme: light)"
@@ -152,6 +152,7 @@ nav:
       - Overview: examples/overview.md
       - Verilator + VCD: examples/verilator-counter.md
       - cocotb + JSON waveforms: examples/cocotb-waveforms.md
+      - VCS, Questa, and Cadence artifacts: examples/commercial-simulators.md
   - Architecture:
       - Overview: architecture/overview.md
       - Security Model: architecture/security.md
@@ -172,9 +173,12 @@ nav:
       - Waveform Summaries: guides/waveforms.md
       - Simulator Support: guides/simulator-support.md
       - Performance Optimization: guides/performance.md
+      - Troubleshooting: guides/troubleshooting.md
+      - Production Deployment: deployment/production.md
   - Adapters:
       - Custom Adapters: adapters/custom.md
   - About:
       - Changelog: about/changelog.md
+      - Release Checklist: release/v1.2.0-checklist.md
       - License: about/license.md
       - Security Policy: about/security.md

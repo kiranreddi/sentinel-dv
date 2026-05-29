@@ -1,0 +1,8 @@
+{
+  "test_name": "counter_tb.test_vcs_counter",
+  "kind": "functional",
+  "metrics": [
+    {"name": "line", "scope": "counter", "covered": 88.0, "hits": 22, "total": 25},
+    {"name": "toggle", "scope": "counter", "covered": 75.0, "hits": 6, "total": 8}
+  ]
+}

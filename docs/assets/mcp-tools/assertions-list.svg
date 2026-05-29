@@ -19,26 +19,26 @@
 <text x="20" y="234" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;schema_version&quot;: &quot;1.0.0&quot;,</text>
 <text x="20" y="249" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;assertions&quot;: [</text>
 <text x="20" y="264" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    {</text>
-<text x="20" y="279" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;assertion_id&quot;: &quot;a_1288a531c038&quot;,</text>
+<text x="20" y="279" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;assertion_id&quot;: &quot;a_03847f8e5b0f&quot;,</text>
 <text x="20" y="294" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;language&quot;: &quot;sva&quot;,</text>
 <text x="20" y="309" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;name&quot;: &quot;axi_awvalid_stable_chk&quot;,</text>
 <text x="20" y="324" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;scope&quot;: &quot;counter_tb&quot;,</text>
 <text x="20" y="339" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;file&quot;: &quot;counter.sv&quot;,</text>
-<text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;line&quot;: 20,</text>
+<text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;line&quot;: 12,</text>
 <text x="20" y="369" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;signals&quot;: [</text>
-<text x="20" y="384" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;clk&quot;</text>
-<text x="20" y="399" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      ],</text>
-<text x="20" y="414" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;tags&quot;: [</text>
-<text x="20" y="429" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;axi4&quot;</text>
-<text x="20" y="444" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      ],</text>
-<text x="20" y="459" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;intent&quot;: {</text>
-<text x="20" y="474" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;protocol&quot;: &quot;axi4&quot;,</text>
-<text x="20" y="489" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;requirement&quot;: &quot;Demo protocol tag (illustrative)&quot;</text>
-<text x="20" y="504" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      }</text>
-<text x="20" y="519" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    }</text>
-<text x="20" y="534" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  ],</text>
-<text x="20" y="549" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;pagination&quot;: {</text>
-<text x="20" y="564" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;page&quot;: 1,</text>
-<text x="20" y="579" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;page_size&quot;: 50,</text>
+<text x="20" y="384" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;clk&quot;,</text>
+<text x="20" y="399" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;count&quot;</text>
+<text x="20" y="414" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      ],</text>
+<text x="20" y="429" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;tags&quot;: [</text>
+<text x="20" y="444" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;axi4&quot;,</text>
+<text x="20" y="459" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;vcs&quot;</text>
+<text x="20" y="474" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      ],</text>
+<text x="20" y="489" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;intent&quot;: {</text>
+<text x="20" y="504" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;protocol&quot;: &quot;axi4&quot;,</text>
+<text x="20" y="519" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;requirement&quot;: &quot;demo assertion tagged for protocol filtering&quot;</text>
+<text x="20" y="534" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      }</text>
+<text x="20" y="549" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    },</text>
+<text x="20" y="564" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    {</text>
+<text x="20" y="579" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;assertion_id&quot;: &quot;a_1288a531c038&quot;,</text>
 <text x="20" y="594" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  …</text>
 </svg>

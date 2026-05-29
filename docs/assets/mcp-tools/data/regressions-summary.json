@@ -1,28 +1,46 @@
 {
   "tool": "regressions.summary",
   "arguments": {
-    "suite": "axi_burst",
+    "suite": "verilator_counter",
     "window_days": 30,
-    "as_of": "2026-05-28T12:00:00Z"
+    "as_of": null
   },
   "response": {
-    "suite": "axi_burst",
+    "suite": "verilator_counter",
     "window_days": 30,
-    "as_of": "2026-05-28T12:00:00Z",
-    "pass_rate": 0.0,
+    "as_of": "2026-05-29T01:30:54.264357Z",
+    "pass_rate": 33.33,
     "runs": [
       {
-        "run_id": "r_2968fa34e74e",
-        "suite": "axi_burst",
+        "run_id": "r_d39bb5009606",
+        "suite": "verilator_counter",
         "status": "fail",
-        "created_at": "2026-05-28T04:47:53.152882Z"
+        "created_at": "2026-05-29T01:30:53.845386Z"
+      },
+      {
+        "run_id": "r_85b1d3f70e48",
+        "suite": "verilator_counter",
+        "status": "pass",
+        "created_at": "2026-05-29T01:30:53.830505Z"
+      },
+      {
+        "run_id": "r_566fd6e9a21b",
+        "suite": "verilator_counter",
+        "status": "fail",
+        "created_at": "2026-05-29T01:30:53.798640Z"
       }
     ],
     "top_signatures": [
       {
-        "signature_id": "s_accaf1efb76e",
+        "signature_id": "s_71de94577c0f",
         "category": "scoreboard",
-        "summary": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
+        "summary": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5",
+        "count": 1
+      },
+      {
+        "signature_id": "s_ea51e615c938",
+        "category": "unknown",
+        "summary": "Counter overflow not handled",
         "count": 1
       }
     ],

@@ -62,6 +62,7 @@ class CocotbParser:
             if failure_elem is not None or error_elem is not None:
                 status = "fail"
                 elem = failure_elem if failure_elem is not None else error_elem
+                assert elem is not None
 
                 message = elem.get("message", "")
                 details = elem.text or ""

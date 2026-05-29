@@ -4,33 +4,46 @@ Runnable examples ship in the repository. Use **`sentinel-dv>=1.2.0`** and enabl
 
 | Example | Location | Docs |
 |---------|----------|------|
-| **Verilator — all 15 MCP tools** (recommended) | `demo/verilator_counter/` | [Full walkthrough](verilator-counter.md) |
-| **Multi-project (all tools)** | `demo/` (UVM + cocotb + Verilator) | [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) |
+| **VCS, Questa, and Cadence artifacts** | `demo/{vcs,questa,cadence}_counter/` | [Simulator artifact examples](commercial-simulators.md) |
+| **Multi-project (all tools)** | `demo/` (UVM + cocotb + Verilator + VCS + Questa + Cadence) | [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) |
+| **Verilator — all 15 MCP tools** | `demo/verilator_counter/` | [Full walkthrough](verilator-counter.md) |
 | **cocotb + JSON waveforms** | `demo/cocotb_results/`, `demo/waveforms/` | [cocotb + waveforms](cocotb-waveforms.md) |
 
 ## Multi-project (rigorous)
 
-Index **six suites** (two UVM, three cocotb, one Verilator) in one database:
+Index the complete checked-in demo corpus in one database:
 
 ```bash
-cd demo/verilator_counter && make run && cd ../..
 cp demo/config.example.yaml demo/config.yaml
 sentinel-dv-index --config demo/config.yaml --index-all
-python scripts/verify_all_mcp_tools.py --multi
+python scripts/verify_all_mcp_tools.py
 pytest tests/integration/test_multi_project_all_mcp_tools.py -q
 ```
 
-## Verilator — full MCP walkthrough
+## VCS, Questa, and Cadence
 
-Build with Verilator, index assertions/coverage/UVM log + two JUnit runs + VCD, then verify:
+Verify simulator-specific artifact fixtures:
 
 ```bash
-cd demo/verilator_counter && make run && cp config.example.yaml config.yaml
+python examples/simulator_matrix.py --sim all
+python scripts/verify_all_mcp_tools.py --sim vcs
+python scripts/verify_all_mcp_tools.py --sim questa
+python scripts/verify_all_mcp_tools.py --sim cadence
+```
+
+See [VCS, Questa, and Cadence artifact examples](commercial-simulators.md).
+
+## Verilator — full MCP walkthrough
+
+Index assertions/coverage/UVM log + two JUnit runs + waveform summary, then verify:
+
+```bash
+cd demo/verilator_counter && cp config.example.yaml config.yaml
 sentinel-dv-index --config config.yaml --index-all
 python ../../scripts/verify_all_mcp_tools.py --in-place
 ```
 
-Covers **`runs.list`** through **`wave.summary`**. See [Verilator counter demo](verilator-counter.md).
+Covers **`runs.list`** through **`wave.summary`**. If Verilator is installed, `make run` also regenerates the VCD used by the VCD-only walkthrough. See [Verilator counter demo](verilator-counter.md).
 
 ## Verilator + VCD only
 

@@ -9,6 +9,26 @@
     "schema_version": "1.0.0",
     "assertions": [
       {
+        "assertion_id": "a_03847f8e5b0f",
+        "language": "sva",
+        "name": "axi_awvalid_stable_chk",
+        "scope": "counter_tb",
+        "file": "counter.sv",
+        "line": 12,
+        "signals": [
+          "clk",
+          "count"
+        ],
+        "tags": [
+          "axi4",
+          "vcs"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "demo assertion tagged for protocol filtering"
+        }
+      },
+      {
         "assertion_id": "a_1288a531c038",
         "language": "sva",
         "name": "axi_awvalid_stable_chk",
@@ -30,7 +50,7 @@
     "pagination": {
       "page": 1,
       "page_size": 50,
-      "total_items": 1,
+      "total_items": 2,
       "total_pages": 1
     }
   }

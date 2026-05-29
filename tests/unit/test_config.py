@@ -103,8 +103,10 @@ class TestSentinelDVConfig:
     def test_from_yaml(self):
         """Config should load from YAML file."""
         with tempfile.TemporaryDirectory() as tmpdir:
+            artifacts = Path(tmpdir) / "artifacts"
+            artifacts.mkdir()
             config_data = {
-                "artifact_roots": [tmpdir],
+                "artifact_roots": ["artifacts"],
                 "index": {"type": "duckdb", "path": "./test.db"},
                 "security": {"max_page_size": 100},
             }
@@ -114,7 +116,8 @@ class TestSentinelDVConfig:
                 yaml.safe_dump(config_data, f)
 
             config = SentinelDVConfig.from_yaml(str(config_file))
-            assert len(config.artifact_roots) == 1
+            assert config.artifact_roots == [str(artifacts.resolve())]
+            assert config.index.path == str((Path(tmpdir) / "test.db").resolve())
             assert config.security.max_page_size == 100
 
     def test_to_yaml(self):

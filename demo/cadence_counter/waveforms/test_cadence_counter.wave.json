@@ -1,0 +1,24 @@
+{
+  "test_name": "counter_tb.test_cadence_counter",
+  "framework": "cocotb",
+  "format": "precomputed-shm-summary",
+  "end_time_ns": 10000,
+  "signal_groups": [
+    {
+      "name": "counter",
+      "signals": [
+        {"name": "clk", "width": 1, "toggles": 100, "last_value": "0"},
+        {"name": "rst_n", "width": 1, "toggles": 2, "last_value": "1"},
+        {"name": "count", "width": 4, "toggles": 16, "last_value": "0xf"}
+      ]
+    }
+  ],
+  "highlights": [
+    {"time_ns": 1000, "signal": "rst_n", "value": "1", "note": "reset released"},
+    {"time_ns": 2500, "signal": "count", "value": "0x3", "note": "counter increment window"}
+  ],
+  "metadata": {
+    "simulator": "xcelium",
+    "source": "checked-in demo fixture"
+  }
+}

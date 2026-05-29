@@ -1,0 +1,25 @@
+{
+  "test_name": "counter_tb.test_questa_counter",
+  "assertions": [
+    {
+      "name": "axi_awvalid_stable_chk",
+      "language": "sva",
+      "scope": "counter_tb",
+      "file": "counter.sv",
+      "line": 12,
+      "signals": ["clk", "count"],
+      "tags": ["axi4", "questa"],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "demo assertion tagged for protocol filtering"
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "axi_awvalid_stable_chk",
+      "time_ns": 2500,
+      "message": "Assertion \"axi_awvalid_stable_chk\" failed at 2500 ns"
+    }
+  ]
+}

@@ -9,6 +9,7 @@ import pytest
 from fastmcp import Client
 
 from sentinel_dv import server
+from sentinel_dv.demo_fixtures import DEMO_AS_OF
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.tools import core
 from tests.integration.verilator_mcp_demo import (
@@ -93,9 +94,7 @@ class TestVerilatorAllMcpToolsCore:
             )
             assert cocotb_fail["pagination"]["total_items"] >= 1
 
-            reg = core.get_regression_summary(
-                store, suite=suite, window_days=30, as_of="2026-05-28T12:00:00Z"
-            )
+            reg = core.get_regression_summary(store, suite=suite, window_days=30, as_of=DEMO_AS_OF)
             assert reg["suite"] == suite
             assert len(reg["runs"]) >= 3
 
@@ -164,9 +163,12 @@ async def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
             ("failures.list", {"category": "scoreboard", "include_evidence": True}),
             (
                 "regressions.summary",
-                {"suite": suite, "window_days": 30, "as_of": "2026-05-28T12:00:00Z"},
+                {"suite": suite, "window_days": 30, "as_of": DEMO_AS_OF},
             ),
-            ("runs.diff", {"base_run_id": fail_run["run_id"], "compare_run_id": pass_run["run_id"]}),
+            (
+                "runs.diff",
+                {"base_run_id": fail_run["run_id"], "compare_run_id": pass_run["run_id"]},
+            ),
             ("wave.signals", {"test_id": wave_test["test_id"]}),
             (
                 "wave.summary",

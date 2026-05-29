@@ -12,6 +12,7 @@ from sentinel_dv.config import get_config
 from sentinel_dv.indexing import query as index_query
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.schemas.assertions import AssertionFailure, AssertionInfo
+from sentinel_dv.schemas.common import EvidenceRef
 from sentinel_dv.schemas.coverage import CoverageSummary
 from sentinel_dv.tools.errors import ToolError
 from sentinel_dv.tools.validate import (
@@ -35,6 +36,7 @@ def _validate_assertion_payload(assertion: dict[str, Any]) -> None:
             line=assertion["line"],
             intent=assertion.get("intent"),
             signals=assertion.get("signals", []),
+            enabled_in_run=assertion.get("enabled_in_run"),
         )
     except ValidationError as exc:
         raise ToolError("INTERNAL", f"Invalid assertion payload in index: {exc}") from exc
@@ -57,7 +59,14 @@ def _validate_assertion_failure_payload(failure: dict[str, Any]) -> None:
 def _validate_coverage_summary_payload(summary: dict[str, Any]) -> dict[str, Any]:
     """Validate and normalize coverage summary rows."""
     evidence = summary.get("evidence")
-    normalized_evidence = [] if evidence is None else [evidence] if isinstance(evidence, dict) else evidence
+    if evidence is None:
+        normalized_evidence: list[EvidenceRef] = []
+    elif isinstance(evidence, dict):
+        normalized_evidence = [EvidenceRef(**evidence)]
+    else:
+        normalized_evidence = [
+            item if isinstance(item, EvidenceRef) else EvidenceRef(**item) for item in evidence
+        ]
     try:
         CoverageSummary(
             run_id=summary["run_id"],
@@ -69,7 +78,7 @@ def _validate_coverage_summary_payload(summary: dict[str, Any]) -> dict[str, Any
     except ValidationError as exc:
         raise ToolError("INTERNAL", f"Invalid coverage payload in index: {exc}") from exc
     normalized = dict(summary)
-    normalized["evidence"] = normalized_evidence
+    normalized["evidence"] = [item.model_dump() for item in normalized_evidence]
     return normalized
 
 

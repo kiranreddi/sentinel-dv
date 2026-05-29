@@ -1,0 +1,5 @@
+xcelium simulator transcript
+UVM_INFO @ 0 ns: (uvm_test_top) [TEST] Running test test_cadence_counter
+UVM_INFO @ 100 ns: (uvm_test_top.env.agent.monitor) [ENV] uvm_test_top.env.agent.monitor active
+UVM_ERROR @ 1250 ns: (uvm_test_top.env.scoreboard) [SCB] DATA MISMATCH: expected count=3 got 5
+UVM_FATAL @ 1300 ns: (uvm_test_top) [TEST] TEST FAILED

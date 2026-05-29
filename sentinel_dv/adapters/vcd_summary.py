@@ -157,7 +157,7 @@ class VcdSummaryParser:
 
         return {
             "test_name": resolved_test_name,
-            "framework": "verilator",
+            "framework": "unknown",
             "format": "vcd-summary",
             "end_time_ns": end_time_ns if end_time_ns is not None else trace_end_ns,
             "signal_count": len(signal_list),

@@ -28,14 +28,13 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from tests.integration.multi_project_demo import (  # noqa: E402
+from sentinel_dv.demo_fixtures import (  # noqa: E402
     DEMO_ROOT,
-    build_multi_config,
     discover_fixtures,
     index_demo_tree,
+    invoke_core_tool,
     tool_call_matrix,
 )
-from tests.integration.multi_project_demo import invoke_core_tool  # noqa: E402
 from sentinel_dv.indexing.store import IndexStore  # noqa: E402
 
 ASSETS_DIR = REPO_ROOT / "docs" / "assets" / "mcp-tools"
@@ -139,9 +138,11 @@ def _capture_tools(db_path: Path) -> list[tuple[str, dict[str, Any], dict[str, A
 
 def _md_json_block(payload: dict[str, Any], admonition: str) -> list[str]:
     """Format JSON inside a pymdownx admonition (4-space indented body)."""
-    body = ["    ```json"] + ["    " + line for line in json.dumps(payload, indent=2).splitlines()] + [
-        "    ```"
-    ]
+    body = (
+        ["    ```json"]
+        + ["    " + line for line in json.dumps(payload, indent=2).splitlines()]
+        + ["    ```"]
+    )
     return [f"??? {admonition}"] + body + [""]
 
 
@@ -149,7 +150,7 @@ def _write_gallery_md(captured: list[tuple[str, dict, dict]]) -> None:
     lines = [
         "# MCP tool gallery",
         "",
-        "!!! note \"Auto-generated\"",
+        '!!! note "Auto-generated"',
         "    Regenerate after demo or tool changes:",
         "    ```bash",
         "    python scripts/generate_mcp_tool_gallery.py",

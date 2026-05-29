@@ -1,7 +1,6 @@
 # Sentinel DV — multi-project demo (index entire demo/ tree)
 # Usage from repo root:
-#   cd demo/verilator_counter && make run
-#   cd ../.. && cp demo/config.example.yaml demo/config.yaml
+#   cp demo/config.example.yaml demo/config.yaml
 #   sentinel-dv-index --config demo/config.yaml --index-all
 
 artifact_roots:

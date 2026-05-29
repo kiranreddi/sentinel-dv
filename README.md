@@ -131,9 +131,7 @@ sentinel_dv/
 
 ## 🚀 Quick Start
 
-> **PyPI:** Use **`sentinel-dv>=1.2.0`** for assertion + coverage intelligence, waveform indexing, and deterministic regression windows. Do **not** use **1.0.0** (broken wheel). Install flow: `pip install` → `sentinel-dv-index` → `sentinel-dv-server` → 15 MCP tools.
->
-> **Maintainers:** [Yank 1.0.0 on PyPI](https://pypi.org/manage/project/sentinel-dv/releases/) (Options → Yank) with reason: *Broken wheel missing subpackages; use >=1.0.1.* PyPI has no public yank API yet.
+> **PyPI:** Use **`sentinel-dv>=1.2.0`** for assertion + coverage intelligence, waveform indexing, deterministic regression windows, and all 15 MCP tools.
 
 ### Install from MCP Registry
 
@@ -176,7 +174,7 @@ cd sentinel-dv
 # Install with development dependencies
 pip install -e ".[dev]"
 
-# Or production install (requires >=1.2.0 for assertion/coverage intelligence; do not use 1.0.0)
+# Or production install (requires >=1.2.0 for assertion/coverage intelligence)
 pip install "sentinel-dv>=1.2.0"
 ```
 
@@ -265,23 +263,24 @@ With Claude or any MCP client:
 ## 📖 Documentation
 
 ### Core Concepts
-- [Architecture Overview](docs/architecture.md) - Design principles and structure
-- [Schema Reference](docs/schemas.md) - Complete type definitions
+- [Architecture Overview](docs/architecture/overview.md) - Design principles and structure
+- [Schema Reference](docs/architecture/schemas.md) - Complete type definitions
 - [Tool Contracts](docs/tools/overview.md) - Request/response specifications
 - [Security Model](docs/architecture/security.md) - Redaction, bounding, sandboxing
 
 ### Examples
-- [Examples overview](docs/examples/overview.md) — Verilator VCD, cocotb + JSON waveforms, UVM logs
+- [Examples overview](docs/examples/overview.md) — VCS, Questa, Cadence, Verilator, cocotb, and UVM artifact fixtures
 - [MCP tool gallery](https://kiranreddi.github.io/sentinel-dv/tools/mcp-tool-gallery/) — SVG “screenshots” for all 15 tools
 - [Verilator + VCD](docs/examples/verilator-counter.md) — Build, index, query `wave.*` with time windows
+- [VCS, Questa, and Cadence](docs/examples/commercial-simulators.md) — Exported artifact fixtures and all-tool verification
 - [cocotb + waveforms](docs/examples/cocotb-waveforms.md) — Index `demo/` tree
-- [demo/](demo/) — Runnable artifacts (multi-project UVM, cocotb, Verilator)
+- [demo/](demo/) — Runnable artifacts (multi-project UVM, cocotb, Verilator, VCS, Questa, Cadence)
 
 ### Guides
 - [Waveform summaries](docs/guides/waveforms.md) - JSON + VCD indexing
 - [Getting Started](docs/getting-started/quick-start.md) - Setup and first queries
 - [Adapter Development](docs/adapters/custom.md) - Parse new artifact formats
-- [Simulator Support](docs/simulator_support.md) - Vendor-specific notes
+- [Simulator Support](docs/guides/simulator-support.md) - Vendor-specific notes
 - [Deployment Guide](docs/deployment/production.md) - Production best practices
 
 ### Reference
@@ -329,6 +328,7 @@ mypy sentinel_dv/
 - ✅ **Test coverage** - 70%+ with unit and integration tests
 - ✅ **Documentation** - Full guides and API reference
 - ✅ **Waveform summaries** - `*.wave.json` + `*.vcd` (`VcdSummaryParser`); [Verilator demo](demo/verilator_counter/)
+- ✅ **Simulator examples** - VCS, Questa, and Cadence exported artifact fixtures with all-tool verification
 - 🚧 **Plugin ecosystem** - Coming soon
 
 ---
@@ -377,6 +377,6 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 **Built with ❤️ for the verification community**
 
-[⬆ back to top](#️-sentinel-dv-v100---verification-intelligence-for-ai-agents)
+[⬆ back to top](#️-sentinel-dv-v120---verification-intelligence-for-ai-agents)
 
 </div>

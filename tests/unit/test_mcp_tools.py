@@ -111,6 +111,11 @@ class TestMcpTools:
         assert result["pagination"]["total_items"] == 1
         assert result["tests"][0]["name"] == "failing"
 
+    def test_find_test_by_name_matches_substrings(self, indexed_store):
+        result = indexed_store.find_test_by_name("ail")
+        assert result is not None
+        assert result["name"] in {"failing", "passing"}
+
     def test_list_failures_include_evidence(self, indexed_store):
         result = core.list_failures(indexed_store, include_evidence=True)
         assert result["pagination"]["total_items"] == 1

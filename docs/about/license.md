@@ -207,9 +207,9 @@ Sentinel DV depends on the following open source packages:
 
 | Package | License | Purpose |
 |---------|---------|---------|
-| FastAPI | MIT | MCP server framework |
+| FastMCP | MIT | MCP server framework |
 | Pydantic | MIT | Data validation |
-| SQLite | Public Domain | Database engine |
+| DuckDB | MIT | Index database engine |
 | Ruff | MIT | Linting |
 | Black | MIT | Code formatting |
 | pytest | MIT | Testing |
@@ -220,16 +220,14 @@ All dependencies use permissive licenses compatible with Apache 2.0.
 
 By contributing to Sentinel DV, you agree that your contributions will be licensed under the Apache License 2.0.
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines.
+See the [contribution guidelines](https://github.com/kiranreddi/sentinel-dv/blob/main/CONTRIBUTING.md).
 
 ## Questions
 
-For licensing questions, please contact:
-- GitHub Issues: https://github.com/kiranreddi/sentinel-dv/issues
-- Email: [your-email@example.com]
+For licensing questions, use GitHub Issues: https://github.com/kiranreddi/sentinel-dv/issues
 
 ## Full License Text
 
 The complete Apache License 2.0 text is available at:
 - https://www.apache.org/licenses/LICENSE-2.0
-- [LICENSE file](../../LICENSE) in the repository root
+- [LICENSE file](https://github.com/kiranreddi/sentinel-dv/blob/main/LICENSE) in the repository root

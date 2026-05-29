@@ -1,28 +1,34 @@
 {
   "tool": "wave.summary",
   "arguments": {
-    "test_id": "t_dff9c20ec6c4",
+    "test_id": "t_3bb6bfc925aa",
     "start_time_ns": 1000,
     "end_time_ns": 25000
   },
   "response": {
-    "test_id": "t_dff9c20ec6c4",
+    "test_id": "t_3bb6bfc925aa",
     "format": "precomputed-vcd",
     "end_time_ns": 25000,
     "start_time_ns": 1000,
     "end_time_ns_query": 25000,
-    "signal_count": 4,
+    "signal_count": 3,
     "highlights": [
       {
-        "time_ns": 15000,
-        "signal": "sum",
-        "value": "0x000F",
-        "note": "add result stable"
+        "time_ns": 1000,
+        "signal": "rst",
+        "value": "0",
+        "note": "reset released"
+      },
+      {
+        "time_ns": 2500,
+        "signal": "count",
+        "value": "0x3",
+        "note": "counter increment window"
       }
     ],
     "metadata": {
-      "source": "demo",
-      "project": "alu_core",
+      "source": "checked-in demo fixture",
+      "generator": "verilator-vcd-summary",
       "window": {
         "start_time_ns": 1000,
         "end_time_ns": 25000,
@@ -31,9 +37,9 @@
     },
     "evidence": {
       "kind": "waveform_summary",
-      "path": "waveforms/alu_core/test_alu_add.wave.json"
+      "path": "verilator_counter/test_counter_sim.wave.json"
     },
-    "source_path": "waveforms/alu_core/test_alu_add.wave.json",
+    "source_path": "verilator_counter/test_counter_sim.wave.json",
     "schema_version": "1.0.0"
   }
 }

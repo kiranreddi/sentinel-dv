@@ -763,8 +763,8 @@ class IndexStore:
             raise ValueError(f"Invalid sort_by: {sort_by}")
 
         # Build WHERE clause
-        where_clauses = []
-        params = []
+        where_clauses: list[str] = []
+        params: list[Any] = []
 
         if run_id:
             where_clauses.append("run_id = ?")
@@ -976,7 +976,10 @@ class IndexStore:
         ).fetchone()
         if not result:
             return None
-        return json.loads(result[0])
+        topology = json.loads(result[0])
+        if not isinstance(topology, dict):
+            raise ValueError(f"Invalid topology payload for test {test_id}")
+        return topology
 
     def insert_topology(self, test_id: str, topology: dict[str, Any]) -> None:
         """Insert or replace topology for a test."""
@@ -1000,8 +1003,11 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
-        match_clauses = ["name = ?", "name LIKE ?"]
-        params: list[Any] = [name, f"%.{name}"]
+        exact_name = name
+        suffix_pattern = f"%.{name}"
+        contains_pattern = f"%{name}%"
+        match_clauses = ["name = ?", "name LIKE ?", "name LIKE ?"]
+        params: list[Any] = [exact_name, suffix_pattern, contains_pattern]
         framework_clause = ""
         if framework:
             framework_clause = "AND framework = ?"
@@ -1011,10 +1017,17 @@ class IndexStore:
             f"""
             SELECT * FROM tests
             WHERE ({' OR '.join(match_clauses)}) {framework_clause}
-            ORDER BY created_at DESC, test_id ASC
+            ORDER BY
+                CASE
+                    WHEN name = ? THEN 0
+                    WHEN name LIKE ? THEN 1
+                    ELSE 2
+                END,
+                created_at DESC,
+                test_id ASC
             LIMIT 1
         """,
-            params,
+            params + [exact_name, suffix_pattern],
         ).fetchone()
         if not result:
             return None
@@ -1466,8 +1479,12 @@ class IndexStore:
             run_ids,
         ).fetchone()
 
-        total_tests = stats[0] or 0
-        passed = stats[1] or 0
+        if stats is None:
+            total_tests = 0
+            passed = 0
+        else:
+            total_tests = stats[0] or 0
+            passed = stats[1] or 0
         pass_rate = (100.0 * passed / total_tests) if total_tests else 0.0
 
         sig_rows = self._conn.execute(

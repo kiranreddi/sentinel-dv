@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from enum import Enum
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+from typing import Any, TypedDict
 
 from sentinel_dv.adapters.assertion_reports import ASSERTION_GLOBS, AssertionReportParser
 from sentinel_dv.adapters.cocotb import CocotbParser
@@ -25,6 +26,20 @@ from sentinel_dv.ids import (
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.normalization.redaction import Redactor
 from sentinel_dv.utils.bounded_text import truncate_text
+
+
+class IndexStats(TypedDict):
+    """Counters returned by a full artifact indexing pass."""
+
+    artifacts: int
+    runs: int
+    tests: int
+    failures: int
+    waveforms: int
+    assertions: int
+    assertion_failures: int
+    coverage: int
+    warnings: list[str]
 
 
 class ArtifactIndexer:
@@ -101,7 +116,7 @@ class ArtifactIndexer:
             }
         )
 
-    def index_all(self) -> dict[str, int]:
+    def index_all(self) -> IndexStats:
         """Index all discovered artifacts into the store."""
         artifacts = self.scan_artifacts()
         waveform_artifacts = (
@@ -109,7 +124,7 @@ class ArtifactIndexer:
         )
         assertion_artifacts = self.scan_assertion_artifacts() if self.adapters.assertions else []
         coverage_artifacts = self.scan_coverage_artifacts() if self.adapters.coverage else []
-        stats: dict[str, int | list[str]] = {
+        stats: IndexStats = {
             "artifacts": len(artifacts)
             + len(waveform_artifacts)
             + len(assertion_artifacts)
@@ -185,9 +200,7 @@ class ArtifactIndexer:
             return str(value.value)
         return str(value)
 
-    def _index_uvm_log(
-        self, store: IndexStore, log_path: Path, stats: dict[str, int | list[str]]
-    ) -> None:
+    def _index_uvm_log(self, store: IndexStore, log_path: Path, stats: IndexStats) -> None:
         if not self._artifact_within_limit(log_path):
             return
         result = self.uvm_parser.parse_log(log_path)
@@ -235,9 +248,7 @@ class ArtifactIndexer:
         for failure in result.get("failures", []):
             self._index_failure(store, failure, test_id, test_id_full, run_id, stats)
 
-    def _index_cocotb_xml(
-        self, store: IndexStore, xml_path: Path, stats: dict[str, int | list[str]]
-    ) -> None:
+    def _index_cocotb_xml(self, store: IndexStore, xml_path: Path, stats: IndexStats) -> None:
         if not self._artifact_within_limit(xml_path):
             return
         result = self.cocotb_parser.parse_junit_xml(xml_path)
@@ -263,7 +274,7 @@ class ArtifactIndexer:
             )
             stats["runs"] += 1
 
-        failures_by_test = {}
+        failures_by_test: dict[str | None, list[dict[str, Any]]] = {}
         for failure in result.get("failures", []):
             failures_by_test.setdefault(failure.get("test_name"), []).append(failure)
 
@@ -295,7 +306,7 @@ class ArtifactIndexer:
         test_id: str,
         test_id_full: str,
         run_id: str,
-        stats: dict[str, int | list[str]],
+        stats: IndexStats,
     ) -> None:
         category = self._coerce_taxonomy_value(failure.get("category"), "unknown")
         severity = self._coerce_taxonomy_value(failure.get("severity", "error"), "error")
@@ -340,7 +351,7 @@ class ArtifactIndexer:
         stats["failures"] += 1
 
     def _index_waveform_summary(
-        self, store: IndexStore, artifact_path: Path, stats: dict[str, int | list[str]]
+        self, store: IndexStore, artifact_path: Path, stats: IndexStats
     ) -> None:
         if not self._artifact_within_limit(artifact_path):
             return
@@ -390,9 +401,7 @@ class ArtifactIndexer:
             return None
         return test["test_id"], test["run_id"], test["test_id_full"]
 
-    def _index_assertion_artifact(
-        self, store: IndexStore, path: Path, stats: dict[str, int | list[str]]
-    ) -> None:
+    def _index_assertion_artifact(self, store: IndexStore, path: Path, stats: IndexStats) -> None:
         if not self._artifact_within_limit(path):
             return
         try:
@@ -425,12 +434,12 @@ class ArtifactIndexer:
         test_id: str,
         run_id: str,
         test_id_full: str,
-        stats: dict[str, int | list[str]],
+        stats: IndexStats,
         source_rel: str = "unknown.log",
     ) -> None:
         name_to_id: dict[str, str] = {}
         for adef in parsed.get("assertions", []):
-            aid, afull = generate_assertion_id(
+            assertion_id, assertion_id_full = generate_assertion_id(
                 adef["name"],
                 adef["scope"],
                 adef["file"],
@@ -438,8 +447,8 @@ class ArtifactIndexer:
                 adef.get("language", "sva"),
             )
             store.insert_assertion(
-                assertion_id=aid,
-                assertion_id_full=afull,
+                assertion_id=assertion_id,
+                assertion_id_full=assertion_id_full,
                 language=adef.get("language", "sva"),
                 name=adef["name"],
                 scope=adef["scope"],
@@ -450,21 +459,21 @@ class ArtifactIndexer:
                 intent_requirement=adef.get("intent_requirement"),
                 tags=adef.get("tags", []),
             )
-            name_to_id[adef["name"]] = aid
+            name_to_id[adef["name"]] = assertion_id
             stats["assertions"] += 1
 
         for fail in parsed.get("failures", []):
-            fail_name = fail.get("name", "unknown")
-            aid = name_to_id.get(fail_name)
-            if not aid:
-                aid, afull = generate_unknown_assertion_id(
+            fail_name = str(fail.get("name") or "unknown")
+            failure_assertion_id = name_to_id.get(fail_name)
+            if not failure_assertion_id:
+                failure_assertion_id, assertion_id_full = generate_unknown_assertion_id(
                     test_id_full, fail.get("message", fail_name)
                 )
                 store.insert_assertion(
-                    assertion_id=aid,
-                    assertion_id_full=afull,
+                    assertion_id=failure_assertion_id,
+                    assertion_id_full=assertion_id_full,
                     language="unknown",
-                    name=f"unknown_assertion_{aid[2:10]}",
+                    name=f"unknown_assertion_{failure_assertion_id[2:10]}",
                     scope="synthetic",
                     file="unknown.sv",
                     line=1,
@@ -473,10 +482,10 @@ class ArtifactIndexer:
                     intent_requirement=None,
                     tags=["unknown"],
                 )
-                name_to_id[fail_name] = aid
+                name_to_id[fail_name] = failure_assertion_id
                 stats["assertions"] += 1
             store.insert_assertion_failure(
-                assertion_id=aid,
+                assertion_id=failure_assertion_id,
                 test_id=test_id,
                 run_id=run_id,
                 message=fail.get("message", ""),
@@ -487,9 +496,7 @@ class ArtifactIndexer:
             )
             stats["assertion_failures"] += 1
 
-    def _index_log_assertions(
-        self, store: IndexStore, log_path: Path, stats: dict[str, int | list[str]]
-    ) -> None:
+    def _index_log_assertions(self, store: IndexStore, log_path: Path, stats: IndexStats) -> None:
         if not self._artifact_within_limit(log_path):
             return
         result = self.uvm_parser.parse_log(log_path)
@@ -507,9 +514,7 @@ class ArtifactIndexer:
             store, parsed, *ctx, stats, source_rel=self._relative_path(log_path)
         )
 
-    def _index_coverage_artifact(
-        self, store: IndexStore, path: Path, stats: dict[str, int | list[str]]
-    ) -> None:
+    def _index_coverage_artifact(self, store: IndexStore, path: Path, stats: IndexStats) -> None:
         if not self._artifact_within_limit(path):
             return
         try:
@@ -558,7 +563,7 @@ class ArtifactIndexer:
         max_refs = self.security.max_evidence_refs
         max_extract = self.security.max_excerpt_length
         for ref in refs[:max_refs]:
-            path_value = str(ref.get("path", "")).strip()
+            path_value = str(ref.get("path", "")).strip().replace("\\", "/")
             if not path_value:
                 continue
             p = Path(path_value)
@@ -567,8 +572,14 @@ class ArtifactIndexer:
                     path_value = self._relative_path(p)
                 except ValueError:
                     continue
-            if path_value.startswith("/"):
+            if path_value.startswith("/") or path_value.startswith("//"):
                 continue
+            if len(path_value) >= 2 and path_value[1] == ":":
+                continue
+            normalized_path = PurePosixPath(path_value)
+            if ".." in normalized_path.parts:
+                continue
+            path_value = normalized_path.as_posix()
             span = ref.get("span") or {}
             item: dict[str, Any] = {
                 "kind": str(ref.get("kind", "log")),
@@ -578,9 +589,11 @@ class ArtifactIndexer:
                     for k in ("start_line", "end_line", "start_time_ns", "end_time_ns")
                     if span.get(k) is not None
                 },
-                "extract": truncate_text(str(ref.get("extract", "")), max_extract)
-                if ref.get("extract")
-                else None,
+                "extract": (
+                    truncate_text(str(ref.get("extract", "")), max_extract)
+                    if ref.get("extract")
+                    else None
+                ),
             }
             normalized.append(item)
         return normalized

@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 from sentinel_dv.schemas.common import EvidenceRef
-from sentinel_dv.schemas.coverage import CoverageMetric, CoverageSummary
+from sentinel_dv.schemas.coverage import CoverageKind, CoverageMetric, CoverageSummary
 
 
 class CoverageParser:
@@ -77,15 +77,26 @@ class CoverageParser:
                 CoverageMetric(name="line", scope="module", covered=0.0, hits=0, total=0)
             )
 
-        summary_kind = (
-            kind
-            if kind in {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
-            else "functional"
-        )
+        summary_kind: CoverageKind
+        if kind == "code":
+            summary_kind = "code"
+        elif kind == "assertion":
+            summary_kind = "assertion"
+        elif kind == "toggle":
+            summary_kind = "toggle"
+        elif kind == "fsm":
+            summary_kind = "fsm"
+        elif kind == "unknown":
+            summary_kind = "unknown"
+        else:
+            summary_kind = "functional"
         rel_path = report_path.name
         return CoverageSummary(
             run_id=run_id,
-            kind=summary_kind,  # type: ignore[arg-type]
+            test_id=None,
+            kind=summary_kind,
             metrics=metrics,
-            evidence=[EvidenceRef(kind="coverage", path=rel_path)],
+            evidence=[
+                EvidenceRef(kind="coverage", path=rel_path, span=None, extract=None, hash=None)
+            ],
         )

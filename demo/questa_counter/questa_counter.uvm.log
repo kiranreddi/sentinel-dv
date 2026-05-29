@@ -1,0 +1,5 @@
+# Questa simulator transcript
+# UVM_INFO @ 0 ns [TEST] (uvm_test_top): Running test test_questa_counter
+# UVM_INFO @ 100 ns [ENV] (uvm_test_top.env.agent.monitor): uvm_test_top.env.agent.monitor active
+# UVM_ERROR @ 1250 ns [SCB] (uvm_test_top.env.scoreboard): DATA MISMATCH: expected count=3 got 5
+# UVM_FATAL @ 1300 ns [TEST] (uvm_test_top): TEST FAILED

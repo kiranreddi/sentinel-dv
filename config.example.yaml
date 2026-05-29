@@ -9,8 +9,8 @@ artifact_roots:
 
 # Index storage configuration
 index:
-  type: duckdb  # Options: duckdb, sqlite, json
-  path: ./sentinel_dv.db  # Database file path
+  type: duckdb  # Supported backend
+  path: ./sentinel_dv.db  # Relative paths resolve from this config file
 
 # Adapter configuration (enable/disable parsers)
 adapters:
@@ -18,7 +18,7 @@ adapters:
   cocotb: true           # Parse cocotb results
   assertions: true       # *.assert.json, assertions*.rpt, sim log SVA patterns
   coverage: true         # coverage.json, coverage.txt, coverage.xml, *.cov.json
-  waveform_summary: false  # Index *.wave.json and *.vcd (demo/waveforms/, demo/verilator_counter/)
+  waveform_summary: false  # Index *.wave.json and *.vcd when waveform tools are needed
 
 # Security limits
 security:

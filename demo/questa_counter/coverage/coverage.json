@@ -1,0 +1,8 @@
+{
+  "test_name": "counter_tb.test_questa_counter",
+  "kind": "functional",
+  "metrics": [
+    {"name": "line", "scope": "counter", "covered": 89.0, "hits": 23, "total": 25},
+    {"name": "toggle", "scope": "counter", "covered": 75.0, "hits": 6, "total": 8}
+  ]
+}

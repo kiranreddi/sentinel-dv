@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="cadence-counter-regression">
+  <testsuite name="counter_tb" tests="1" errors="0" failures="1" skipped="0" time="0.020">
+    <testcase classname="counter_tb" name="test_cadence_counter_overflow" time="0.020">
+      <failure message="Scoreboard mismatch: counter wrap check failed">
+Expected count to wrap at 15; observed 16 without wrap.
+      </failure>
+    </testcase>
+  </testsuite>
+</testsuites>

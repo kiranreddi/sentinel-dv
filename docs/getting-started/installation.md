@@ -1,6 +1,6 @@
 # Installation
 
-**Current release: v1.2.0** ([changelog](../about/changelog.md#120---2026-05-27))
+**Current release: v1.2.0** ([changelog](../about/changelog.md))
 
 This guide shows how to configure and run Sentinel DV locally, then connect it to an MCP client (e.g. Claude Desktop).
 
@@ -108,4 +108,3 @@ Update `.vscode/mcp.json`:
 
 - Sentinel DV exposes MCP tools over **stdio** (there are currently no documented HTTP endpoints).
 - If the server reports `INDEX_NOT_READY`, run the indexing step again.
-

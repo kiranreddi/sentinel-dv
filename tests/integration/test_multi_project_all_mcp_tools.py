@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from sentinel_dv.demo_fixtures import DEMO_AS_OF
 from sentinel_dv.indexing.store import IndexStore
 from tests.integration.multi_project_demo import (
     DEMO_ROOT,
@@ -32,19 +33,19 @@ def multi_index(tmp_path_factory):
 class TestMultiProjectIndex:
     def test_index_covers_all_projects(self, multi_index):
         _db, _cfg, stats = multi_index
-        assert stats["runs"] >= 8, stats
-        assert stats["tests"] >= 10, stats
-        assert stats["failures"] >= 5, stats
-        assert stats["waveforms"] >= 4, stats
-        assert stats["assertions"] >= 2, stats
-        assert stats["coverage"] >= 1, stats
+        assert stats["runs"] >= 17, stats
+        assert stats["tests"] >= 19, stats
+        assert stats["failures"] >= 11, stats
+        assert stats["waveforms"] >= 8, stats
+        assert stats["assertions"] >= 5, stats
+        assert stats["coverage"] >= 4, stats
 
     def test_expected_suites_present(self, multi_index):
         db, _cfg, _stats = multi_index
         with IndexStore(db) as store:
             runs, _ = store.query_runs(page_size=200)
             suites = {r["suite"] for r in runs}
-        assert EXPECTED_SUITES <= suites
+        assert suites >= EXPECTED_SUITES
 
 
 class TestMultiProjectCoreTools:
@@ -68,9 +69,17 @@ def test_per_suite_regression_summary(multi_index):
     from sentinel_dv.tools import core
 
     with IndexStore(db) as store:
-        for suite in ("axi_burst", "apb_register", "alu_core", "verilator_counter"):
+        for suite in (
+            "axi_burst",
+            "apb_register",
+            "alu_core",
+            "verilator_counter",
+            "vcs_counter",
+            "questa_counter",
+            "cadence_counter",
+        ):
             summary = core.get_regression_summary(
-                store, suite=suite, window_days=30, as_of="2026-05-28T12:00:00Z"
+                store, suite=suite, window_days=30, as_of=DEMO_AS_OF
             )
             assert summary["suite"] == suite
             assert summary["runs"], f"no runs for {suite}"

@@ -292,7 +292,7 @@ We thank the following researchers for responsibly disclosing security issues:
 
 - [Architecture → Security Model](../architecture/security.md) - Complete security design
 - [Installation Guide](../getting-started/installation.md) - Secure installation practices
-- [Contributing Guide](../../CONTRIBUTING.md) - Secure development practices
+- [Contributing Guide](https://github.com/kiranreddi/sentinel-dv/blob/main/CONTRIBUTING.md) - Secure development practices
 
 ---
 
