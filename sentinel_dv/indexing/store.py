@@ -5,6 +5,7 @@ This module provides the DuckDB-based storage layer for indexed verification art
 Implements the schema documented in docs/index-store.md.
 """
 
+import contextlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -344,12 +345,10 @@ class IndexStore:
             raise RuntimeError("Not connected to database")
 
         for table in ("runs", "tests"):
-            try:
+            with contextlib.suppress(duckdb.Error):
                 self._conn.execute(
                     f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS created_at_ms BIGINT"
                 )
-            except duckdb.Error:
-                pass
             rows = self._conn.execute(
                 f"SELECT rowid, created_at FROM {table} WHERE created_at_ms IS NULL"
             ).fetchall()
