@@ -36,7 +36,10 @@
         "evidence": [
           {
             "kind": "coverage",
-            "path": "verilator_counter/coverage/coverage.json"
+            "path": "verilator_counter/coverage/coverage.json",
+            "span": null,
+            "extract": null,
+            "hash": null
           }
         ]
       }

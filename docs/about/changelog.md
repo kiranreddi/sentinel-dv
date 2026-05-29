@@ -11,7 +11,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Documentation alignment for assertion/coverage parameter usage and deterministic replay examples.
+- (Nothing yet.)
+
+## [1.3.0] - 2026-05-29
+
+### Added
+
+- VCS, Questa, and Cadence Xcelium checked-in fixtures plus multi-project UVM/cocotb demos.
+- Shared `demo_fixtures` harness, `verify_all_mcp_tools.py --sim`, and MCP tool gallery assets.
+- Integration tests for the full demo corpus and commercial simulator matrix.
+
+### Changed
+
+- Relative config paths resolve from the config file directory; indexer and evidence handling hardened.
+- Install **`sentinel-dv>=1.3.0`** for commercial simulator examples and multi-project validation.
 
 ## [1.2.0] - 2026-05-27
 
@@ -70,6 +83,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 See the repository [CHANGELOG.md](https://github.com/kiranreddi/sentinel-dv/blob/main/CHANGELOG.md) for the full 1.0.0 entry.
 
+[1.3.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.3.0
 [1.2.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.2.0
 [1.1.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.1.0
 [1.0.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.0.1

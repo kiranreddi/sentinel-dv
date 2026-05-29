@@ -8,13 +8,13 @@
       "run_id": "r_85b1d3f70e48",
       "run_id_full": "85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33",
       "suite": "verilator_counter",
-      "created_at": "2026-05-29T01:30:53.830505Z",
+      "created_at": "2026-05-29T05:21:10.979751Z",
       "status": "pass",
       "ci_system": null,
       "ci_build_id": null,
       "ci_job_url": null,
       "artifact_manifest_hash": null,
-      "index_built_at": "2026-05-29T01:30:53.831278Z"
+      "index_built_at": "2026-05-29T05:21:10.980055Z"
     },
     "schema_version": "1.0.0"
   }

@@ -13,7 +13,7 @@ Get up and running with Sentinel DV in minutes.
 === "PyPI (Recommended)"
 
     ```bash
-    pip install "sentinel-dv>=1.2.0"
+    pip install "sentinel-dv>=1.3.0"
     ```
 
 === "From Source"
@@ -89,7 +89,7 @@ python -m sentinel_dv.server --config config.yaml
 **Server will start on stdio (MCP protocol):**
 
 ```
-Sentinel DV v1.2.0 started
+Sentinel DV v1.3.0 started
 Schema version: 1.0.0
 Tools registered: 15
 Index ready: 150 tests indexed
@@ -190,7 +190,8 @@ print(f"Failures indexed: {store.count_failures()}")
 ## Next Steps
 
 - [MCP tool gallery](../tools/mcp-tool-gallery.md) — visual cards for all 15 tools (real JSON from `demo/`)
-- [Multi-project demo](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) — UVM, cocotb, and Verilator sample projects
+- [Multi-project demo](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) — UVM, cocotb, Verilator, and commercial simulator fixtures
+- [VCS, Questa, and Cadence](../examples/commercial-simulators.md) — license-free artifact validation (`python scripts/verify_all_mcp_tools.py --sim vcs`)
 - [Verilator + VCD example](../examples/verilator-counter.md) — end-to-end waveform demo
 - [Waveform summaries](../guides/waveforms.md) — `*.wave.json` and `*.vcd` indexing
 - [Configure adapters](../configuration.md) for your specific simulator

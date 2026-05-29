@@ -9,11 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Documentation alignment for assertion/coverage MCP parameters (`protocol`, `tag`, `start_time_ns`, `end_time_ns`, `include_evidence`, `as_of`) and deterministic replay guidance.
+- (Nothing yet.)
+
+## [1.3.0] - 2026-05-29
+
+### Added
+
+- **Commercial simulator fixtures** — checked-in artifact trees for **VCS**, **Questa**, and **Cadence Xcelium** under `demo/vcs_counter/`, `demo/questa_counter/`, and `demo/cadence_counter/` (JUnit XML, UVM logs, assertion JSON, coverage JSON, `*.wave.json`).
+- **Multi-project demo corpus** — additional UVM (`demo/uvm_logs/`) and cocotb (`demo/cocotb_results/`) sample projects for regression-style MCP validation.
+- **`sentinel_dv/demo_fixtures.py`** — shared indexing helpers, MCP tool matrix, `discover_fixtures()`, and `scripts/verify_all_mcp_tools.py --sim` support.
+- **`examples/simulator_matrix.py`** — run the 15-tool matrix across Verilator and commercial fixtures.
+- **MCP tool gallery** — `scripts/generate_mcp_tool_gallery.py` and docs assets under `docs/assets/mcp-tools/`.
+- **Integration tests** — `test_multi_project_all_mcp_tools.py`, `test_simulator_examples_all_mcp_tools.py` (parametrized VCS/Questa/Cadence).
 
 ### Changed
 
-- No unreleased code changes currently tracked.
+- **Config paths** — relative `artifact_roots` and `index.path` resolve from the config file directory.
+- **Indexer** — broader cocotb JUnit/XML discovery; taxonomy enum coercion for DuckDB; evidence path traversal hardening.
+- **Waveform indexing** — when both `*.wave.json` and `*.vcd` exist under a demo tree, both are indexed (documented for Verilator walkthrough).
+- Version bumped to `1.3.0` in package metadata, docs, and MCP registry manifest (`server.json`).
+
+### Migration Notes
+
+- Re-index after upgrade: `sentinel-dv-index --config config.yaml --index-all`.
+- For commercial simulators, point `artifact_roots` at exported artifacts only (Sentinel DV does not launch simulators). See [Commercial simulators](docs/examples/commercial-simulators.md).
 
 ## [1.2.0] - 2026-05-27
 

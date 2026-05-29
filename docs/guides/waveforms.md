@@ -145,7 +145,7 @@ sentinel-dv-index --config config.yaml --index-all
 
 Expected indexer output includes `waveforms=1`. Then start the MCP server and call `wave.signals` / `wave.summary` for the indexed test.
 
-Requirements: [Verilator](https://verilator.org) on `PATH`, `sentinel-dv>=1.2.0` installed.
+Requirements: [Verilator](https://verilator.org) on `PATH`, `sentinel-dv>=1.3.0` installed.
 
 ## Combined demo (cocotb + JSON waveforms)
 

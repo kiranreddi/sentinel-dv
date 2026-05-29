@@ -36,7 +36,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T01:30:53.845386Z",
+          "created_at": "2026-05-29T05:21:10.984111Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -47,7 +47,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-29T01:30:53.830505Z",
+          "created_at": "2026-05-29T05:21:10.979751Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -58,7 +58,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T01:30:53.798640Z",
+          "created_at": "2026-05-29T05:21:10.968923Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -93,13 +93,13 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "run_id": "r_85b1d3f70e48",
         "run_id_full": "85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33",
         "suite": "verilator_counter",
-        "created_at": "2026-05-29T01:30:53.830505Z",
+        "created_at": "2026-05-29T05:21:10.979751Z",
         "status": "pass",
         "ci_system": null,
         "ci_build_id": null,
         "ci_job_url": null,
         "artifact_manifest_hash": null,
-        "index_built_at": "2026-05-29T01:30:53.831278Z"
+        "index_built_at": "2026-05-29T05:21:10.980055Z"
       },
       "schema_version": "1.0.0"
     }
@@ -135,7 +135,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "sim_vendor": null,
           "sim_version": null,
           "dut_top": null,
-          "created_at": "2026-05-29T01:30:53.830505Z"
+          "created_at": "2026-05-29T05:21:10.979751Z"
         }
       ],
       "pagination": {
@@ -174,7 +174,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "sim_vendor": null,
         "sim_version": null,
         "dut_top": null,
-        "created_at": "2026-05-29T01:30:53.830505Z"
+        "created_at": "2026-05-29T05:21:10.979751Z"
       }
     }
     ```
@@ -456,7 +456,10 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "evidence": [
             {
               "kind": "coverage",
-              "path": "verilator_counter/coverage/coverage.json"
+              "path": "verilator_counter/coverage/coverage.json",
+              "span": null,
+              "extract": null,
+              "hash": null
             }
           ]
         }
@@ -693,26 +696,26 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "suite": "verilator_counter",
       "window_days": 30,
-      "as_of": "2026-05-29T01:30:54.264357Z",
+      "as_of": "2026-05-29T05:21:11.130064Z",
       "pass_rate": 33.33,
       "runs": [
         {
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T01:30:53.845386Z"
+          "created_at": "2026-05-29T05:21:10.984111Z"
         },
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-29T01:30:53.830505Z"
+          "created_at": "2026-05-29T05:21:10.979751Z"
         },
         {
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T01:30:53.798640Z"
+          "created_at": "2026-05-29T05:21:10.968923Z"
         }
       ],
       "top_signatures": [

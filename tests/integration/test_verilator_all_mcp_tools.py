@@ -35,7 +35,8 @@ def indexed_demo(tmp_path):
     assert stats["assertions"] >= 2, stats
     assert stats["assertion_failures"] >= 1, stats
     assert stats["coverage"] >= 1, stats
-    assert stats["waveforms"] == 1, stats
+    # Repo demo may index both precomputed *.wave.json and waves/*.vcd
+    assert stats["waveforms"] >= 1, stats
     cfg = build_demo_config(work, db)
     suite = work.name if work != DEMO_DIR else "verilator_counter"
     return work, db, cfg, suite, stats
@@ -119,7 +120,7 @@ def test_index_in_repo_demo_dir(tmp_path):
     work = prepare_work_dir(tmp_path, use_repo_demo=True)
     db = tmp_path / "inplace.duckdb"
     stats = index_demo(work, db)
-    assert stats["waveforms"] == 1
+    assert stats["waveforms"] >= 1
     assert stats["runs"] >= 3
 
 
