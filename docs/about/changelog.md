@@ -13,6 +13,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - (Nothing yet.)
 
+## [1.3.2] - 2026-05-29
+
+### Added
+
+- Pre-release scripts and release workflow gates (`pre_release.sh`, `check_versions.py`).
+- Additional unit tests for server handlers, CLI, and coverage.
+
+### Changed
+
+- Install **`sentinel-dv>=1.3.2`** for pre-release tooling and doc fixes since 1.3.1.
+
 ## [1.3.1] - 2026-05-29
 
 ### Added
@@ -95,6 +106,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 See the repository [CHANGELOG.md](https://github.com/kiranreddi/sentinel-dv/blob/main/CHANGELOG.md) for the full 1.0.0 entry.
 
+[1.3.2]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.3.2
 [1.3.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.3.1
 [1.3.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.3.0
 [1.2.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.2.0

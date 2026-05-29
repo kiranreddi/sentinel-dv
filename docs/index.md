@@ -11,7 +11,7 @@ hide:
 <div class="sdv-hero__inner" markdown>
 
 <span class="sdv-hero__badge">:material-shield-check: MCP · Security-first</span>
-<span class="sdv-hero__badge">v1.3.1</span>
+<span class="sdv-hero__badge">v1.3.2</span>
 
 # Sentinel DV
 

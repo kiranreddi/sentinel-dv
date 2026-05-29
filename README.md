@@ -1,4 +1,4 @@
-# 🛡️ Sentinel DV v1.3.1 - Verification Intelligence for AI Agents
+# 🛡️ Sentinel DV v1.3.2 - Verification Intelligence for AI Agents
 
 <!-- mcp-name: io.github.kiranreddi/sentinel-dv -->
 
@@ -131,7 +131,7 @@ sentinel_dv/
 
 ## 🚀 Quick Start
 
-> **PyPI:** Use **`sentinel-dv>=1.3.1`** for commercial simulator fixtures (VCS, Questa, Cadence), multi-project demos, assertion/coverage intelligence, waveform indexing, and all 15 MCP tools.
+> **PyPI:** Use **`sentinel-dv>=1.3.2`** for commercial simulator fixtures (VCS, Questa, Cadence), multi-project demos, assertion/coverage intelligence, waveform indexing, and all 15 MCP tools.
 
 ### Install from MCP Registry
 
@@ -146,7 +146,7 @@ Install via [uv](https://docs.astral.sh/uv/) (`uvx`) or your MCP client’s regi
       "command": "uvx",
       "args": [
         "--from",
-        "sentinel-dv@1.3.1",
+        "sentinel-dv@1.3.2",
         "sentinel-dv-server",
         "--config",
         "/absolute/path/to/config.yaml"
@@ -161,7 +161,7 @@ Alternatively set `SENTINEL_DV_CONFIG` to your config path and omit `--config`.
 **Before querying:** build the artifact index (required once per config):
 
 ```bash
-uvx --from sentinel-dv@1.3.1 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
+uvx --from sentinel-dv@1.3.2 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
 ```
 
 ### Installation
@@ -175,7 +175,7 @@ cd sentinel-dv
 pip install -e ".[dev]"
 
 # Or production install (requires >=1.3.1)
-pip install "sentinel-dv>=1.3.1"
+pip install "sentinel-dv>=1.3.2"
 ```
 
 ### Configuration

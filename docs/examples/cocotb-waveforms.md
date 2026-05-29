@@ -4,7 +4,7 @@ Index the bundled **`demo/`** tree to exercise multiple cocotb projects, UVM log
 
 ## Requirements
 
-- `sentinel-dv>=1.3.1`
+- `sentinel-dv>=1.3.2`
 - Repository clone (examples live under `demo/`)
 
 ## 1. Configure

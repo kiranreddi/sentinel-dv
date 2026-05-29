@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (Nothing yet.)
 
+## [1.3.2] - 2026-05-29
+
+### Added
+
+- **Pre-release tooling** — `scripts/pre_release.sh`, `scripts/check_versions.py`, and [RELEASING.md](docs/release/RELEASING.md).
+- **Release workflow preflight** — lint, tests, ≥70% coverage, and version/tag alignment before PyPI publish.
+- **Unit tests** — MCP server handlers, indexing CLI, waveform helpers, and expanded store/utils coverage.
+
+### Changed
+
+- Documentation: explicit `cp config.example.yaml` in quick-start and troubleshooting.
+- Version bumped to `1.3.2` across package metadata and docs.
+
 ## [1.3.1] - 2026-05-29
 
 ### Added
