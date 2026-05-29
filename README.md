@@ -174,7 +174,7 @@ cd sentinel-dv
 # Install with development dependencies
 pip install -e ".[dev]"
 
-# Or production install (requires >=1.3.0 for commercial simulator fixtures and multi-project demos)
+# Or production install (requires >=1.3.1)
 pip install "sentinel-dv>=1.3.1"
 ```
 

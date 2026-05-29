@@ -26,9 +26,17 @@ Get up and running with Sentinel DV in minutes.
 
 ## Configuration
 
-**Required:** Sentinel DV does not start without a config file (no silent `demo/` default). Copy `config.example.yaml` or set `SENTINEL_DV_CONFIG`.
+**Required:** Sentinel DV does not start without a config file (no silent `demo/` default).
 
-Create a `config.yaml` file:
+From the repository root, copy the template and edit paths for your environment:
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+Alternatively set `export SENTINEL_DV_CONFIG=/absolute/path/to/config.yaml`, or place `config.yaml` / `config.yml` in the directory where you start the server.
+
+Example `config.yaml`:
 
 ```yaml
 artifact_roots:

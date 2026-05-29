@@ -5,6 +5,7 @@
 ### “No configuration found…”
 
 Sentinel DV requires a config file. Use either:
+- Create config first: `cp config.example.yaml config.yaml` (required — no automatic `demo/` fallback)
 - `python -m sentinel_dv.server --config /path/to/config.yaml`
 - or `export SENTINEL_DV_CONFIG=/path/to/config.yaml` and then run `python -m sentinel_dv.server`
 
