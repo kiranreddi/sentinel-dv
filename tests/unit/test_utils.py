@@ -8,7 +8,7 @@ from sentinel_dv.utils.bounded_text import (
     normalize_whitespace,
     truncate_text,
 )
-from sentinel_dv.utils.hashing import sha256_hex, stable_signature
+from sentinel_dv.utils.hashing import hash_file_chunk, sha256_hex, stable_signature
 from sentinel_dv.utils.time import (
     now_utc,
     ns_to_human,
@@ -40,6 +40,16 @@ class TestHashing:
         sig2 = stable_signature(["summary", "category", "component1"])  # Different order
         assert sig1 == sig2  # Should be same due to sorting
         assert len(sig1) == 16  # Truncated to 16 chars
+
+    def test_hash_file_chunk(self, tmp_path):
+        log = tmp_path / "sim.log"
+        log.write_text("alpha\nbeta\ngamma\n", encoding="utf-8")
+        h = hash_file_chunk(str(log), 1, 2)
+        assert len(h) == 64
+        with pytest.raises(ValueError):
+            hash_file_chunk(str(log), 0, 1)
+        with pytest.raises(ValueError):
+            hash_file_chunk(str(log), 1, 99)
 
 
 class TestTimeUtils:
@@ -105,6 +115,12 @@ class TestBoundedText:
         assert len(result) == 50
         assert result.endswith("...")
 
+    def test_truncate_text_preserve_newlines(self):
+        text = "line one\nline two\nline three\nline four"
+        result = truncate_text(text, max_length=30, suffix="...", preserve_newlines=True)
+        assert len(result) <= 30
+        assert result.endswith("...")
+
     def test_extract_excerpt(self):
         """extract_excerpt should extract line ranges."""
         text = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5"
@@ -112,6 +128,12 @@ class TestBoundedText:
         assert "Line 2" in excerpt
         assert "Line 3" in excerpt
         assert "Line 4" in excerpt
+
+    def test_extract_excerpt_default_lines(self):
+        text = "\n".join(f"line {i}" for i in range(20))
+        excerpt = extract_excerpt(text, max_length=500)
+        assert "line 0" in excerpt
+        assert "line 9" in excerpt
 
     def test_normalize_whitespace(self):
         """normalize_whitespace should normalize spaces."""

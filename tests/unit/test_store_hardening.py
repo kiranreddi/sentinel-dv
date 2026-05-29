@@ -84,3 +84,30 @@ def test_resolve_config_does_not_default_to_demo(tmp_path, monkeypatch) -> None:
     monkeypatch.delenv("SENTINEL_DV_CONFIG", raising=False)
     with pytest.raises(RuntimeError, match="does not silently default"):
         resolve_config(None)
+
+
+def test_migrate_schema_idempotent_on_reopen(tmp_path) -> None:
+    db = tmp_path / "migrate.db"
+    store = IndexStore(db)
+    store.connect()
+    run_id, run_full = generate_run_id(suite="s", ci_system="x", ci_build_id="1")
+    store.insert_run(run_id, run_full, "s", "2026-05-20T10:00:00Z", "pass")
+    store.close()
+
+    store2 = IndexStore(db)
+    store2.connect()
+    row = store2._conn.execute(
+        "SELECT created_at_ms FROM runs WHERE run_id = ?", [run_id]
+    ).fetchone()
+    assert row[0] is not None
+    store2.close()
+
+
+def test_evidence_sequence_allocates_unique_ids(tmp_path) -> None:
+    store = IndexStore(tmp_path / "ev.db")
+    store.connect()
+    store.insert_evidence("failure", "f1", "log", "/a.log")
+    store.insert_evidence("failure", "f2", "log", "/b.log")
+    rows = store._conn.execute("SELECT id FROM evidence ORDER BY id").fetchall()
+    assert [r[0] for r in rows] == [1, 2]
+    store.close()
