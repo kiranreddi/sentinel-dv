@@ -21,6 +21,7 @@ from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.normalization.redaction import Redactor, set_default_redactor
 from sentinel_dv.tools import core
 from sentinel_dv.tools.errors import ToolError
+from sentinel_dv.tools.mcp_metadata import OUTPUT_SCHEMAS, READ_ONLY_ANNOTATIONS, TOOL_DESCRIPTIONS
 
 F = TypeVar("F", bound=Callable[..., dict[str, Any]])
 
@@ -71,13 +72,26 @@ def _tool_wrapper(fn: F) -> F:
     return inner  # type: ignore[return-value]
 
 
+def _readonly_tool(name: str) -> Callable[[F], F]:
+    """Register a read-only MCP tool with description, outputSchema, and annotations."""
+
+    def decorator(fn: F) -> F:
+        return mcp.tool(  # type: ignore[return-value]
+            name=name,
+            description=TOOL_DESCRIPTIONS[name],
+            output_schema=OUTPUT_SCHEMAS[name],
+            annotations=READ_ONLY_ANNOTATIONS,
+        )(_tool_wrapper(fn))
+
+    return decorator
+
+
 # ============================================================================
 # Discovery tools
 # ============================================================================
 
 
-@mcp.tool(name="runs.list")
-@_tool_wrapper
+@_readonly_tool("runs.list")
 def runs_list(
     suite: str | None = Field(None, description="Filter by suite name"),
     status: str | None = Field(None, description="Filter by run status (pass|fail|error)"),
@@ -85,23 +99,19 @@ def runs_list(
     page: int = Field(1, description="Page number (1-based)"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
-    """List indexed verification runs."""
     return core.list_runs(
         get_store(), suite=suite, status=status, ci_system=ci_system, page=page, page_size=page_size
     )
 
 
-@mcp.tool(name="runs.get")
-@_tool_wrapper
+@_readonly_tool("runs.get")
 def runs_get(
     run_id: str = Field(..., description="Run identifier"),
 ) -> dict[str, Any]:
-    """Get detailed information about a run."""
     return core.get_run_details(get_store(), run_id)
 
 
-@mcp.tool(name="tests.list")
-@_tool_wrapper
+@_readonly_tool("tests.list")
 def tests_list(
     run_id: str | None = Field(None, description="Filter by run ID"),
     framework: str | None = Field(None, description="Filter by framework (uvm|cocotb)"),
@@ -110,7 +120,6 @@ def tests_list(
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
-    """List tests with filtering and pagination."""
     return core.list_tests(
         get_store(),
         run_id=run_id,
@@ -122,8 +131,7 @@ def tests_list(
     )
 
 
-@mcp.tool(name="assertions.list")
-@_tool_wrapper
+@_readonly_tool("assertions.list")
 def assertions_list(
     scope: str | None = Field(None, description="Filter by scope"),
     name_pattern: str | None = Field(None, description="Filter by assertion name"),
@@ -132,7 +140,6 @@ def assertions_list(
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
-    """List assertion definitions."""
     return core.list_assertions(
         get_store(),
         scope=scope,
@@ -144,15 +151,13 @@ def assertions_list(
     )
 
 
-@mcp.tool(name="coverage.list")
-@_tool_wrapper
+@_readonly_tool("coverage.list")
 def coverage_list(
     run_id: str | None = Field(None, description="Filter by run ID"),
-    kind: str | None = Field(None, description="Coverage kind (functional|line|...)"),
+    kind: str | None = Field(None, description="Coverage kind (functional|line|code|toggle|fsm)"),
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
-    """List coverage summaries."""
     return core.list_coverage(get_store(), run_id=run_id, kind=kind, page=page, page_size=page_size)
 
 
@@ -161,30 +166,24 @@ def coverage_list(
 # ============================================================================
 
 
-@mcp.tool(name="tests.get")
-@_tool_wrapper
+@_readonly_tool("tests.get")
 def tests_get(
     test_id: str = Field(..., description="Test identifier"),
 ) -> dict[str, Any]:
-    """Get full test details."""
     return core.get_test_details(get_store(), test_id)
 
 
-@mcp.tool(name="tests.topology")
-@_tool_wrapper
+@_readonly_tool("tests.topology")
 def tests_topology(
     test_id: str = Field(..., description="Test identifier"),
 ) -> dict[str, Any]:
-    """Get test/UVM topology."""
     return core.get_test_topology(get_store(), test_id)
 
 
-@mcp.tool(name="assertions.get")
-@_tool_wrapper
+@_readonly_tool("assertions.get")
 def assertions_get(
     assertion_id: str = Field(..., description="Assertion identifier"),
 ) -> dict[str, Any]:
-    """Get assertion definition."""
     return core.get_assertion_details(get_store(), assertion_id)
 
 
@@ -193,8 +192,7 @@ def assertions_get(
 # ============================================================================
 
 
-@mcp.tool(name="failures.list")
-@_tool_wrapper
+@_readonly_tool("failures.list")
 def failures_list(
     test_id: str | None = Field(None, description="Filter by test ID"),
     run_id: str | None = Field(None, description="Filter by run ID"),
@@ -205,7 +203,6 @@ def failures_list(
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
-    """List failure events."""
     return core.list_failures(
         get_store(),
         test_id=test_id,
@@ -219,8 +216,7 @@ def failures_list(
     )
 
 
-@mcp.tool(name="assertions.failures")
-@_tool_wrapper
+@_readonly_tool("assertions.failures")
 def assertions_failures(
     run_id: str | None = Field(None, description="Filter by run ID"),
     test_id: str | None = Field(None, description="Filter by test ID"),
@@ -231,7 +227,6 @@ def assertions_failures(
     page: int = Field(1, description="Page number"),
     page_size: int = Field(100, description="Items per page"),
 ) -> dict[str, Any]:
-    """List runtime assertion failures."""
     return core.list_assertion_failures(
         get_store(),
         run_id=run_id,
@@ -245,8 +240,7 @@ def assertions_failures(
     )
 
 
-@mcp.tool(name="coverage.summary")
-@_tool_wrapper
+@_readonly_tool("coverage.summary")
 def coverage_summary(
     run_id: str = Field(..., description="Run identifier"),
     kind: str | None = Field(None, description="Optional coverage kind filter"),
@@ -254,7 +248,6 @@ def coverage_summary(
         False, description="Include evidence refs in coverage summaries"
     ),
 ) -> dict[str, Any]:
-    """Get coverage summaries for a run."""
     return core.get_coverage_summary(
         get_store(), run_id, kind=kind, include_evidence=include_evidence
     )
@@ -265,8 +258,7 @@ def coverage_summary(
 # ============================================================================
 
 
-@mcp.tool(name="regressions.summary")
-@_tool_wrapper
+@_readonly_tool("regressions.summary")
 def regressions_summary(
     suite: str = Field(..., description="Suite name"),
     window_days: int = Field(7, description="Time window in days"),
@@ -275,62 +267,63 @@ def regressions_summary(
         description="RFC3339 end timestamp for reproducible window (default: now UTC)",
     ),
 ) -> dict[str, Any]:
-    """Regression pass rate and top failure signatures."""
     return core.get_regression_summary(
         get_store(), suite=suite, window_days=window_days, as_of=as_of
     )
 
 
-@mcp.tool(name="runs.diff")
-@_tool_wrapper
+@_readonly_tool("runs.diff")
 def runs_diff(
     base_run_id: str = Field(..., description="Base run ID"),
     compare_run_id: str = Field(..., description="Compare run ID"),
 ) -> dict[str, Any]:
-    """Compare two runs."""
     return core.compare_runs(get_store(), base_run_id=base_run_id, compare_run_id=compare_run_id)
 
 
 # ============================================================================
-# Waveform tools (experimental)
+# Waveform tools
 # ============================================================================
 
 
-@mcp.tool(name="wave.signals")
-@_tool_wrapper
+@_readonly_tool("wave.signals")
 def wave_signals(
     test_id: str = Field(..., description="Test identifier"),
     start_time_ns: int | None = Field(
         None,
-        description="Optional window start in nanoseconds (e.g. 20000 for 20 µs). VCD: re-parses source trace.",
+        description="Optional window start in nanoseconds. VCD: re-parses source trace.",
     ),
     end_time_ns: int | None = Field(
         None,
-        description="Optional window end in nanoseconds (e.g. 30000 for 30 µs). Requires start_time_ns.",
+        description="Optional window end in nanoseconds. Requires start_time_ns.",
     ),
 ) -> dict[str, Any]:
-    """List signals from a precomputed waveform summary."""
     return core.wave_signals(
         get_store(), test_id, start_time_ns=start_time_ns, end_time_ns=end_time_ns
     )
 
 
-@mcp.tool(name="wave.summary")
-@_tool_wrapper
+@_readonly_tool("wave.summary")
 def wave_summary(
     test_id: str = Field(..., description="Test identifier"),
     start_time_ns: int | None = Field(
         None,
-        description="Optional window start in nanoseconds (e.g. 20000 for 20 µs). VCD: re-parses source trace.",
+        description="Optional window start in nanoseconds. VCD: re-parses source trace.",
     ),
     end_time_ns: int | None = Field(
         None,
-        description="Optional window end in nanoseconds (e.g. 30000 for 30 µs). Requires start_time_ns.",
+        description="Optional window end in nanoseconds. Requires start_time_ns.",
+    ),
+    include_signals: bool = Field(
+        False,
+        description="When true, include the same per-signal list as wave.signals in this response.",
     ),
 ) -> dict[str, Any]:
-    """Get precomputed waveform summary for a test."""
     return core.wave_summary(
-        get_store(), test_id, start_time_ns=start_time_ns, end_time_ns=end_time_ns
+        get_store(),
+        test_id,
+        start_time_ns=start_time_ns,
+        end_time_ns=end_time_ns,
+        include_signals=include_signals,
     )
 
 

@@ -6,6 +6,7 @@ from typing import Any, Literal
 
 ErrorCode = Literal[
     "NOT_FOUND",
+    "TOPOLOGY_NOT_INDEXED",
     "INVALID_ARGUMENT",
     "PERMISSION_DENIED",
     "INTERNAL",

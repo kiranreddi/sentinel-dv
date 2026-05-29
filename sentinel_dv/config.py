@@ -215,16 +215,10 @@ def resolve_config(config_path: str | Path | None = None) -> SentinelDVConfig:
         if candidate.is_file():
             return load_config(candidate)
 
-    repo_root = Path(__file__).resolve().parent.parent
-    demo_root = repo_root / "demo"
-    if demo_root.is_dir():
-        return SentinelDVConfig(
-            artifact_roots=[str(demo_root)],
-            index=IndexConfig(path=str(repo_root / "sentinel_dv.db")),
-        )
-
     raise RuntimeError(
-        "No configuration found. Set SENTINEL_DV_CONFIG or pass --config to the server."
+        "No configuration found. Pass --config, set SENTINEL_DV_CONFIG, "
+        "or place config.yaml in the working directory. "
+        "Sentinel DV does not silently default to demo/ in production."
     )
 
 

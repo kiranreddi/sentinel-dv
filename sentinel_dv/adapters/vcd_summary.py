@@ -196,6 +196,7 @@ class VcdSummaryParser:
                     "signal": entry["name"],
                     "value": entry.get("value_at_end") or entry.get("last_value"),
                     "note": f"{entry.get('toggles', 0)} toggles in window",
+                    "category": "toggle_activity",
                 }
             )
 
@@ -208,6 +209,7 @@ class VcdSummaryParser:
                     "signal": busiest["name"],
                     "value": busiest.get("value_at_start"),
                     "note": "value at window start",
+                    "category": "window_boundary",
                 },
             )
         return highlights[:5]

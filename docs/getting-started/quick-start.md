@@ -13,7 +13,7 @@ Get up and running with Sentinel DV in minutes.
 === "PyPI (Recommended)"
 
     ```bash
-    pip install "sentinel-dv>=1.3.0"
+    pip install "sentinel-dv>=1.3.1"
     ```
 
 === "From Source"
@@ -25,6 +25,8 @@ Get up and running with Sentinel DV in minutes.
     ```
 
 ## Configuration
+
+**Required:** Sentinel DV does not start without a config file (no silent `demo/` default). Copy `config.example.yaml` or set `SENTINEL_DV_CONFIG`.
 
 Create a `config.yaml` file:
 
@@ -89,7 +91,7 @@ python -m sentinel_dv.server --config config.yaml
 **Server will start on stdio (MCP protocol):**
 
 ```
-Sentinel DV v1.3.0 started
+Sentinel DV v1.3.1 started
 Schema version: 1.0.0
 Tools registered: 15
 Index ready: 150 tests indexed

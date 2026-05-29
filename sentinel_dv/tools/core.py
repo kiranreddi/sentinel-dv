@@ -149,9 +149,16 @@ def get_test_details(store: IndexStore, test_id: str) -> dict[str, Any]:
 def get_test_topology(store: IndexStore, test_id: str) -> dict[str, Any]:
     """Get UVM/test topology for a test."""
     validate_id(test_id, "test_id")
+    if not store.get_test(test_id):
+        raise ToolError("NOT_FOUND", f"Test not found: {test_id}")
     topology = store.get_topology(test_id)
     if topology is None:
-        raise ToolError("NOT_FOUND", f"Topology not found for test: {test_id}")
+        raise ToolError(
+            "TOPOLOGY_NOT_INDEXED",
+            f"No UVM/topology indexed for test {test_id}. "
+            "Re-index with adapters.uvm enabled and ensure the test log contains topology.",
+            details={"test_id": test_id},
+        )
     return item_response({"test_id": test_id, **topology})
 
 
@@ -369,6 +376,30 @@ def _resolve_artifact_path(relative_path: str) -> Path:
     raise ToolError("NOT_FOUND", f"Waveform artifact not found: {relative_path}")
 
 
+def _infer_highlight_category(highlight: dict[str, Any]) -> str:
+    """Classify a highlight for grouped waveform summaries."""
+    explicit = highlight.get("category") or highlight.get("type")
+    if explicit:
+        return str(explicit)
+    note = (highlight.get("note") or "").lower()
+    if "toggle" in note:
+        return "toggle_activity"
+    if "reset" in note:
+        return "reset_event"
+    if "fsm" in note or "state" in note:
+        return "fsm"
+    return "event"
+
+
+def _group_highlights(highlights: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    """Group highlights by category for DV-oriented summaries."""
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for item in highlights:
+        category = _infer_highlight_category(item)
+        groups.setdefault(category, []).append(item)
+    return groups
+
+
 def _load_waveform_summary(
     store: IndexStore,
     test_id: str,
@@ -436,6 +467,36 @@ def _load_waveform_summary(
     }
 
 
+def _waveform_signals_payload(
+    record: dict[str, Any],
+    summary: dict[str, Any],
+    *,
+    test_id: str,
+    start_time_ns: int | None,
+    end_time_ns: int | None,
+) -> dict[str, Any]:
+    """Build bounded per-signal list from a loaded waveform summary."""
+    signals = summary.get("signals", [])
+    if not signals and summary.get("signal_groups"):
+        for group in summary["signal_groups"]:
+            signals.extend(group.get("signals", []))
+    max_signals = get_config().security.max_wave_signals
+    truncated = len(signals) > max_signals
+    if truncated:
+        signals = signals[:max_signals]
+    return {
+        "test_id": test_id,
+        "format": record["format"],
+        "end_time_ns": record["end_time_ns"],
+        "start_time_ns": start_time_ns,
+        "end_time_ns_query": end_time_ns,
+        "signals": signals,
+        "signal_count": summary.get("signal_count", len(signals)),
+        "truncated": truncated,
+        "source_path": record["source_path"],
+    }
+
+
 def wave_signals(
     store: IndexStore,
     test_id: str,
@@ -449,24 +510,10 @@ def wave_signals(
 
     record = _load_waveform_summary(store, test_id, start_time_ns, end_time_ns)
     summary = record["summary"]
-    signals = summary.get("signals", [])
-    max_signals = get_config().security.max_wave_signals
-    truncated = len(signals) > max_signals
-    if truncated:
-        signals = signals[:max_signals]
-
     return detail_response(
-        {
-            "test_id": test_id,
-            "format": record["format"],
-            "end_time_ns": record["end_time_ns"],
-            "start_time_ns": start_time_ns,
-            "end_time_ns_query": end_time_ns,
-            "signals": signals,
-            "signal_count": summary.get("signal_count", len(signals)),
-            "truncated": truncated,
-            "source_path": record["source_path"],
-        }
+        _waveform_signals_payload(
+            record, summary, test_id=test_id, start_time_ns=start_time_ns, end_time_ns=end_time_ns
+        )
     )
 
 
@@ -475,6 +522,7 @@ def wave_summary(
     test_id: str,
     start_time_ns: int | None = None,
     end_time_ns: int | None = None,
+    include_signals: bool = False,
 ) -> dict[str, Any]:
     """Get precomputed waveform summary for a test."""
     validate_id(test_id, "test_id")
@@ -483,17 +531,29 @@ def wave_summary(
 
     record = _load_waveform_summary(store, test_id, start_time_ns, end_time_ns)
     summary = record["summary"]
-    return detail_response(
-        {
-            "test_id": test_id,
-            "format": record["format"],
-            "end_time_ns": record["end_time_ns"],
-            "start_time_ns": start_time_ns,
-            "end_time_ns_query": end_time_ns,
-            "signal_count": summary.get("signal_count"),
-            "highlights": summary.get("highlights", []),
-            "metadata": summary.get("metadata", {}),
-            "evidence": summary.get("evidence"),
-            "source_path": record["source_path"],
-        }
-    )
+    highlights = summary.get("highlights", [])
+    payload: dict[str, Any] = {
+        "test_id": test_id,
+        "format": record["format"],
+        "end_time_ns": record["end_time_ns"],
+        "start_time_ns": start_time_ns,
+        "end_time_ns_query": end_time_ns,
+        "signal_count": summary.get("signal_count"),
+        "highlights": highlights,
+        "highlight_groups": _group_highlights(highlights),
+        "signal_groups": summary.get("signal_groups"),
+        "metadata": summary.get("metadata", {}),
+        "evidence": summary.get("evidence"),
+        "source_path": record["source_path"],
+    }
+    if include_signals:
+        payload.update(
+            _waveform_signals_payload(
+                record,
+                summary,
+                test_id=test_id,
+                start_time_ns=start_time_ns,
+                end_time_ns=end_time_ns,
+            )
+        )
+    return detail_response(payload)

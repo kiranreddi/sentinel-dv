@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (Nothing yet.)
 
+## [1.3.1] - 2026-05-29
+
+### Added
+
+- **MCP metadata** — rich tool descriptions, `outputSchema` on all 15 tools, and `readOnlyHint` / `idempotentHint` annotations (`sentinel_dv/tools/mcp_metadata.py`).
+- **`wave.summary`** — `include_signals` flag (combined metadata + per-signal list), `highlight_groups` by category, and `signal_groups` from JSON fixtures.
+- **`TOPOLOGY_NOT_INDEXED`** error when a test exists but UVM topology was not indexed (distinct from `NOT_FOUND`).
+- **`created_at_ms`** on runs/tests for epoch-based `regressions.summary` windows (legacy ISO strings backfilled on connect).
+- **Unit tests** — `tests/unit/test_store_hardening.py` for sort safety, sequences, regression windows, and config resolution.
+
+### Changed
+
+- **SQL sort** — `ORDER BY` built only from fixed column maps (`_TESTS_ORDER_BY`, `_RUNS_ORDER_BY`).
+- **ID allocation** — DuckDB sequences replace `MAX(id)+1` for assertion failures, evidence, and coverage rows.
+- **Configuration** — `resolve_config()` no longer silently defaults to `demo/`; requires `--config`, `SENTINEL_DV_CONFIG`, or `config.yaml`/`config.yml` in cwd.
+- **Documentation** — mandatory config guidance, `coverage.list` vs `coverage.summary`, waveform and topology error reference.
+
+### Migration Notes
+
+- **Breaking (config):** Deployments that relied on implicit `demo/` indexing must pass an explicit config path or place `config.yaml` in the server working directory.
+- Re-index recommended after upgrade so `created_at_ms` is populated for all runs.
+
 ## [1.3.0] - 2026-05-29
 
 ### Added

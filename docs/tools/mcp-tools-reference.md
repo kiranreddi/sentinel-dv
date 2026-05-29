@@ -67,7 +67,7 @@ List assertion definitions in the index.
 
 ### coverage.list
 
-List coverage summary records.
+**Paginated catalog** of coverage rows (possibly across many runs). Use to discover which `run_id` / `kind` combinations exist.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -166,7 +166,7 @@ Runtime assertion failures linked to definitions.
 
 ### coverage.summary
 
-Aggregated, bounded coverage metrics for a run.
+**Single-run rollup** (not paginated): all coverage summaries for one `run_id`, bounded by `security.max_coverage_metrics`. Distinct from `coverage.list`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -228,13 +228,14 @@ With time window (nanoseconds; both required together):
 
 ### wave.summary
 
-Same parameters as `wave.signals`.
+Metadata, **`highlight_groups`** (by category), and optional time window. Set **`include_signals": true`** to also return the per-signal list (same data as `wave.signals` in one call).
 
 ```json
 {
   "test_id": "t_abc",
   "start_time_ns": 2000,
-  "end_time_ns": 3000
+  "end_time_ns": 3000,
+  "include_signals": false
 }
 ```
 
@@ -248,7 +249,7 @@ Same parameters as `wave.signals`.
 | Assertion debug | `assertions.list` → `assertions.failures` → `assertions.get` |
 | Nightly health | `regressions.summary` → `runs.list` → `failures.list` |
 | Run comparison | `runs.diff` → `coverage.summary` |
-| Waveform slice | `tests.list` → `wave.summary` → `wave.signals` (+ optional window) |
+| Waveform slice | `tests.list` → `wave.summary` (optionally `include_signals: true`) (+ optional window) |
 
 ---
 
@@ -259,3 +260,4 @@ Same parameters as `wave.signals`.
 | `INDEX_NOT_READY` | Index missing or config not loaded |
 | `INVALID_ARGUMENT` | Bad IDs, pagination, or time window (`start` > `end`, only one of start/end set) |
 | `NOT_FOUND` | Unknown `test_id`, `run_id`, etc. |
+| `TOPOLOGY_NOT_INDEXED` | Test exists but no UVM/topology was indexed (re-index with `adapters.uvm: true`) |

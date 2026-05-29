@@ -48,20 +48,25 @@ List signals for an indexed test.
 
 ## wave.summary
 
-Bounded highlights and metadata for the same indexed test. Accepts the same parameters as `wave.signals`.
+Bounded highlights and metadata for the same indexed test. Accepts the same time-window parameters as `wave.signals`, plus:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `include_signals` | `false` | When `true`, includes the full per-signal list (same as calling `wave.signals`) |
 
 ```json
 {
   "test_id": "t_abc123",
   "start_time_ns": 2000,
-  "end_time_ns": 3000
+  "end_time_ns": 3000,
+  "include_signals": false
 }
 ```
 
-**Response fields (typical):** `format` (`vcd-summary` or `wave-json`), `start_time_ns`, `end_time_ns`, `highlights`, signal metadata.
+**Response fields (typical):** `format`, `highlight_groups` (highlights grouped by category), `highlights`, `signal_groups` (from JSON fixtures), `metadata`, optional `signals` when `include_signals` is true.
 
 ## Typical workflow
 
 1. `tests.list` — find `test_id` for the simulation under debug.
-2. `wave.summary` — see trace length and busiest signals.
-3. `wave.signals` — per-signal toggles; add a time window to narrow to a failure interval.
+2. `wave.summary` — trace length, `highlight_groups`, and busiest intervals.
+3. `wave.signals` or `wave.summary` with `include_signals: true` — per-signal toggles; add a time window to narrow to a failure interval.

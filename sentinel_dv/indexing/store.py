@@ -12,6 +12,38 @@ from typing import Any
 
 import duckdb
 
+# Fixed ORDER BY fragments (never interpolate user input into SQL).
+_TESTS_ORDER_BY: dict[str, str] = {
+    "created_at": "created_at",
+    "name": "name",
+    "status": "status",
+    "test_id": "test_id",
+    "duration_ms": "duration_ms",
+}
+_RUNS_ORDER_BY: dict[str, str] = {
+    "created_at": "r.created_at",
+    "suite": "r.suite",
+    "status": "r.status",
+    "run_id": "r.run_id",
+}
+_ID_SEQUENCES: dict[str, str] = {
+    "assertion_failures": "assertion_failures_id_seq",
+    "evidence": "evidence_id_seq",
+    "coverage_summaries": "coverage_summaries_id_seq",
+}
+
+
+def _iso_to_epoch_ms(iso_timestamp: str) -> int | None:
+    """Parse RFC3339 UTC timestamps to epoch milliseconds for window queries."""
+    try:
+        normalized = iso_timestamp.replace("Z", "+00:00")
+        dt = datetime.fromisoformat(normalized)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return int(dt.timestamp() * 1000)
+    except (TypeError, ValueError):
+        return None
+
 
 class IndexStore:
     """
@@ -303,6 +335,63 @@ class IndexStore:
             ON evidence(owner_kind, owner_id)
         """)
 
+        self._migrate_schema()
+        self._ensure_id_sequences()
+
+    def _migrate_schema(self) -> None:
+        """Add epoch-ms columns and backfill from legacy ISO created_at strings."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        for table in ("runs", "tests"):
+            try:
+                self._conn.execute(
+                    f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS created_at_ms BIGINT"
+                )
+            except duckdb.Error:
+                pass
+            rows = self._conn.execute(
+                f"SELECT rowid, created_at FROM {table} WHERE created_at_ms IS NULL"
+            ).fetchall()
+            for rowid, created_at in rows:
+                epoch_ms = _iso_to_epoch_ms(created_at) if created_at else None
+                if epoch_ms is not None:
+                    self._conn.execute(
+                        f"UPDATE {table} SET created_at_ms = ? WHERE rowid = ?",
+                        [epoch_ms, rowid],
+                    )
+
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_runs_suite_created_at_ms
+            ON runs(suite, created_at_ms)
+        """)
+
+    def _ensure_id_sequences(self) -> None:
+        """Create monotonic ID sequences for tables that previously used MAX(id)+1."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        existing = {
+            row[0]
+            for row in self._conn.execute(
+                "SELECT sequence_name FROM duckdb_sequences()"
+            ).fetchall()
+        }
+        for table, seq_name in _ID_SEQUENCES.items():
+            if seq_name in existing:
+                continue
+            max_row = self._conn.execute(f"SELECT COALESCE(MAX(id), 0) FROM {table}").fetchone()
+            max_id = int(max_row[0]) if max_row else 0
+            start = max(max_id + 1, 1)
+            self._conn.execute(f"CREATE SEQUENCE {seq_name} START {start}")
+
+    def _next_row_id(self, sequence_name: str) -> int:
+        """Allocate the next integer primary key from a named sequence."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+        row = self._conn.execute(f"SELECT nextval('{sequence_name}')").fetchone()
+        return int(row[0]) if row else 1
+
     # ========================================================================
     # Metadata operations
     # ========================================================================
@@ -344,18 +433,20 @@ class IndexStore:
             raise RuntimeError("Not connected to database")
 
         index_built_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        created_at_ms = _iso_to_epoch_ms(created_at)
 
         self._conn.execute(
             """
             INSERT INTO runs (
-                run_id, run_id_full, suite, created_at, status,
+                run_id, run_id_full, suite, created_at, created_at_ms, status,
                 ci_system, ci_build_id, ci_job_url,
                 artifact_manifest_hash, index_built_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (run_id) DO UPDATE SET
                 run_id_full=excluded.run_id_full,
                 suite=excluded.suite,
                 created_at=excluded.created_at,
+                created_at_ms=excluded.created_at_ms,
                 status=excluded.status,
                 ci_system=excluded.ci_system,
                 ci_build_id=excluded.ci_build_id,
@@ -368,6 +459,7 @@ class IndexStore:
                 run_id_full,
                 suite,
                 created_at,
+                created_at_ms,
                 status,
                 ci_system,
                 ci_build_id,
@@ -421,13 +513,15 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
+        created_at_ms = _iso_to_epoch_ms(created_at)
+
         self._conn.execute(
             """
             INSERT INTO tests (
                 test_id, test_id_full, run_id, framework, name, seed,
                 status, duration_ms, sim_vendor, sim_version, dut_top,
-                created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                created_at, created_at_ms
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (test_id) DO UPDATE SET
                 test_id_full=excluded.test_id_full,
                 run_id=excluded.run_id,
@@ -439,7 +533,8 @@ class IndexStore:
                 sim_vendor=excluded.sim_vendor,
                 sim_version=excluded.sim_version,
                 dut_top=excluded.dut_top,
-                created_at=excluded.created_at
+                created_at=excluded.created_at,
+                created_at_ms=excluded.created_at_ms
         """,
             [
                 test_id,
@@ -454,6 +549,7 @@ class IndexStore:
                 sim_version,
                 dut_top,
                 created_at,
+                created_at_ms,
             ],
         )
 
@@ -623,10 +719,7 @@ class IndexStore:
         """Insert a runtime assertion failure."""
         if not self._conn:
             raise RuntimeError("Not connected to database")
-        next_id_result = self._conn.execute(
-            "SELECT COALESCE(MAX(id), 0) + 1 FROM assertion_failures"
-        ).fetchone()
-        next_id = next_id_result[0] if next_id_result else 1
+        next_id = self._next_row_id(_ID_SEQUENCES["assertion_failures"])
         self._conn.execute(
             """
             INSERT INTO assertion_failures (
@@ -668,10 +761,7 @@ class IndexStore:
         """Insert normalized evidence row."""
         if not self._conn:
             raise RuntimeError("Not connected to database")
-        next_id_result = self._conn.execute(
-            "SELECT COALESCE(MAX(id), 0) + 1 FROM evidence"
-        ).fetchone()
-        next_id = next_id_result[0] if next_id_result else 1
+        next_id = self._next_row_id(_ID_SEQUENCES["evidence"])
         self._conn.execute(
             """
             INSERT INTO evidence (
@@ -736,8 +826,6 @@ class IndexStore:
     # Query operations
     # ========================================================================
 
-    _TESTS_SORT_COLUMNS = frozenset({"created_at", "name", "status", "test_id", "duration_ms"})
-
     def query_tests(
         self,
         run_id: str | None = None,
@@ -759,7 +847,8 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
-        if sort_by not in self._TESTS_SORT_COLUMNS:
+        order_column = _TESTS_ORDER_BY.get(sort_by)
+        if order_column is None:
             raise ValueError(f"Invalid sort_by: {sort_by}")
 
         # Build WHERE clause
@@ -796,13 +885,13 @@ class IndexStore:
 
         # Get paginated results
         offset = (page - 1) * page_size
-        order = "DESC" if sort_desc else "ASC"
+        order_dir = "DESC" if sort_desc else "ASC"
 
         results = self._conn.execute(
             f"""
             SELECT * FROM tests
             WHERE {where_sql}
-            ORDER BY {sort_by} {order}, test_id ASC
+            ORDER BY {order_column} {order_dir}, test_id ASC
             LIMIT ? OFFSET ?
         """,
             params + [page_size, offset],
@@ -889,8 +978,6 @@ class IndexStore:
                 item["evidence"] = self.get_evidence("failure", item["failure_id"])
         return items, total
 
-    _RUNS_SORT_COLUMNS = frozenset({"created_at", "suite", "status", "run_id"})
-
     def query_runs(
         self,
         suite: str | None = None,
@@ -905,7 +992,8 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
-        if sort_by not in self._RUNS_SORT_COLUMNS:
+        order_column = _RUNS_ORDER_BY.get(sort_by)
+        if order_column is None:
             raise ValueError(f"Invalid sort_by: {sort_by}")
 
         where_clauses: list[str] = []
@@ -922,7 +1010,7 @@ class IndexStore:
             params.append(ci_system)
 
         where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
-        order = "DESC" if sort_desc else "ASC"
+        order_dir = "DESC" if sort_desc else "ASC"
 
         count_result = self._conn.execute(
             f"SELECT COUNT(*) FROM runs r WHERE {where_sql}", params
@@ -946,7 +1034,7 @@ class IndexStore:
             LEFT JOIN tests t ON r.run_id = t.run_id
             WHERE {where_sql}
             GROUP BY r.run_id, r.suite, r.status, r.created_at, r.ci_system, r.ci_build_id
-            ORDER BY r.{sort_by} {order}, r.run_id ASC
+            ORDER BY {order_column} {order_dir}, r.run_id ASC
             LIMIT ? OFFSET ?
         """,
             params + [page_size, offset],
@@ -1315,10 +1403,7 @@ class IndexStore:
             raise RuntimeError("Not connected to database")
 
         payload = metrics if isinstance(metrics, list) else metrics.get("metrics", metrics)
-        next_id_result = self._conn.execute(
-            "SELECT COALESCE(MAX(id), 0) + 1 FROM coverage_summaries"
-        ).fetchone()
-        next_id = next_id_result[0] if next_id_result else 1
+        next_id = self._next_row_id(_ID_SEQUENCES["coverage_summaries"])
         self._conn.execute(
             """
             INSERT INTO coverage_summaries (id, run_id, test_id, kind, metrics_json, evidence_json)
@@ -1443,17 +1528,21 @@ class IndexStore:
         else:
             end_dt = datetime.now(timezone.utc)
         cutoff_dt = end_dt - timedelta(days=window_days)
-        cutoff = cutoff_dt.isoformat().replace("+00:00", "Z")
         as_of_iso = end_dt.isoformat().replace("+00:00", "Z")
+        cutoff_ms = int(cutoff_dt.timestamp() * 1000)
+        as_of_ms = int(end_dt.timestamp() * 1000)
 
         runs = self._conn.execute(
             """
             SELECT run_id, suite, status, created_at
             FROM runs
-            WHERE suite = ? AND created_at >= ? AND created_at <= ?
-            ORDER BY created_at DESC, run_id ASC
+            WHERE suite = ?
+              AND created_at_ms IS NOT NULL
+              AND created_at_ms >= ?
+              AND created_at_ms <= ?
+            ORDER BY created_at_ms DESC, run_id ASC
         """,
-            [suite, cutoff, as_of_iso],
+            [suite, cutoff_ms, as_of_ms],
         ).fetchall()
 
         run_ids = [r[0] for r in runs]

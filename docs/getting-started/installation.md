@@ -1,6 +1,6 @@
 # Installation
 
-**Current release: v1.3.0** ([changelog](../about/changelog.md))
+**Current release: v1.3.1** ([changelog](../about/changelog.md))
 
 This guide shows how to configure and run Sentinel DV locally, then connect it to an MCP client (e.g. Claude Desktop).
 
@@ -17,10 +17,10 @@ uvx --from sentinel-dv sentinel-dv-server --config /absolute/path/to/config.yaml
 ### From PyPI
 
 ```bash
-pip install "sentinel-dv>=1.3.0"
+pip install "sentinel-dv>=1.3.1"
 ```
 
-> **Note:** Do not install PyPI **1.0.0** (broken wheel). Use **`sentinel-dv>=1.3.0`** for VCS/Questa/Cadence fixtures, assertion/coverage intelligence, VCD/JSON waveforms, and all 15 MCP tools. Verified flow: install → `sentinel-dv-index --index-all` → `sentinel-dv-server` → MCP tools.
+> **Note:** Do not install PyPI **1.0.0** (broken wheel). Use **`sentinel-dv>=1.3.1`** for VCS/Questa/Cadence fixtures, assertion/coverage intelligence, VCD/JSON waveforms, and all 15 MCP tools. Verified flow: install → `sentinel-dv-index --index-all` → `sentinel-dv-server` → MCP tools.
 
 For development:
 
@@ -28,13 +28,17 @@ For development:
 pip install -e ".[dev]"
 ```
 
-## 2. Create `config.yaml`
+## 2. Create `config.yaml` (required)
+
+Sentinel DV **requires** a config file before indexing or serving MCP tools. There is no automatic `demo/` fallback.
 
 Copy the provided template and update:
 
 ```bash
 cp config.example.yaml config.yaml
 ```
+
+You may also use `config.yml` in the working directory, or set `SENTINEL_DV_CONFIG` / pass `--config` with any path you choose.
 
 Edit `config.yaml` to set:
 

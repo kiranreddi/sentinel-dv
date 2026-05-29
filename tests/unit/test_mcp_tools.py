@@ -126,6 +126,16 @@ class TestMcpTools:
         topo = core.get_test_topology(indexed_store, test_id)
         assert topo["item"]["components"][0]["name"] == "env"
 
+    def test_topology_missing_vs_test_missing(self, indexed_store):
+        pass_id = core.list_tests(indexed_store, status="pass")["tests"][0]["test_id"]
+        with pytest.raises(ToolError) as exc:
+            core.get_test_topology(indexed_store, pass_id)
+        assert exc.value.code == "TOPOLOGY_NOT_INDEXED"
+
+        with pytest.raises(ToolError) as exc2:
+            core.get_test_topology(indexed_store, "t_notindatabase")
+        assert exc2.value.code == "NOT_FOUND"
+
     def test_regression_summary(self, indexed_store):
         summary = core.get_regression_summary(indexed_store, suite="nightly", window_days=30)
         assert summary["pass_rate"] == 50.0

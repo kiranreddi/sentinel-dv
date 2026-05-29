@@ -1,6 +1,25 @@
 # Configuration
 
-`config.yaml` controls what Sentinel DV indexes and the safety limits it enforces on tool responses.
+`config.yaml` (or `config.yml`) controls what Sentinel DV indexes and the safety limits it enforces on tool responses.
+
+## Configuration is required
+
+The MCP server and indexer **do not start without a config file**. Sentinel DV will **not** silently point at the bundled `demo/` tree if you omit configuration.
+
+Provide config in **one** of these ways:
+
+1. **`--config /absolute/path/to/config.yaml`** on `sentinel-dv-server` and `sentinel-dv-index`
+2. **`SENTINEL_DV_CONFIG`** environment variable (same path)
+3. **`config.yaml` or `config.yml`** in the process **current working directory**
+
+Copy the template from the repository root:
+
+```bash
+cp config.example.yaml config.yaml
+# edit artifact_roots and index.path, then index and start the server
+```
+
+For trying examples only, use the demo-specific templates (e.g. `cp demo/config.example.yaml demo/config.yaml`).
 
 ## Minimal example
 

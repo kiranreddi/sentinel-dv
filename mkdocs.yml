@@ -1,6 +1,6 @@
 site_name: Sentinel DV
 site_url: https://kiranreddi.github.io/sentinel-dv/
-site_description: Sentinel DV v1.3.0 — security-first MCP server for verification intelligence (SystemVerilog/UVM/cocotb)
+site_description: Sentinel DV v1.3.1 — security-first MCP server for verification intelligence (SystemVerilog/UVM/cocotb)
 site_author: Sentinel DV Team
 repo_url: https://github.com/kiranreddi/sentinel-dv
 repo_name: kiranreddi/sentinel-dv
@@ -179,6 +179,6 @@ nav:
       - Custom Adapters: adapters/custom.md
   - About:
       - Changelog: about/changelog.md
-      - Release Checklist: release/v1.3.0-checklist.md
+      - Release Checklist: release/v1.3.1-checklist.md
       - License: about/license.md
       - Security Policy: about/security.md

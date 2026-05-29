@@ -13,6 +13,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - (Nothing yet.)
 
+## [1.3.1] - 2026-05-29
+
+### Added
+
+- MCP tool `outputSchema`, read-only annotations, and expanded descriptions for LLM discoverability.
+- `wave.summary` `include_signals`, `highlight_groups`, and `TOPOLOGY_NOT_INDEXED` error code.
+
+### Changed
+
+- Config file is required (no silent `demo/` fallback); regression windows use epoch milliseconds.
+- Install **`sentinel-dv>=1.3.1`** for these fixes.
+
 ## [1.3.0] - 2026-05-29
 
 ### Added
@@ -83,6 +95,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 See the repository [CHANGELOG.md](https://github.com/kiranreddi/sentinel-dv/blob/main/CHANGELOG.md) for the full 1.0.0 entry.
 
+[1.3.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.3.1
 [1.3.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.3.0
 [1.2.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.2.0
 [1.1.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.1.0
