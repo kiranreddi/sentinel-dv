@@ -1,23 +1,23 @@
 {
   "tool": "tests.get",
   "arguments": {
-    "test_id": "t_dff9c20ec6c4"
+    "test_id": "t_3bb6bfc925aa"
   },
   "response": {
     "schema_version": "1.0.0",
     "item": {
-      "test_id": "t_dff9c20ec6c4",
-      "test_id_full": "dff9c20ec6c48140d5a82bda6df56b434e33a43f442676e7bdb3d4dd8faed46d",
-      "run_id": "r_26595f0640e8",
+      "test_id": "t_3bb6bfc925aa",
+      "test_id_full": "3bb6bfc925aae6acf97f11e409203ddc88654087de1717626f929993e218be86",
+      "run_id": "r_85b1d3f70e48",
       "framework": "cocotb",
-      "name": "alu_tb.test_alu_add",
+      "name": "counter_tb.test_counter_sim",
       "seed": null,
       "status": "pass",
-      "duration_ms": 30,
+      "duration_ms": 10,
       "sim_vendor": null,
       "sim_version": null,
       "dut_top": null,
-      "created_at": "2026-05-28T04:47:53.110987Z"
+      "created_at": "2026-05-29T01:30:53.830505Z"
     }
   }
 }

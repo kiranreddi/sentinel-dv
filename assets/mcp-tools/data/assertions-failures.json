@@ -10,6 +10,57 @@
     "assertion_failures": [
       {
         "id": 1,
+        "assertion_id": "a_03847f8e5b0f",
+        "test_id": "t_1f8ec97914c0",
+        "run_id": "r_e05edc733d2b",
+        "time_ns": 2500,
+        "message": "Assertion \"axi_awvalid_stable_chk\" failed at 2500 ns",
+        "evidence": [
+          {
+            "kind": "log",
+            "path": "cadence_counter/assertions/counter.assert.json",
+            "span": {},
+            "extract": "Assertion \"axi_awvalid_stable_chk\" failed at 2500 ns",
+            "hash": null
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "assertion_id": "a_03847f8e5b0f",
+        "test_id": "t_2a2b1eecc369",
+        "run_id": "r_4625bceb1d6e",
+        "time_ns": 2500,
+        "message": "Assertion \"axi_awvalid_stable_chk\" failed at 2500 ns",
+        "evidence": [
+          {
+            "kind": "log",
+            "path": "questa_counter/assertions/counter.assert.json",
+            "span": {},
+            "extract": "Assertion \"axi_awvalid_stable_chk\" failed at 2500 ns",
+            "hash": null
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "assertion_id": "a_03847f8e5b0f",
+        "test_id": "t_ed09d88e1f1a",
+        "run_id": "r_8f85ecd85936",
+        "time_ns": 2500,
+        "message": "Assertion \"axi_awvalid_stable_chk\" failed at 2500 ns",
+        "evidence": [
+          {
+            "kind": "log",
+            "path": "vcs_counter/assertions/counter.assert.json",
+            "span": {},
+            "extract": "Assertion \"axi_awvalid_stable_chk\" failed at 2500 ns",
+            "hash": null
+          }
+        ]
+      },
+      {
+        "id": 4,
         "assertion_id": "a_c00ae0788840",
         "test_id": "t_3bb6bfc925aa",
         "run_id": "r_85b1d3f70e48",
@@ -29,7 +80,7 @@
     "pagination": {
       "page": 1,
       "page_size": 50,
-      "total_items": 1,
+      "total_items": 4,
       "total_pages": 1
     }
   }

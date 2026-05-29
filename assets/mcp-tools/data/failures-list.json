@@ -9,6 +9,38 @@
     "schema_version": "1.0.0",
     "failures": [
       {
+        "failure_id": "f_9225893b0dd9",
+        "failure_id_full": "9225893b0dd9c7a90564117f97246cb99b62a292dab2e53af327e498d90cac2f",
+        "test_id": "t_bdf825c67e63",
+        "run_id": "r_c93470980bbc",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5",
+        "message": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5",
+        "time_ns": 1250,
+        "phase": null,
+        "component": "unknown",
+        "tags_json": "[\"scoreboard\", \"uvm\"]",
+        "tags_flat": "scoreboard uvm",
+        "signature_id": "s_167aa5eb920e"
+      },
+      {
+        "failure_id": "f_e28595124a71",
+        "failure_id_full": "e28595124a71dc81b63b4d4764ec36f0e37ea0ed965aaa824b98bcd4a31ebd54",
+        "test_id": "t_3fb5c5afeb62",
+        "run_id": "r_b1d6f6071a8b",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "[SCB] DATA MISMATCH: expected count=3 got 5",
+        "message": "[SCB] DATA MISMATCH: expected count=3 got 5",
+        "time_ns": 1250,
+        "phase": null,
+        "component": "uvm_test_top.env.scoreboard",
+        "tags_json": "[\"scoreboard\", \"uvm\"]",
+        "tags_flat": "scoreboard uvm",
+        "signature_id": "s_31f7c4e8d3fa"
+      },
+      {
         "failure_id": "f_f5047a164e15",
         "failure_id_full": "f5047a164e15479a42931a6ffc6ccb5af290afa266c5536b1ec5c7c4081d8f8a",
         "test_id": "t_7a0a37762958",
@@ -25,6 +57,22 @@
         "signature_id": "s_71de94577c0f"
       },
       {
+        "failure_id": "f_fbcd0a68cb83",
+        "failure_id_full": "fbcd0a68cb83115822432efd0db24e0de2d90ff6014cf029eb962638390e5235",
+        "test_id": "t_81f11ef7e513",
+        "run_id": "r_3bd942f45ef3",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "[SCB] (uvm_test_top.env.scoreboard): DATA MISMATCH: expected count=3 got 5",
+        "message": "[SCB] (uvm_test_top.env.scoreboard): DATA MISMATCH: expected count=3 got 5",
+        "time_ns": 1250,
+        "phase": null,
+        "component": "unknown",
+        "tags_json": "[\"scoreboard\", \"uvm\"]",
+        "tags_flat": "scoreboard uvm",
+        "signature_id": "s_2940b1f3a20a"
+      },
+      {
         "failure_id": "f_b1128d5281f7",
         "failure_id_full": "b1128d5281f7d07f2b569f4a431978bb8d993e7a20be422068d4926fc46826cb",
         "test_id": "t_7dd03c3d152f",
@@ -39,12 +87,60 @@
         "tags_json": "[\"scoreboard\", \"uvm\", \"axi4\"]",
         "tags_flat": "scoreboard uvm axi4",
         "signature_id": "s_accaf1efb76e"
+      },
+      {
+        "failure_id": "f_52ca140d72a4",
+        "failure_id_full": "52ca140d72a4828303a2fe7d74203a3da9d0832f5d2d3a5589972f0837c21ce9",
+        "test_id": "t_e65285b55eec",
+        "run_id": "r_bcde15e0d7db",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "Scoreboard mismatch: counter wrap check failed",
+        "message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      ",
+        "time_ns": null,
+        "phase": null,
+        "component": null,
+        "tags_json": "[\"scoreboard\", \"cocotb\"]",
+        "tags_flat": "scoreboard cocotb",
+        "signature_id": "s_171ee2cbf014"
+      },
+      {
+        "failure_id": "f_b0e75506b88c",
+        "failure_id_full": "b0e75506b88c8ed940b5c06dde26159fcf6ccd430f599ac2d7fa44cb57c1f5fa",
+        "test_id": "t_731e321ad3c0",
+        "run_id": "r_399aa82757dd",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "Scoreboard mismatch: counter wrap check failed",
+        "message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      ",
+        "time_ns": null,
+        "phase": null,
+        "component": null,
+        "tags_json": "[\"scoreboard\", \"cocotb\"]",
+        "tags_flat": "scoreboard cocotb",
+        "signature_id": "s_171ee2cbf014"
+      },
+      {
+        "failure_id": "f_bc9b5cf421b9",
+        "failure_id_full": "bc9b5cf421b9ab5df0919fef6c80eb490c6efa4e3b7e4f77c98b497e261e68fc",
+        "test_id": "t_7f5785415392",
+        "run_id": "r_12ec8baa2f30",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "Scoreboard mismatch: counter wrap check failed",
+        "message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      ",
+        "time_ns": null,
+        "phase": null,
+        "component": null,
+        "tags_json": "[\"scoreboard\", \"cocotb\"]",
+        "tags_flat": "scoreboard cocotb",
+        "signature_id": "s_171ee2cbf014"
       }
     ],
     "pagination": {
       "page": 1,
       "page_size": 50,
-      "total_items": 2,
+      "total_items": 8,
       "total_pages": 1
     }
   }

@@ -1,6 +1,7 @@
 {
   "tool": "runs.list",
   "arguments": {
+    "suite": "verilator_counter",
     "page": 1,
     "page_size": 200
   },
@@ -11,7 +12,7 @@
         "run_id": "r_d39bb5009606",
         "suite": "verilator_counter",
         "status": "fail",
-        "created_at": "2026-05-28T04:47:53.171676Z",
+        "created_at": "2026-05-29T01:30:53.845386Z",
         "ci_system": null,
         "ci_build_id": null,
         "total_tests": 1,
@@ -22,7 +23,7 @@
         "run_id": "r_85b1d3f70e48",
         "suite": "verilator_counter",
         "status": "pass",
-        "created_at": "2026-05-28T04:47:53.168145Z",
+        "created_at": "2026-05-29T01:30:53.830505Z",
         "ci_system": null,
         "ci_build_id": null,
         "total_tests": 1,
@@ -33,73 +34,18 @@
         "run_id": "r_566fd6e9a21b",
         "suite": "verilator_counter",
         "status": "fail",
-        "created_at": "2026-05-28T04:47:53.160940Z",
+        "created_at": "2026-05-29T01:30:53.798640Z",
         "ci_system": null,
         "ci_build_id": null,
         "total_tests": 1,
         "passed_tests": 0,
-        "failed_tests": 1
-      },
-      {
-        "run_id": "r_2968fa34e74e",
-        "suite": "axi_burst",
-        "status": "fail",
-        "created_at": "2026-05-28T04:47:53.152882Z",
-        "ci_system": null,
-        "ci_build_id": null,
-        "total_tests": 1,
-        "passed_tests": 0,
-        "failed_tests": 1
-      },
-      {
-        "run_id": "r_07d0f584403c",
-        "suite": "apb_register",
-        "status": "fail",
-        "created_at": "2026-05-28T04:47:53.145575Z",
-        "ci_system": null,
-        "ci_build_id": null,
-        "total_tests": 1,
-        "passed_tests": 0,
-        "failed_tests": 1
-      },
-      {
-        "run_id": "r_c6f691e1ad14",
-        "suite": "fifo_sync",
-        "status": "fail",
-        "created_at": "2026-05-28T04:47:53.137064Z",
-        "ci_system": null,
-        "ci_build_id": null,
-        "total_tests": 2,
-        "passed_tests": 1,
-        "failed_tests": 1
-      },
-      {
-        "run_id": "r_0fb765971a20",
-        "suite": "counter_block",
-        "status": "fail",
-        "created_at": "2026-05-28T04:47:53.125239Z",
-        "ci_system": null,
-        "ci_build_id": null,
-        "total_tests": 2,
-        "passed_tests": 1,
-        "failed_tests": 1
-      },
-      {
-        "run_id": "r_26595f0640e8",
-        "suite": "alu_core",
-        "status": "fail",
-        "created_at": "2026-05-28T04:47:53.110987Z",
-        "ci_system": null,
-        "ci_build_id": null,
-        "total_tests": 2,
-        "passed_tests": 1,
         "failed_tests": 1
       }
     ],
     "pagination": {
       "page": 1,
       "page_size": 200,
-      "total_items": 8,
+      "total_items": 3,
       "total_pages": 1
     }
   }
