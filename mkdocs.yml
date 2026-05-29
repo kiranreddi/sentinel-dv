@@ -179,6 +179,7 @@ nav:
       - Custom Adapters: adapters/custom.md
   - About:
       - Changelog: about/changelog.md
+      - How to release: release/RELEASING.md
       - Release Checklist: release/v1.3.1-checklist.md
       - License: about/license.md
       - Security Policy: about/security.md

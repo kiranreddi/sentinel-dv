@@ -1,0 +1,47 @@
+# Manual dry-run of release gates without publishing (run before tagging).
+name: Pre-release check
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Proposed tag (e.g. v1.3.2)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Lint, tests, coverage, versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Version check
+        run: python scripts/check_versions.py "${{ inputs.tag }}"
+
+      - name: Ruff
+        run: ruff check sentinel_dv/ tests/
+
+      - name: Black
+        run: black --check sentinel_dv/ tests/
+
+      - name: Tests and coverage (>=70%)
+        run: |
+          pytest tests/ \
+            --cov=sentinel_dv \
+            --cov-report=term-missing \
+            --cov-fail-under=70 \
+            -q

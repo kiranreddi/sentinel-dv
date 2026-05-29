@@ -10,8 +10,57 @@ permissions:
   id-token: write
 
 jobs:
+  preflight:
+    name: Pre-release gates (lint, tests, coverage, versions)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Version tag matches package metadata
+        run: python scripts/check_versions.py "${{ github.ref_name }}"
+
+      - name: Ruff
+        run: ruff check sentinel_dv/ tests/
+
+      - name: Black
+        run: black --check sentinel_dv/ tests/
+
+      - name: Tests and coverage (>=70%)
+        run: |
+          pytest tests/ \
+            --cov=sentinel_dv \
+            --cov-report=json \
+            --cov-fail-under=70 \
+            -q
+
+      - name: Wheel smoke import
+        run: |
+          pip install build
+          python -m build --wheel --outdir dist-wheel
+          pip install --force-reinstall dist-wheel/*.whl
+          python -c "
+          import importlib
+          for mod in (
+              'sentinel_dv.indexing.store',
+              'sentinel_dv.server',
+              'sentinel_dv.tools.mcp_metadata',
+          ):
+              importlib.import_module(mod)
+          "
+
   release:
     name: Build, PyPI, GitHub Release, MCP Registry
+    needs: preflight
     runs-on: ubuntu-latest
 
     steps:

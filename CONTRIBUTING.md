@@ -123,6 +123,19 @@ Fixes #(issue)
 Describe the tests you ran to verify your changes.
 ```
 
+## Releasing (maintainers)
+
+Do **not** push a `v*` tag until pre-release checks pass. See **[docs/release/RELEASING.md](docs/release/RELEASING.md)** for the full checklist.
+
+```bash
+# After bumping version in pyproject.toml + docs:
+./scripts/pre_release.sh vX.Y.Z
+git push origin main
+git tag vX.Y.Z && git push origin vX.Y.Z
+```
+
+The GitHub Release workflow runs the same gates (lint, tests, ≥70% coverage, version vs tag) before publishing to PyPI.
+
 ## Development Setup
 
 ### Prerequisites
