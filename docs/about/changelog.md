@@ -7,6 +7,30 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased] — 2026-06-02 Patch
+
+### Fixed
+
+- **UVM parser: false-positive failures from count-summary lines** — VCS
+  logs end with `UVM_ERROR :    0` / `UVM_FATAL :    0` and Questa logs with
+  `# UVM_ERROR :    0`.  These were matched by the generic fallback pattern
+  and stored as real failures.  A new `UVM_COUNT_SUMMARY_PATTERN` now skips
+  them before any other pattern is attempted.
+  Impact on 1197-run real CI dataset: **16 240 → 4 380 indexed failures**
+  (11 860 false positives eliminated).
+- **UVM parser: passing tests marked fail** — `TEST_FAILED_PATTERN` contained
+  `\bUVM_FATAL\b` which matched the count-summary line `UVM_FATAL :    0` in
+  otherwise-passing logs, producing spurious `status=fail` on passing tests.
+  Removed `\bUVM_FATAL\b` from the pattern; fatal detection is done via the
+  parsed messages list where count-summary lines are already excluded.
+- **MCP output schema validation** (`_ITEM_ENVELOPE`) — FastMCP validates tool
+  output against the declared JSON schema. Error responses return
+  `{schema_version, error: {...}}` with no `item` key, which failed schema
+  validation for get/topology tools. Fixed by making `item` optional
+  (only `schema_version` is required).
+
+---
+
 ## [2.1.0] - 2026-06-02
 
 ### Added

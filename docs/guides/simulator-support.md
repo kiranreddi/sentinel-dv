@@ -96,6 +96,24 @@ xrun -sv counter.sv tb.sv -l xrun.log
 
 For MCP use, export IMC coverage, assertion summaries, and SHM waveform information into bounded JSON/XML/text files before indexing. Raw SHM/coverage databases are not parsed directly.
 
+## UVM log parsing details
+
+Sentinel DV ships patterns for the four common UVM log formats:
+
+| Format | Example line |
+|--------|-------------|
+| VCS native | `UVM_ERROR /path/file.svh(10) @ 887915000000: uvm_test_top.comp [TAG] message` |
+| VCS Jenkins | `UVM_ERROR /path/file.svh @ 887915000000: uvm_test_top.comp message` |
+| Questa | `# UVM_ERROR @ 100 ns: uvm_test_top.comp message` |
+| Generic fallback | `UVM_ERROR @ 100 ns: message` |
+
+Patterns are tried in the order shown; the first match wins.
+
+**Count-summary lines are always skipped**: VCS appends `UVM_ERROR :    0`
+and Questa appends `# UVM_ERROR :    0` at end-of-simulation to report
+per-severity counts.  These lines are **not** failures and are filtered
+before any pattern is attempted.
+
 ## Security model
 
 Sentinel DV keeps simulator support artifact-based by design:
