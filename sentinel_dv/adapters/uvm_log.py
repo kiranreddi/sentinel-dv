@@ -40,6 +40,15 @@ class UVMLogParser:
     - Xcelium
     """
 
+    # UVM count-summary lines to skip: "UVM_ERROR :    3" or "# UVM_FATAL :    0"
+    # These appear at the end of VCS/Questa logs as a count summary, not real failures.
+    # VCS format:    "UVM_ERROR :    0"
+    # Questa format: "# UVM_ERROR :    0"
+    UVM_COUNT_SUMMARY_PATTERN = re.compile(
+        r"^#?\s*UVM_(?:INFO|WARNING|ERROR|FATAL)\s*:\s*\d+\s*$",
+        re.IGNORECASE,
+    )
+
     # UVM message pattern (generic)
     # Format: UVM_[SEVERITY] @ [TIME]: [COMPONENT] [FILE]([LINE]) [MESSAGE]
     UVM_MSG_PATTERN = re.compile(
@@ -64,7 +73,18 @@ class UVMLogParser:
         re.MULTILINE | re.IGNORECASE,
     )
 
-    # VCS specific patterns (file:line form)
+    # VCS native log format: UVM_ERROR file.svh(linenum) @ time: component [tag] msg
+    # This is the most common format in VCS simulation logs
+    VCS_NATIVE_PATTERN = re.compile(
+        r"^(UVM_(?:INFO|WARNING|ERROR|FATAL))\s+"  # severity
+        r"(?:\S+\.sv[h]?\(\d+\)\s+)?"             # optional file(line)
+        r"@\s*(\d+)\s*(?:[a-z]+\s*)?"             # @ time [unit]
+        r":\s*(\S+)\s+"                            # : component
+        r"(.+?)$",                                 # message
+        re.MULTILINE,
+    )
+
+    # VCS specific patterns (file:(line) form — older VCS style)
     VCS_PATTERN = re.compile(
         r"(UVM_(?:INFO|WARNING|ERROR|FATAL))\s+"
         r"(?:@\s*(\d+)\s*([a-z]+)\s*)?"
@@ -123,10 +143,13 @@ class UVMLogParser:
     TEST_FAILED_PATTERN = re.compile(
         r"\bTEST\s+FAILED\b"
         r"|\bFINAL\s+RESULT\s*:\s*FAIL\b"
-        r"|\bUVM_FATAL\b"
         r"|\bSIMULATION\s+FAILED\b",
         re.IGNORECASE,
     )
+    # NOTE: UVM_FATAL is intentionally NOT in TEST_FAILED_PATTERN — it would
+    # match "UVM_FATAL :    0" count-summary lines in passing logs.  Fatal
+    # status is detected instead through the parsed messages list in
+    # _determine_test_status().
 
     # Topology extraction
     COMPONENT_PATTERN = re.compile(r"(?:uvm_test_top|uvm_top)\.(\S+)", re.IGNORECASE)
@@ -224,7 +247,33 @@ class UVMLogParser:
         lines = content.split("\n")
 
         for line_num, line in enumerate(lines, start=1):
-            # Try VCS Jenkins-style first (most specific for real CI logs):
+            # Skip UVM count-summary lines (e.g. "UVM_ERROR :    0" at end of log).
+            # These are end-of-simulation statistics, not individual failure events.
+            if self.UVM_COUNT_SUMMARY_PATTERN.match(line):
+                continue
+
+            # Try VCS native format first (most common in real VCS CI logs):
+            # UVM_ERROR file.svh(line) @ time: component [tag] message
+            match = self.VCS_NATIVE_PATTERN.match(line)
+            if match:
+                severity = match.group(1).upper()
+                time_str = match.group(2)
+                component = match.group(3) or "unknown"
+                message = match.group(4).strip()
+                # VCS native logs report time in femtoseconds
+                time_ns = self._parse_time(time_str, "fs") if time_str else None
+                phase = self._extract_phase(message)
+                yield UVMMessage(
+                    severity=severity,
+                    component=component,
+                    message=message,
+                    time_ns=time_ns,
+                    phase=phase,
+                    line_number=line_num,
+                )
+                continue
+
+            # Try VCS Jenkins-style (alternate real CI log format):
             # UVM_ERROR <filepath>.svh @ <time_fs>: <component>  <msg>
             match = self.VCS_JENKINS_PATTERN.match(line)
             if match:
@@ -232,7 +281,6 @@ class UVMLogParser:
                 time_str = match.group(2)
                 component = match.group(3) or "unknown"
                 message = match.group(4).strip()
-                # VCS Jenkins logs report time in femtoseconds
                 time_ns = self._parse_time(time_str, "fs") if time_str else None
                 phase = self._extract_phase(message)
                 yield UVMMessage(
@@ -267,7 +315,7 @@ class UVMLogParser:
                 )
                 continue
 
-            # Try VCS file:line pattern
+            # Try VCS file:(line) pattern (older VCS style)
             match = self.VCS_PATTERN.search(line)
             if match:
                 severity = match.group(1).upper()

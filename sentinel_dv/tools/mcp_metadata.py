@@ -58,8 +58,12 @@ _ITEM_ENVELOPE = {
     "properties": {
         "schema_version": _SCHEMA_VERSION,
         "item": {"type": "object", "additionalProperties": True},
+        "error": {"type": "object", "additionalProperties": True},
     },
-    "required": ["schema_version", "item"],
+    # Only schema_version is always required; "item" is present on success,
+    # "error" is present on failure. Both shapes are valid.
+    "required": ["schema_version"],
+    "additionalProperties": True,
 }
 
 _DETAIL_ENVELOPE = {
