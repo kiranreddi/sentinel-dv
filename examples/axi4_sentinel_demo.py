@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AXI4 UVM three-simulator sentinel-dv demo.
+"""AXI4 UVM four-simulator sentinel-dv demo.
 
 Demonstrates all 26 MCP tools against a realistic AXI4-Lite slave
 UVM testbench indexed from VCS, Questa, and Xcelium simulation results.

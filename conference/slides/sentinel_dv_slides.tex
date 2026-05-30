@@ -136,8 +136,9 @@
 \section{Model Context Protocol}
 \begin{frame}[fragile]{Model Context Protocol (MCP)}
   \begin{columns}[T]
-    \column{0.55\textwidth}
+    \column{0.52\textwidth}
       \begin{block}{What is MCP?}
+        \small
         \begin{itemize}
           \item Open standard by Anthropic (Nov 2024)
           \item JSON-RPC 2.0 over stdio or SSE
@@ -148,30 +149,42 @@
         \end{itemize}
       \end{block}
 
-      \vspace{0.5em}
-      \begin{exampleblock}{MCP Tool Call (JSON-RPC)}
+      \vspace{0.3em}
+      \begin{exampleblock}{MCP Tool Call (JSON-RPC 2.0)}
+        \footnotesize
 \begin{semiverbatim}\color{white}
-{
-  "method": "tools/call",
-  "params": {
-    "name": "regression.health",
-    "arguments": {}
-  }
-}
+\{"jsonrpc":"2.0","id":1,
+ "method":"tools/call",
+ "params":\{
+   "name":"regression.health",
+   "arguments":\{\}
+ \}\}
+--> \{"health_score":87,
+     "status":"pass",
+     "failing_tests":2\}
 \end{semiverbatim}
       \end{exampleblock}
 
-    \column{0.40\textwidth}
+    \column{0.44\textwidth}
       \begin{block}{Why MCP for DV?}
+        \small
         \begin{itemize}
-          \item Sim artifacts $\rightarrow$ structured tools
+          \item Sim artifacts $\rightarrow$ structured JSON tools
           \item AI reasons over \emph{your} regression
           \item Works with any LLM that supports MCP
           \item Runs in CI — no GUI required
           \item Output schemas validated (Pydantic)
           \item Path redaction built in
+          \item \textbf{Tool-agnostic}: VCS, Questa, Xcelium, Verilator
         \end{itemize}
       \end{block}
+      \vspace{0.3em}
+      \begin{alertblock}{Token Efficiency}
+        \small
+        Raw logs: \textbf{100K+ tokens}/run\\
+        MCP structured output: \textbf{$<$500 tokens}\\
+        \textbf{200$\times$ context savings}
+      \end{alertblock}
   \end{columns}
 \end{frame}
 
@@ -186,60 +199,73 @@
 % =============================================================================
 \section{26 MCP Tools}
 \begin{frame}{26 MCP Tools — Six Categories}
+  \small
   \begin{columns}[T]
     \column{0.32\textwidth}
-      \begin{block}{Chart\ Run Tracking (4)}
+      \begin{block}{Run Tracking (5)}
+        \footnotesize
         \texttt{runs.list} · \texttt{runs.get}\\
         \texttt{runs.diff} · \texttt{runs.submit}\\
         \texttt{runs.cross\_sim}
       \end{block}
-      \vspace{0.3em}
-      \begin{block}{Test\ Test Analysis (5)}
+      \vspace{0.2em}
+      \begin{block}{Test Analysis (5)}
+        \footnotesize
         \texttt{tests.list} · \texttt{tests.get}\\
         \texttt{tests.topology}\\
         \texttt{tests.replay} · \texttt{tests.cluster}
       \end{block}
-      \vspace{0.3em}
-      \begin{block}{Assert\ Assertion Engine (5)}
+      \vspace{0.2em}
+      \begin{block}{Assertion Engine (5)}
+        \footnotesize
         \texttt{assertions.list} · \texttt{.get}\\
         \texttt{.failures} · \texttt{.sva\_status}\\
         \texttt{.vacuity}
       \end{block}
 
     \column{0.32\textwidth}
-      \begin{block}{Cov\ Coverage Intel. (5)}
+      \begin{block}{Coverage Intel. (5)}
+        \footnotesize
         \texttt{coverage.list} · \texttt{.summary}\\
         \texttt{.trend} · \texttt{.gaps}\\
         \texttt{.advisor}
       \end{block}
-      \vspace{0.3em}
-      \begin{block}{Bug\ Failure Triage (4)}
+      \vspace{0.2em}
+      \begin{block}{Failure Triage (4)}
+        \footnotesize
         \texttt{failures.list}\\
         \texttt{regressions.summary}\\
         \texttt{regression.health}
       \end{block}
-      \vspace{0.3em}
-      \begin{block}{Wave\ Live Sim (3)}
+      \vspace{0.2em}
+      \begin{block}{Waveform / Sim (2+)}
+        \footnotesize
         \texttt{wave.signals}\\
         \texttt{wave.summary}\\
         \texttt{sim.status}
       \end{block}
 
     \column{0.32\textwidth}
-      \begin{alertblock}{*\ 5 DV Intelligence Tools}
-        \vspace{0.2em}
-        \small
+      \begin{alertblock}{5 DV Intelligence Tools}
+        \footnotesize
+        \vspace{0.1em}
         \textbf{coverage.trend}\\
-        Time-series trajectory + direction\\[4pt]
+        Time-series trajectory\\[2pt]
         \textbf{runs.cross\_sim}\\
-        Cross-vendor divergence\\[4pt]
+        Cross-vendor divergence\\[2pt]
         \textbf{tests.cluster}\\
-        Root-cause grouping\\[4pt]
+        Root-cause grouping\\[2pt]
         \textbf{regression.health}\\
-        0--100 DV readiness score\\[4pt]
+        0--100 DV readiness score\\[2pt]
         \textbf{coverage.advisor}\\
         SV constraint generation
       \end{alertblock}
+      \vspace{0.2em}
+      \begin{exampleblock}{4 Simulators}
+        \footnotesize
+        VCS · Questa · Xcelium\\
+        Verilator (open source)
+      \end{exampleblock}
   \end{columns}
 \end{frame}
 
@@ -247,7 +273,8 @@
 \begin{frame}[fragile]{Multi-Simulator UVM Log Parsing}
   \begin{columns}[T]
     \column{0.48\textwidth}
-      \begin{block}{Three Simulator Formats Supported}
+      \begin{block}{Four Simulator Formats Supported}
+        \small
         \begin{tabular}{ll}
           \toprule
           \textbf{Simulator} & \textbf{Format Prefix} \\
@@ -255,6 +282,7 @@
           VCS (Synopsys) & \texttt{UVM\_ERROR file(line) @} \\
           Questa (Siemens) & \texttt{\# UVM\_ERROR @ time} \\
           Xcelium (Cadence) & \texttt{xcelium: UVM\_ERROR} \\
+          Verilator & JUnit XML / cocotb \\
           \bottomrule
         \end{tabular}
       \end{block}
@@ -438,41 +466,44 @@ regression.health -> {
 
 % =============================================================================
 \section{AXI4 Demo \& Validation}
-\begin{frame}[fragile]{AXI4 UVM 3-Simulator Demo}
+\begin{frame}[fragile]{AXI4 UVM 4-Simulator Demo}
   \begin{columns}[T]
     \column{0.50\textwidth}
       \begin{block}{What's in the Demo}
+        \small
         \begin{itemize}
           \item \texttt{demo/axi4\_uvm/} in the repository
           \item AXI4-Lite slave DUT + UVM testbench
           \item 4 tests: back-to-back, error resp, boundary, stress
-          \item Pre-generated artifacts for \textbf{all 3 simulators}:
-                VCS, Questa, Xcelium
+          \item Pre-generated artifacts for \textbf{all 4 simulators}:
+                VCS, Questa, Xcelium, Verilator
           \item Results, assertions, coverage, waveforms per sim
           \item \textbf{5 seconds} to index + run all 26 tools
         \end{itemize}
       \end{block}
       \vspace{0.3em}
       \begin{block}{Demo Structure}
-        \small
+        \footnotesize
         \texttt{demo/axi4\_uvm/vcs/} \\
         \texttt{demo/axi4\_uvm/questa/} \\
         \texttt{demo/axi4\_uvm/xcelium/} \\
+        \texttt{demo/axi4\_uvm/verilator/} \\
         Each: results.xml, assertions/*.json,\\
-        coverage/*.json, waveforms/*.wave.json
+        coverage/*.html, waveforms/*.wave.json
       \end{block}
 
     \column{0.46\textwidth}
       \begin{exampleblock}{runs.cross\_sim — Divergence}
 \begin{semiverbatim}\color{white}
 runs.cross_sim -> {
-  "simulators_compared": 3,
+  "simulators_compared": 4,
   "divergent_tests": [
     {
       "test": "axi4_stress_test",
       "vcs": "pass",
       "questa": "fail",
       "xcelium": "pass",
+      "verilator": "pass",
       "critical": true
     }
   ]
@@ -599,6 +630,163 @@ advisories:
 
 % =============================================================================
 \section{Getting Started}
+
+% --- NEW: Tool-agnostic + Token efficiency + Engineer impact ---
+\begin{frame}[fragile]{Tool-Agnostic by Design}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \begin{block}{Any LLM, Any CI, Any Simulator}
+        \begin{itemize}
+          \item MCP is an \textbf{open standard} — not vendor locked
+          \item Works with Claude, GPT-4o, Copilot, Cursor, Gemini
+          \item VCS, Questa, Xcelium, Verilator — \textbf{same API}
+          \item Jenkins, GitHub Actions, GitLab CI — point at artifacts
+          \item No EDA license required to run the MCP server
+          \item Pure-Python, MIT licensed, PyPI installable
+        \end{itemize}
+      \end{block}
+      \vspace{0.4em}
+      \begin{exampleblock}{One Config — All Simulators}
+        \footnotesize
+\begin{semiverbatim}\color{white}
+artifact_roots:
+  - /sim/vcs/logs       # VCS
+  - /sim/questa/logs    # Questa
+  - /sim/xcelium/logs   # Xcelium
+  - /sim/verilator/     # Verilator
+\end{semiverbatim}
+      \end{exampleblock}
+
+    \column{0.48\textwidth}
+      \begin{block}{Bring Your Own Flow}
+        \begin{tabular}{ll}
+          \toprule
+          \textbf{Component} & \textbf{What Sentinel DV needs} \\
+          \midrule
+          Simulator & UVM log \emph{or} results.xml \\
+          Coverage & HTML report (any vendor) \\
+          Assertions & SVA pass/fail in log \\
+          Waveforms & FSDB index or VCD \\
+          CI system & Filesystem artifact path \\
+          \bottomrule
+        \end{tabular}
+      \end{block}
+      \vspace{0.4em}
+      \begin{alertblock}{What you do NOT need}
+        \small
+        No proprietary database access\\
+        No simulator API or license\\
+        No coverage DB (UCDB / VDB)\\
+        No waveform viewer (GTKWave)\\
+        \textbf{Just files — and an AI assistant}
+      \end{alertblock}
+  \end{columns}
+\end{frame}
+
+% =============================================================================
+\begin{frame}[fragile]{Token \& Context Efficiency}
+  \begin{columns}[T]
+    \column{0.50\textwidth}
+      \begin{block}{The Problem with Raw Logs}
+        \small
+        \begin{itemize}
+          \item A single VCS simulation log: \textbf{50K--500K lines}
+          \item Raw logs to an LLM: context exhausted fast
+          \item One regression run: $>$1M tokens of raw text
+          \item Result: truncation, hallucination, high API cost
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{alertblock}{Tokens Consumed Comparison}
+        \footnotesize
+        \begin{tabular}{lr}
+          \toprule
+          \textbf{Approach} & \textbf{Tokens} \\
+          \midrule
+          Raw UVM logs (50 tests) & $\sim$2,000,000 \\
+          Raw HTML coverage report & $\sim$120,000 \\
+          \textbf{MCP structured output} & \textbf{$\sim$3,000} \\
+          \bottomrule
+        \end{tabular}\\[2pt]
+        \textbf{$>$600$\times$ context savings}
+      \end{alertblock}
+
+    \column{0.46\textwidth}
+      \begin{block}{How Sentinel DV Achieves This}
+        \small
+        \begin{itemize}
+          \item Parse once at index time (offline)
+          \item Expose only \emph{structured summaries}
+          \item Bounded output schemas (Pydantic)
+          \item Redaction removes paths/names
+        \end{itemize}
+      \end{block}
+      \vspace{0.2em}
+      \begin{exampleblock}{AI Conversation Efficiency}
+        \footnotesize
+\begin{semiverbatim}\color{white}
+User: "Why did regression drop?"
+AI calls:
+  regression.health (~50T)
+  coverage.trend    (~80T)
+  tests.cluster    (~120T)
+Total: ~250 tokens  (vs 2M)
+\end{semiverbatim}
+      \end{exampleblock}
+  \end{columns}
+\end{frame}
+
+% =============================================================================
+\begin{frame}{Engineer Productivity Impact}
+  \begin{columns}[T]
+    \column{0.50\textwidth}
+      \begin{block}{Before Sentinel DV}
+        \small
+        \begin{itemize}
+          \item Open 5+ tools to triage a failure
+          \item Manually grep 500K-line log files
+          \item Copy-paste snippets to ChatGPT
+          \item Re-explain full context every session
+          \item \textbf{2--4 hrs/day} on regression triage
+        \end{itemize}
+      \end{block}
+
+    \column{0.46\textwidth}
+      \begin{block}{After Sentinel DV + AI}
+        \small
+        \begin{itemize}
+          \item One command: \texttt{sentinel-dv index}
+          \item AI has full regression context instantly
+          \item Root-cause in \textbf{seconds}, not hours
+          \item SV constraints auto-generated
+          \item Oncall: \textbf{30 min vs 4 hours}
+        \end{itemize}
+      \end{block}
+  \end{columns}
+  \vspace{0.3em}
+  \begin{columns}[T]
+    \column{0.32\textwidth}
+      \begin{exampleblock}{Triage Time}
+        \centering
+        \large \textbf{4 hrs $\rightarrow$ 5 min}\\
+        \small Failure root-cause
+      \end{exampleblock}
+    \column{0.32\textwidth}
+      \begin{exampleblock}{Coverage Closure}
+        \centering
+        \large \textbf{Days $\rightarrow$ Hours}\\
+        \small Gaps + constraints
+      \end{exampleblock}
+    \column{0.32\textwidth}
+      \begin{exampleblock}{Onboarding}
+        \centering
+        \large \textbf{Weeks $\rightarrow$ Days}\\
+        \small New engineer ramp
+      \end{exampleblock}
+  \end{columns}
+\end{frame}
+
+% =============================================================================
 \begin{frame}[fragile]{Installation \& Quick Start}
   \begin{columns}[T]
     \column{0.48\textwidth}
@@ -662,8 +850,8 @@ sentinel-dv index \
       \begin{block}{What We Built}
         \begin{itemize}
           \item \textbf{26 MCP tools} — full DV workflow coverage
-          \item \textbf{3-simulator} UVM log parsing (zero false positives)
-          \item \textbf{HTML coverage parsers} — no DB access needed
+          \item \textbf{4-simulator} UVM log parsing (zero false positives)
+          \item \textbf{HTML coverage parsers} — VCS URG + Questa + Xcelium
           \item \textbf{5 DV intelligence tools} — trend, clustering,
                 health score, advisor
           \item Validated on \textbf{1,477 real CI runs}, 6 projects

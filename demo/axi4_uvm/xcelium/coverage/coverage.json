@@ -1,7 +1,7 @@
 {
   "test_name": "axi4_uvm_xcelium.axi4_bk2bk_test",
   "kind": "functional",
-  "simulator": "vcs",
+  "simulator": "xcelium",
   "metrics": [
     {
       "name": "axi4_burst_cg.cp_awburst.fixed",

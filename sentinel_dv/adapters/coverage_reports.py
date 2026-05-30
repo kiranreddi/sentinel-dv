@@ -21,6 +21,10 @@ COVERAGE_GLOBS: tuple[str, ...] = (
     "dashboard.html",
     # Questa HTML report data file (from 'vcover -html')
     "overalldu.js",
+    # Xcelium IMC/iccr HTML report (from 'imc -exec' or 'xcrg -report')
+    "cov_report.html",
+    "imc_summary.html",
+    "xcoverage_report.html",
 )
 
 _KIND_MAP = {
@@ -67,6 +71,8 @@ class CoverageReportParser:
             return self._is_urg_dashboard(path)
         if name == "overalldu.js":
             return self._is_questa_overalldu(path)
+        if name in {"cov_report.html", "imc_summary.html", "xcoverage_report.html"}:
+            return self._is_xcelium_html(path)
         return False
 
     @staticmethod
@@ -97,6 +103,8 @@ class CoverageReportParser:
             return self._parse_urg_html(path)
         if name == "overalldu.js":
             return self._parse_questa_overalldu(path)
+        if name in {"cov_report.html", "imc_summary.html", "xcoverage_report.html"}:
+            return self._parse_xcelium_html(path)
         if path.suffix.lower() == ".json" or name.endswith(".cov.json"):
             return self._parse_json(path)
         if path.suffix.lower() == ".xml" or name == "coverage.xml":
@@ -370,6 +378,109 @@ class CoverageReportParser:
             "metrics": metrics,
             "source_path": path.name,
             "tool": "questa_vcover",
+        }
+
+    @staticmethod
+    def _is_xcelium_html(path: Path) -> bool:
+        """Return True if this looks like an Xcelium IMC/iccr HTML coverage report."""
+        try:
+            snippet = path.read_text(encoding="utf-8", errors="replace")[:3000]
+            xcelium_markers = (
+                "Xcelium",
+                "xcelium",
+                "imc",
+                "IMC",
+                "Coverage Summary",
+                "Line Coverage",
+                "Branch Coverage",
+                "Toggle Coverage",
+                "iccr",
+                "ICCR",
+            )
+            return any(m in snippet for m in xcelium_markers)
+        except OSError:
+            return False
+
+    def _parse_xcelium_html(self, path: Path) -> dict[str, Any]:
+        """Parse Xcelium IMC HTML report for overall coverage metrics.
+
+        Xcelium imc -exec 'report -html -out <dir>' produces HTML tables like:
+          <td class="...">Line Coverage</td><td ...>72.45%</td>
+          <td class="...">Branch Coverage</td><td ...>68.12%</td>
+          <td class="...">Toggle Coverage</td><td ...>55.30%</td>
+          <td class="...">Functional Coverage</td><td ...>81.00%</td>
+
+        Falls back to any "Coverage: NN%" patterns in the HTML.
+        """
+        content = path.read_text(encoding="utf-8", errors="replace")
+        metrics: list[dict[str, Any]] = []
+
+        # Primary: extract table rows with coverage type and percentage
+        # Xcelium HTML uses patterns like: >Line Coverage<...>72.45%<
+        _XCOV_ROW = re.compile(
+            r">\s*((?:Line|Branch|Toggle|Statement|Functional|Assertion|FSM|Expression)"
+            r"(?:\s+Coverage)?)\s*<.*?>\s*([\d.]+)\s*%\s*<",
+            re.IGNORECASE | re.DOTALL,
+        )
+        _KIND_XCEL = {
+            "line": "line",
+            "branch": "branch",
+            "toggle": "toggle",
+            "statement": "line",
+            "functional": "functional",
+            "assertion": "assertion",
+            "fsm": "fsm",
+            "expression": "branch",
+        }
+        seen: set[str] = set()
+        for m in _XCOV_ROW.finditer(content):
+            raw_kind = m.group(1).lower().replace(" coverage", "").strip()
+            pct = float(m.group(2))
+            kind_name = _KIND_XCEL.get(raw_kind, raw_kind)
+            if kind_name not in seen:
+                seen.add(kind_name)
+                metrics.append(
+                    _normalize_metric(
+                        {
+                            "name": kind_name,
+                            "scope": "top",
+                            "covered": pct,
+                            "hits": int(pct),
+                            "total": 100,
+                        }
+                    )
+                )
+
+        # Secondary fallback: generic "Coverage: NN%" text patterns
+        if not metrics:
+            for m in re.finditer(
+                r"(Line|Branch|Toggle|Functional|Assertion)\s*Coverage\s*[:\s]+([\d.]+)\s*%",
+                content,
+                re.IGNORECASE,
+            ):
+                raw_kind = m.group(1).lower()
+                pct = float(m.group(2))
+                metrics.append(
+                    _normalize_metric(
+                        {
+                            "name": raw_kind,
+                            "scope": "top",
+                            "covered": pct,
+                            "hits": int(pct),
+                            "total": 100,
+                        }
+                    )
+                )
+
+        metrics = self._bound_metrics(metrics) or [
+            _normalize_metric({"name": "line", "scope": "top", "covered": 0.0})
+        ]
+        return {
+            "test_name": None,
+            "kind": "code",
+            "metrics": metrics,
+            "source_path": path.name,
+            "tool": "xcelium_imc",
         }
 
     def _bound_metrics(self, metrics: list[dict[str, Any]]) -> list[dict[str, Any]]:

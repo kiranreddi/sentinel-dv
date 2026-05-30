@@ -1,4 +1,4 @@
-# AXI4 UVM Three-Simulator Demo
+# AXI4 UVM Four-Simulator Demo
 
 A complete AXI4-Lite slave UVM verification environment demonstrating all
 26 sentinel-dv MCP tools against **VCS**, **Questa**, and **Xcelium** simulation results.
@@ -23,7 +23,7 @@ A complete AXI4-Lite slave UVM verification environment demonstrating all
 
 ```
 demo/axi4_uvm/
-├── config.yaml          # sentinel-dv config (3-simulator demo)
+├── config.yaml          # sentinel-dv config (4-simulator demo)
 ├── axi4_slave.sv        # RTL with SVA properties
 ├── axi4_tb_top.sv       # UVM testbench
 ├── vcs/
@@ -41,7 +41,7 @@ demo/axi4_uvm/
 ## Quick start
 
 ```bash
-# Index all three simulators
+# Index all all four simulators
 cd demo/axi4_uvm
 sentinel-dv-index --config config.yaml --index-all
 

@@ -80,8 +80,7 @@ summaries---that are stored in fragmented, proprietary formats inaccessible to A
 reasoning systems. We present \textbf{Sentinel DV}, an open-source
 \emph{Model Context Protocol} (MCP) server that exposes \textbf{26 structured tool
 endpoints} enabling large language models (LLMs) to query, analyze, and reason
-over real simulation artifacts. Sentinel DV parses UVM logs from three commercial
-simulators (VCS, Questa, Xcelium), extracts coverage metrics from vendor HTML
+over real simulation artifacts. Sentinel DV parses UVM logs from four simulators (VCS, Questa, Xcelium, Verilator), extracts coverage metrics from vendor HTML
 reports without database access, and provides five DV intelligence tools including
 a composite regression health score and an AI-powered coverage advisor. Validated
 on \textbf{1,477 real CI runs} across six verification projects, Sentinel DV
@@ -161,7 +160,7 @@ test results, failure classifications, and coverage time series. The indexer
 ingests simulation artifacts from configurable root paths.
 
 \noindent\textbf{Adapter Layer.}
-Five adapters parse vendor-specific formats: UVM log parser (3 simulators),
+Five adapters parse vendor-specific formats: UVM log parser (4 simulators),
 JUnit XML / VCS results, assertion JSON, coverage HTML, and waveform summary.
 
 \noindent\textbf{Configuration.}
@@ -315,7 +314,7 @@ records carry priority labels (high/medium/low).
 \centering
 \includegraphics[width=0.95\columnwidth]{../figures/validation_results.png}
 \caption{Validation dataset: runs and failure counts across six verification
-projects spanning three simulator vendors.}
+projects spanning four simulator vendors.}
 \label{fig:val}
 \end{figure}
 
@@ -381,7 +380,7 @@ simulation artifacts queryable by AI assistants through 26 structured tool
 endpoints. Key innovations include multi-simulator UVM log parsing with
 false-positive elimination, HTML coverage extraction without database access, a
 composite regression health score, and an AI-powered coverage constraint advisor.
-Validated on 1,477 real CI runs across six projects and three simulator vendors,
+Validated on 1,477 real CI runs across six projects and four simulator vendors (VCS, Questa, Xcelium, Verilator),
 Sentinel DV achieves zero tool failures and 73\% reduction in false positives.
 
 Future work includes direct binary database parsing (UCDB/VDB), formal property

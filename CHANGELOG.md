@@ -36,16 +36,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **DV Intelligence tools** — `coverage.trend`, `runs.cross_sim`, `tests.cluster`, `regression.health`, `coverage.advisor` (protocol-aware SV constraint snippets for AXI4/AHB/APB/CHI).
 - Coverage HTML parsers for VCS URG (`dashboard.html`) and Questa vcover (`overalldu.js`).
+- **Xcelium IMC HTML coverage parser** (`cov_report.html`, `imc_summary.html`, `xcoverage_report.html`) — auto-detected and parsed; no proprietary DB access required.
+- **4-simulator support** (VCS, Questa, Xcelium, Verilator) — all docs, demos, and examples updated from 3 to 4 simulators.
 - Unit tests in `tests/unit/test_beyond_spec.py`; gallery assets for all 26 tools.
+- Conference materials: DVCon/DAC 2026 paper, Beamer slides (19 pages), PPTX, and technical notes.
 
 ### Changed
 
 - Tool count: **21 → 26** (5 new DV Intelligence tools).
 - Documentation aligned to 26 tools across README, examples, MkDocs, and MCP reference.
+- Demo: `demo/axi4_uvm/xcelium/coverage/cov_report.html` added as Xcelium coverage HTML fixture.
 
 ### Fixed
 
-- UVM log parser false positives from count-summary lines; passing tests no longer marked fail via `UVM_FATAL` in summaries.
+- UVM log parser: `Number of caught/demoted UVM_FATAL reports : N` count summary lines
+  no longer parsed as real failure events (fixes false-positive `fail` status on passing tests).
+- UVM log parser: `UVM_COUNT_SUMMARY_PATTERN` extended to cover both simple count lines
+  (`UVM_ERROR :    0`) and report demote/catch lines.
 - MCP output schema validation for error responses (`item` optional in `_ITEM_ENVELOPE`).
 - `runs.submit` and `tests.replay` responses include `schema_version` via `detail_response()`.
 

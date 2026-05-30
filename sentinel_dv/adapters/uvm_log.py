@@ -40,12 +40,16 @@ class UVMLogParser:
     - Xcelium
     """
 
-    # UVM count-summary lines to skip: "UVM_ERROR :    3" or "# UVM_FATAL :    0"
-    # These appear at the end of VCS/Questa logs as a count summary, not real failures.
-    # VCS format:    "UVM_ERROR :    0"
-    # Questa format: "# UVM_ERROR :    0"
+    # UVM count-summary lines to skip — NOT real failure events.
+    # Covers two formats:
+    #   VCS/Questa final tally:  "UVM_ERROR :    0"  or  "# UVM_ERROR :    0"
+    #   UVM report demote/catch: "Number of demoted UVM_FATAL reports  :    0"
+    #                            "Number of caught UVM_FATAL reports   :    4"
+    #                            "Number of overridden UVM_ERROR reports :  2"
     UVM_COUNT_SUMMARY_PATTERN = re.compile(
-        r"^#?\s*UVM_(?:INFO|WARNING|ERROR|FATAL)\s*:\s*\d+\s*$",
+        r"^#?\s*UVM_(?:INFO|WARNING|ERROR|FATAL)\s*:\s*\d+\s*$"
+        r"|^#?\s*Number\s+of\s+(?:demoted|caught|overridden)\s+UVM_(?:INFO|WARNING|ERROR|FATAL)"
+        r"\s+reports\s*:\s*\d+",
         re.IGNORECASE,
     )
 
