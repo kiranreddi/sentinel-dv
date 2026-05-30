@@ -105,6 +105,22 @@
         "signature_id": "s_171ee2cbf014"
       },
       {
+        "failure_id": "f_81bb456a74ac",
+        "failure_id_full": "81bb456a74acc3bf5ace5f82eddfd82a388fd613914b28235320bb43e512cb3b",
+        "test_id": "t_b439c1f1e40d",
+        "run_id": "r_e0e82e0b1722",
+        "severity": "error",
+        "category": "scoreboard",
+        "summary": "Write-readback mismatch at address 0x000001C0",
+        "message": "\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] FAIL: addr=0x000001C0 exp=0xDEADBEEF got=0x00000000\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] SCOREBOARD MISMATCHES DETECTED\n      ",
+        "time_ns": null,
+        "phase": null,
+        "component": null,
+        "tags_json": "[\"scoreboard\", \"cocotb\"]",
+        "tags_flat": "scoreboard cocotb",
+        "signature_id": "s_11ffe14f53ed"
+      },
+      {
         "failure_id": "f_b0e75506b88c",
         "failure_id_full": "b0e75506b88c8ed940b5c06dde26159fcf6ccd430f599ac2d7fa44cb57c1f5fa",
         "test_id": "t_731e321ad3c0",
@@ -140,7 +156,7 @@
     "pagination": {
       "page": 1,
       "page_size": 50,
-      "total_items": 8,
+      "total_items": 9,
       "total_pages": 1
     }
   }

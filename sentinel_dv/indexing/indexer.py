@@ -124,11 +124,13 @@ class ArtifactIndexer:
         )
         assertion_artifacts = self.scan_assertion_artifacts() if self.adapters.assertions else []
         coverage_artifacts = self.scan_coverage_artifacts() if self.adapters.coverage else []
+        sva_status_artifacts = self._scan_sva_status_artifacts()
         stats: IndexStats = {
             "artifacts": len(artifacts)
             + len(waveform_artifacts)
             + len(assertion_artifacts)
-            + len(coverage_artifacts),
+            + len(coverage_artifacts)
+            + len(sva_status_artifacts),
             "runs": 0,
             "tests": 0,
             "failures": 0,
@@ -164,6 +166,10 @@ class ArtifactIndexer:
             if self.adapters.coverage:
                 for path in coverage_artifacts:
                     self._index_coverage_artifact(store, path, stats)
+
+            # Index SVA run status files (assertions.sva_status + assertions.vacuity tools)
+            for path in sva_status_artifacts:
+                self._index_sva_status_artifact(store, path, stats)
 
         return stats
 
@@ -556,6 +562,88 @@ class ArtifactIndexer:
             evidence={"kind": "coverage", "path": rel},
         )
         stats["coverage"] += 1
+
+    # ------------------------------------------------------------------
+    # SVA run status indexing (assertions.sva_status + assertions.vacuity)
+    # ------------------------------------------------------------------
+    _SVA_STATUS_GLOBS: tuple[str, ...] = ("*sva_status*.json", "*sva*.json")
+
+    def _scan_sva_status_artifacts(self) -> list[Path]:
+        """Collect *sva_status*.json files from all artifact roots."""
+        found: set[Path] = set()
+        for root in self.artifact_roots:
+            if not root.exists():
+                continue
+            for pat in self._SVA_STATUS_GLOBS:
+                for p in root.rglob(pat):
+                    if not p.is_symlink() and self._is_sva_status_file(p):
+                        found.add(p)
+        return sorted(found)
+
+    @staticmethod
+    def _is_sva_status_file(path: Path) -> bool:
+        """Return True if the file looks like an SVA status report (has sva_status list)."""
+        try:
+            with path.open() as fh:
+                first_chars = fh.read(512)
+            return '"sva_status"' in first_chars
+        except OSError:
+            return False
+
+    def _index_sva_status_artifact(
+        self, store: IndexStore, path: Path, stats: IndexStats
+    ) -> None:
+        """Index a *_sva.json file into the sva_run_status table."""
+        if not self._artifact_within_limit(path):
+            return
+        try:
+            with path.open() as fh:
+                data = json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            return
+
+        sva_list = data.get("sva_status", [])
+        if not isinstance(sva_list, list) or not sva_list:
+            return
+
+        test_name = data.get("test_name")
+        test_id = run_id = None
+        if test_name:
+            ctx = self._resolve_test_context(store, test_name)
+            if ctx:
+                test_id, run_id, _ = ctx
+
+        for entry in sva_list:
+            if not isinstance(entry, dict):
+                continue
+            assertion_name = entry.get("name", "")
+            status = entry.get("status", "unknown")
+            attempts = int(entry.get("attempts", 0))
+            failures = int(entry.get("failures", 0))
+            is_vacuous = bool(entry.get("vacuous", status == "vacuous"))
+
+            # Look up assertion_id from the assertions table
+            assertion_id = None
+            if assertion_name and test_id:
+                row = store._conn.execute(
+                    "SELECT assertion_id FROM assertions WHERE name = ? LIMIT 1",
+                    [assertion_name],
+                ).fetchone()
+                if row:
+                    assertion_id = row[0]
+
+            try:
+                store.insert_sva_run_status(
+                    assertion_id=assertion_id or "",
+                    run_id=run_id or "",
+                    test_id=test_id or "",
+                    status="vacuous" if is_vacuous else status,
+                    pass_count=attempts - failures,
+                    fail_count=failures,
+                    vacuous_count=1 if is_vacuous else 0,
+                )
+            except Exception:
+                continue
 
     def _normalize_evidence_refs(self, refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Normalize evidence refs to bounded, relative-path-only payloads."""

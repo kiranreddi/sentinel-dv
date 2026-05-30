@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="axi4-sentinel-xcelium" time="683.5">
+  <testsuite name="axi4_uvm_bk2bk" tests="6" errors="0" failures="0" skipped="0" time="276.8" simulator="xcelium">
+    <testcase classname="axi4_uvm_xcelium" name="axi4_bk2bk_test"         time="41.2"  seed="3661149918"/>
+    <testcase classname="axi4_uvm_xcelium" name="axi4_burst_test"          time="44.8"  seed="789802397"/>
+    <testcase classname="axi4_uvm_xcelium" name="axi4_incr_burst_test"     time="48.9"  seed="2391533280"/>
+    <testcase classname="axi4_uvm_xcelium" name="axi4_concurrent_ids_test" time="54.3"  seed="1228488658"/>
+    <testcase classname="axi4_uvm_xcelium" name="axi4_backpressure_test"   time="38.7"  seed="167182854"/>
+    <testcase classname="axi4_uvm_xcelium" name="axi4_error_resp_test"     time="48.9"  seed="4103022560"/>
+  </testsuite>
+  <testsuite name="axi4_uvm_rtl" tests="4" errors="0" failures="0" skipped="0" time="406.7" simulator="xcelium">
+    <testcase classname="axi4_uvm_xcelium_rtl" name="axi4_rtl_base_test"         time="92.4"  seed="348423808"/>
+    <testcase classname="axi4_uvm_xcelium_rtl" name="axi4_rtl_burst_incr_test"   time="104.2" seed="2648251764"/>
+    <testcase classname="axi4_uvm_xcelium_rtl" name="axi4_rtl_burst_wrap_test"   time="103.1" seed="1149482058"/>
+    <testcase classname="axi4_uvm_xcelium_rtl" name="axi4_rtl_decode_error_test" time="107.0" seed="116726666"/>
+  </testsuite>
+</testsuites>

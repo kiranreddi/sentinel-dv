@@ -1,0 +1,11 @@
+{
+  "phase": "running",
+  "tests_total": 43,
+  "tests_done": 28,
+  "tests_passed": 27,
+  "tests_failed": 1,
+  "percent_done": 65.1,
+  "simulator": "vcs",
+  "suite": "axi4_bk2bk",
+  "updated_at": "2026-05-30T03:53:52.185522+00:00"
+}

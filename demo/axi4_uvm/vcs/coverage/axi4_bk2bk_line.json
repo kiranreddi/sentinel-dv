@@ -1,0 +1,49 @@
+{
+  "test_name": "axi4_uvm_vcs.axi4_bk2bk_test",
+  "kind": "line",
+  "simulator": "vcs",
+  "metrics": [
+    {
+      "name": "line",
+      "scope": "axi4_slave",
+      "covered": 91.3,
+      "hits": 84,
+      "total": 92
+    },
+    {
+      "name": "branch",
+      "scope": "axi4_slave.wstate",
+      "covered": 87.5,
+      "hits": 7,
+      "total": 8
+    },
+    {
+      "name": "branch",
+      "scope": "axi4_slave.rstate",
+      "covered": 100.0,
+      "hits": 6,
+      "total": 6
+    },
+    {
+      "name": "toggle",
+      "scope": "axi4_slave",
+      "covered": 78.4,
+      "hits": 69,
+      "total": 88
+    },
+    {
+      "name": "fsm",
+      "scope": "axi4_slave.wstate",
+      "covered": 100.0,
+      "hits": 4,
+      "total": 4
+    },
+    {
+      "name": "fsm",
+      "scope": "axi4_slave.rstate",
+      "covered": 75.0,
+      "hits": 3,
+      "total": 4
+    }
+  ]
+}

@@ -36,7 +36,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T03:25:16.059604Z",
+          "created_at": "2026-05-30T04:01:56.006241Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -47,7 +47,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-30T03:25:16.041841Z",
+          "created_at": "2026-05-30T04:01:55.989538Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -58,7 +58,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T03:25:16.006324Z",
+          "created_at": "2026-05-30T04:01:55.958292Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -93,14 +93,14 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "run_id": "r_85b1d3f70e48",
         "run_id_full": "85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33",
         "suite": "verilator_counter",
-        "created_at": "2026-05-30T03:25:16.041841Z",
+        "created_at": "2026-05-30T04:01:55.989538Z",
         "status": "pass",
         "ci_system": null,
         "ci_build_id": null,
         "ci_job_url": null,
         "artifact_manifest_hash": null,
-        "index_built_at": "2026-05-30T03:25:16.042646Z",
-        "created_at_ms": 1780111516041
+        "index_built_at": "2026-05-30T04:01:55.990338Z",
+        "created_at_ms": 1780113715989
       },
       "schema_version": "1.0.0"
     }
@@ -158,8 +158,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "sim_vendor": null,
           "sim_version": null,
           "dut_top": null,
-          "created_at": "2026-05-30T03:25:16.041841Z",
-          "created_at_ms": 1780111516041
+          "created_at": "2026-05-30T04:01:55.989538Z",
+          "created_at_ms": 1780113715989
         }
       ],
       "pagination": {
@@ -198,8 +198,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "sim_vendor": null,
         "sim_version": null,
         "dut_top": null,
-        "created_at": "2026-05-30T03:25:16.041841Z",
-        "created_at_ms": 1780111516041
+        "created_at": "2026-05-30T04:01:55.989538Z",
+        "created_at_ms": 1780113715989
       }
     }
     ```
@@ -276,6 +276,153 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "schema_version": "1.0.0",
       "assertions": [
         {
+          "assertion_id": "a_c0ae7a3d319c",
+          "language": "sva",
+          "name": "CHK_ARVALID_STABLE",
+          "scope": "axi4_tb_top.dut",
+          "file": "axi4_slave.sv",
+          "line": 146,
+          "signals": [
+            "ACLK",
+            "ARESETn",
+            "ARVALID",
+            "ARREADY"
+          ],
+          "tags": [
+            "axi4",
+            "handshake",
+            "protocol",
+            "read-address"
+          ],
+          "intent": {
+            "protocol": "axi4",
+            "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert ARVALID before the handshake"
+          }
+        },
+        {
+          "assertion_id": "a_11ed387e66f6",
+          "language": "sva",
+          "name": "CHK_AWVALID_STABLE",
+          "scope": "axi4_tb_top.dut",
+          "file": "axi4_slave.sv",
+          "line": 138,
+          "signals": [
+            "ACLK",
+            "ARESETn",
+            "AWVALID",
+            "AWREADY"
+          ],
+          "tags": [
+            "axi4",
+            "handshake",
+            "protocol",
+            "write-address"
+          ],
+          "intent": {
+            "protocol": "axi4",
+            "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert AWVALID before the handshake"
+          }
+        },
+        {
+          "assertion_id": "a_39857bc021fc",
+          "language": "sva",
+          "name": "CHK_BRESP_ACCEPTED",
+          "scope": "axi4_tb_top.dut",
+          "file": "axi4_slave.sv",
+          "line": 162,
+          "signals": [
+            "ACLK",
+            "ARESETn",
+            "BVALID",
+            "BREADY"
+          ],
+          "tags": [
+            "axi4",
+            "protocol",
+            "timeout",
+            "write-response"
+          ],
+          "intent": {
+            "protocol": "axi4",
+            "requirement": "AXI4 compliance: BVALID must be accepted within a bounded number of cycles"
+          }
+        },
+        {
+          "assertion_id": "a_825670dc11bc",
+          "language": "sva",
+          "name": "CHK_RESP_AFTER_DATA",
+          "scope": "axi4_tb_top.dut",
+          "file": "axi4_slave.sv",
+          "line": 178,
+          "signals": [
+            "ACLK",
+            "ARESETn",
+            "wstate",
+            "wbeat_cnt"
+          ],
+          "tags": [
+            "axi4",
+            "ordering",
+            "protocol",
+            "write-response"
+          ],
+          "intent": {
+            "protocol": "axi4",
+            "requirement": "Write response must only be issued after at least one write data beat has occurred"
+          }
+        },
+        {
+          "assertion_id": "a_6548339b9337",
+          "language": "sva",
+          "name": "CHK_RLAST_ON_FINAL",
+          "scope": "axi4_tb_top.dut",
+          "file": "axi4_slave.sv",
+          "line": 170,
+          "signals": [
+            "ACLK",
+            "ARESETn",
+            "RVALID",
+            "RREADY",
+            "RLAST",
+            "rbeat_cnt",
+            "rlen_q"
+          ],
+          "tags": [
+            "axi4",
+            "burst",
+            "protocol",
+            "read"
+          ],
+          "intent": {
+            "protocol": "axi4",
+            "requirement": "AXI4 spec \u00a7A3.4.3: RLAST must be asserted on the final data beat of a read burst"
+          }
+        },
+        {
+          "assertion_id": "a_fe48551b6a35",
+          "language": "sva",
+          "name": "CHK_WVALID_STABLE",
+          "scope": "axi4_tb_top.dut",
+          "file": "axi4_slave.sv",
+          "line": 154,
+          "signals": [
+            "ACLK",
+            "ARESETn",
+            "WVALID",
+            "WREADY"
+          ],
+          "tags": [
+            "axi4",
+            "handshake",
+            "protocol",
+            "write-data"
+          ],
+          "intent": {
+            "protocol": "axi4",
+            "requirement": "AXI4 spec \u00a7A3.2.1: WVALID must not drop without handshake during a burst"
+          }
+        },
+        {
           "assertion_id": "a_03847f8e5b0f",
           "language": "sva",
           "name": "axi_awvalid_stable_chk",
@@ -317,7 +464,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "pagination": {
         "page": 1,
         "page_size": 50,
-        "total_items": 2,
+        "total_items": 8,
         "total_pages": 1
       }
     }
@@ -330,7 +477,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
 ??? example "Request"
     ```json
     {
-      "assertion_id": "a_03847f8e5b0f"
+      "assertion_id": "a_c0ae7a3d319c"
     }
     ```
 
@@ -339,23 +486,27 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "schema_version": "1.0.0",
       "item": {
-        "assertion_id": "a_03847f8e5b0f",
+        "assertion_id": "a_c0ae7a3d319c",
         "language": "sva",
-        "name": "axi_awvalid_stable_chk",
-        "scope": "counter_tb",
-        "file": "counter.sv",
-        "line": 12,
+        "name": "CHK_ARVALID_STABLE",
+        "scope": "axi4_tb_top.dut",
+        "file": "axi4_slave.sv",
+        "line": 146,
         "signals": [
-          "clk",
-          "count"
+          "ACLK",
+          "ARESETn",
+          "ARVALID",
+          "ARREADY"
         ],
         "tags": [
           "axi4",
-          "vcs"
+          "handshake",
+          "protocol",
+          "read-address"
         ],
         "intent": {
           "protocol": "axi4",
-          "requirement": "demo assertion tagged for protocol filtering"
+          "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert ARVALID before the handshake"
         }
       }
     }
@@ -381,6 +532,23 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "assertion_failures": [
         {
           "id": 1,
+          "assertion_id": "a_39857bc021fc",
+          "test_id": "t_b439c1f1e40d",
+          "run_id": "r_e0e82e0b1722",
+          "time_ns": 1248000,
+          "message": "Assertion \"CHK_BRESP_ACCEPTED\" failed at time 1248000ns \u2014 BVALID not accepted within 16 cycles (master held BREADY low)",
+          "evidence": [
+            {
+              "kind": "log",
+              "path": "axi4_uvm/vcs/assertions/axi4_error_resp.assert.json",
+              "span": {},
+              "extract": "Assertion \"CHK_BRESP_ACCEPTED\" failed at time 1248000ns \u2014 BVALID not accepted within 16 cycles (master held BREADY low)",
+              "hash": null
+            }
+          ]
+        },
+        {
+          "id": 2,
           "assertion_id": "a_03847f8e5b0f",
           "test_id": "t_1f8ec97914c0",
           "run_id": "r_e05edc733d2b",
@@ -397,7 +565,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           ]
         },
         {
-          "id": 2,
+          "id": 3,
           "assertion_id": "a_03847f8e5b0f",
           "test_id": "t_2a2b1eecc369",
           "run_id": "r_4625bceb1d6e",
@@ -414,7 +582,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           ]
         },
         {
-          "id": 3,
+          "id": 4,
           "assertion_id": "a_03847f8e5b0f",
           "test_id": "t_ed09d88e1f1a",
           "run_id": "r_8f85ecd85936",
@@ -431,7 +599,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           ]
         },
         {
-          "id": 4,
+          "id": 5,
           "assertion_id": "a_c00ae0788840",
           "test_id": "t_3bb6bfc925aa",
           "run_id": "r_85b1d3f70e48",
@@ -451,7 +619,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "pagination": {
         "page": 1,
         "page_size": 50,
-        "total_items": 4,
+        "total_items": 5,
         "total_pages": 1
       }
     }
@@ -531,7 +699,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "schema_version": "1.0.0",
       "coverage": [
         {
-          "id": 4,
+          "id": 7,
           "run_id": "r_85b1d3f70e48",
           "test_id": "t_3bb6bfc925aa",
           "kind": "functional",
@@ -592,7 +760,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "run_id": "r_85b1d3f70e48",
       "summaries": [
         {
-          "id": 4,
+          "id": 7,
           "run_id": "r_85b1d3f70e48",
           "test_id": "t_3bb6bfc925aa",
           "kind": "functional",
@@ -793,6 +961,22 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "signature_id": "s_171ee2cbf014"
         },
         {
+          "failure_id": "f_81bb456a74ac",
+          "failure_id_full": "81bb456a74acc3bf5ace5f82eddfd82a388fd613914b28235320bb43e512cb3b",
+          "test_id": "t_b439c1f1e40d",
+          "run_id": "r_e0e82e0b1722",
+          "severity": "error",
+          "category": "scoreboard",
+          "summary": "Write-readback mismatch at address 0x000001C0",
+          "message": "\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] FAIL: addr=0x000001C0 exp=0xDEADBEEF got=0x00000000\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] SCOREBOARD MISMATCHES DETECTED\n      ",
+          "time_ns": null,
+          "phase": null,
+          "component": null,
+          "tags_json": "[\"scoreboard\", \"cocotb\"]",
+          "tags_flat": "scoreboard cocotb",
+          "signature_id": "s_11ffe14f53ed"
+        },
+        {
           "failure_id": "f_b0e75506b88c",
           "failure_id_full": "b0e75506b88c8ed940b5c06dde26159fcf6ccd430f599ac2d7fa44cb57c1f5fa",
           "test_id": "t_731e321ad3c0",
@@ -828,7 +1012,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "pagination": {
         "page": 1,
         "page_size": 50,
-        "total_items": 8,
+        "total_items": 9,
         "total_pages": 1
       }
     }
@@ -852,26 +1036,26 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "suite": "verilator_counter",
       "window_days": 30,
-      "as_of": "2026-05-30T03:25:16.491435Z",
+      "as_of": "2026-05-30T04:01:56.810072Z",
       "pass_rate": 33.33,
       "runs": [
         {
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T03:25:16.059604Z"
+          "created_at": "2026-05-30T04:01:56.006241Z"
         },
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-30T03:25:16.041841Z"
+          "created_at": "2026-05-30T04:01:55.989538Z"
         },
         {
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T03:25:16.006324Z"
+          "created_at": "2026-05-30T04:01:55.958292Z"
         }
       ],
       "top_signatures": [

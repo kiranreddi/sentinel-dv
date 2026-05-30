@@ -1,0 +1,161 @@
+{
+  "test_name": "axi4_uvm_xcelium.axi4_bk2bk_test",
+  "kind": "functional",
+  "simulator": "vcs",
+  "metrics": [
+    {
+      "name": "axi4_burst_cg.cp_awburst.fixed",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 8,
+      "total": 8
+    },
+    {
+      "name": "axi4_burst_cg.cp_awburst.incr",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 24,
+      "total": 24
+    },
+    {
+      "name": "axi4_burst_cg.cp_awburst.wrap",
+      "scope": "axi4_tb_top.dut",
+      "covered": 0.0,
+      "hits": 0,
+      "total": 4
+    },
+    {
+      "name": "axi4_burst_cg.cp_awlen.single",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 12,
+      "total": 12
+    },
+    {
+      "name": "axi4_burst_cg.cp_awlen.short",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 10,
+      "total": 10
+    },
+    {
+      "name": "axi4_burst_cg.cp_awlen.medium",
+      "scope": "axi4_tb_top.dut",
+      "covered": 75.0,
+      "hits": 6,
+      "total": 8
+    },
+    {
+      "name": "axi4_burst_cg.cp_awlen.long",
+      "scope": "axi4_tb_top.dut",
+      "covered": 0.0,
+      "hits": 0,
+      "total": 8
+    },
+    {
+      "name": "axi4_burst_cg.cp_awsize.byte1",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 5,
+      "total": 5
+    },
+    {
+      "name": "axi4_burst_cg.cp_awsize.byte2",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 8,
+      "total": 8
+    },
+    {
+      "name": "axi4_burst_cg.cp_awsize.byte4",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 19,
+      "total": 19
+    },
+    {
+      "name": "axi4_burst_cg.cp_bresp.okay",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 32,
+      "total": 32
+    },
+    {
+      "name": "axi4_burst_cg.cp_bresp.exokay",
+      "scope": "axi4_tb_top.dut",
+      "covered": 0.0,
+      "hits": 0,
+      "total": 4
+    },
+    {
+      "name": "axi4_burst_cg.cp_bresp.slverr",
+      "scope": "axi4_tb_top.dut",
+      "covered": 0.0,
+      "hits": 0,
+      "total": 4
+    },
+    {
+      "name": "axi4_burst_cg.cp_bresp.decerr",
+      "scope": "axi4_tb_top.dut",
+      "covered": 0.0,
+      "hits": 0,
+      "total": 4
+    },
+    {
+      "name": "axi4_backpressure_cg.cp_aw_bp",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 3,
+      "total": 3
+    },
+    {
+      "name": "axi4_backpressure_cg.cp_w_bp",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 2,
+      "total": 2
+    },
+    {
+      "name": "axi4_backpressure_cg.cp_r_bp",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 4,
+      "total": 4
+    },
+    {
+      "name": "axi4_backpressure_cg.cp_b_bp",
+      "scope": "axi4_tb_top.dut",
+      "covered": 50.0,
+      "hits": 2,
+      "total": 4
+    },
+    {
+      "name": "axi4_error_cg.cp_write_error.okay",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 32,
+      "total": 32
+    },
+    {
+      "name": "axi4_error_cg.cp_write_error.decerr",
+      "scope": "axi4_tb_top.dut",
+      "covered": 0.0,
+      "hits": 0,
+      "total": 4
+    },
+    {
+      "name": "axi4_error_cg.cp_read_error.okay",
+      "scope": "axi4_tb_top.dut",
+      "covered": 100.0,
+      "hits": 32,
+      "total": 32
+    },
+    {
+      "name": "axi4_error_cg.cp_read_error.decerr",
+      "scope": "axi4_tb_top.dut",
+      "covered": 0.0,
+      "hits": 0,
+      "total": 4
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites name="axi4-sentinel-vcs" time="847.3">
+  <testsuite name="axi4_uvm_bk2bk" tests="6" errors="0" failures="1" skipped="0" time="312.1" simulator="vcs">
+    <testcase classname="axi4_uvm_vcs" name="axi4_bk2bk_test"         time="48.2"  seed="3661149918"/>
+    <testcase classname="axi4_uvm_vcs" name="axi4_burst_test"          time="51.4"  seed="789802397"/>
+    <testcase classname="axi4_uvm_vcs" name="axi4_incr_burst_test"     time="55.8"  seed="2391533280"/>
+    <testcase classname="axi4_uvm_vcs" name="axi4_concurrent_ids_test" time="63.7"  seed="1228488658"/>
+    <testcase classname="axi4_uvm_vcs" name="axi4_backpressure_test"   time="44.1"  seed="167182854"/>
+    <testcase classname="axi4_uvm_vcs" name="axi4_error_resp_test"     time="48.9"  seed="4103022560">
+      <failure message="Write-readback mismatch at address 0x000001C0" type="UVM_ERROR">
+        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] FAIL: addr=0x000001C0 exp=0xDEADBEEF got=0x00000000
+        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] SCOREBOARD MISMATCHES DETECTED
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="axi4_uvm_rtl" tests="4" errors="0" failures="0" skipped="0" time="535.2" simulator="vcs">
+    <testcase classname="axi4_uvm_vcs_rtl" name="axi4_rtl_base_test"         time="112.4" seed="348423808"/>
+    <testcase classname="axi4_uvm_vcs_rtl" name="axi4_rtl_burst_incr_test"   time="138.7" seed="2648251764"/>
+    <testcase classname="axi4_uvm_vcs_rtl" name="axi4_rtl_burst_wrap_test"   time="141.3" seed="1149482058"/>
+    <testcase classname="axi4_uvm_vcs_rtl" name="axi4_rtl_decode_error_test" time="142.8" seed="116726666"/>
+  </testsuite>
+</testsuites>

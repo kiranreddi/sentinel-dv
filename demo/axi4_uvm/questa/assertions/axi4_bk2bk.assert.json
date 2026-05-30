@@ -1,0 +1,147 @@
+{
+  "test_name": "axi4_uvm_questa.axi4_bk2bk_test",
+  "assertions": [
+    {
+      "name": "CHK_AWVALID_STABLE",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 138,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "AWVALID",
+        "AWREADY"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "handshake",
+        "write-address"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert AWVALID before the handshake"
+      }
+    },
+    {
+      "name": "CHK_ARVALID_STABLE",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 146,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "ARVALID",
+        "ARREADY"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "handshake",
+        "read-address"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert ARVALID before the handshake"
+      }
+    },
+    {
+      "name": "CHK_WVALID_STABLE",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 154,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "WVALID",
+        "WREADY"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "handshake",
+        "write-data"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "AXI4 spec \u00a7A3.2.1: WVALID must not drop without handshake during a burst"
+      }
+    },
+    {
+      "name": "CHK_BRESP_ACCEPTED",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 162,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "BVALID",
+        "BREADY"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "timeout",
+        "write-response"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "AXI4 compliance: BVALID must be accepted within a bounded number of cycles"
+      }
+    },
+    {
+      "name": "CHK_RLAST_ON_FINAL",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 170,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "RVALID",
+        "RREADY",
+        "RLAST",
+        "rbeat_cnt",
+        "rlen_q"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "burst",
+        "read"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "AXI4 spec \u00a7A3.4.3: RLAST must be asserted on the final data beat of a read burst"
+      }
+    },
+    {
+      "name": "CHK_RESP_AFTER_DATA",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 178,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "wstate",
+        "wbeat_cnt"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "ordering",
+        "write-response"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "Write response must only be issued after at least one write data beat has occurred"
+      }
+    }
+  ],
+  "failures": []
+}

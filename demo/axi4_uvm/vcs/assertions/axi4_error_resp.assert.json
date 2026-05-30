@@ -1,0 +1,56 @@
+{
+  "test_name": "axi4_uvm_vcs.axi4_error_resp_test",
+  "assertions": [
+    {
+      "name": "CHK_AWVALID_STABLE",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 138,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "AWVALID",
+        "AWREADY"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "handshake"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "AWVALID stability"
+      }
+    },
+    {
+      "name": "CHK_BRESP_ACCEPTED",
+      "language": "sva",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 162,
+      "signals": [
+        "ACLK",
+        "ARESETn",
+        "BVALID",
+        "BREADY"
+      ],
+      "tags": [
+        "axi4",
+        "protocol",
+        "timeout"
+      ],
+      "intent": {
+        "protocol": "axi4",
+        "requirement": "BVALID must be accepted within bounds"
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "CHK_BRESP_ACCEPTED",
+      "time_ns": 1248000,
+      "message": "Assertion \"CHK_BRESP_ACCEPTED\" failed at time 1248000ns \u2014 BVALID not accepted within 16 cycles (master held BREADY low)"
+    }
+  ]
+}

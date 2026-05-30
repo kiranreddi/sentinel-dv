@@ -54,6 +54,13 @@ class CocotbParser:
             name = testcase.get("name", "unknown")
             classname = testcase.get("classname", "")
             time_sec = float(testcase.get("time", "0"))
+            seed_str = testcase.get("seed")
+            seed_val = int(seed_str) if seed_str and seed_str.isdigit() else None
+            # Inherit simulator from parent testsuite if not on testcase
+            parent_ts = next(
+                (ts for ts in root.findall(".//testsuite") if testcase in list(ts)), None
+            )
+            sim_attr = testcase.get("simulator") or (parent_ts.get("simulator") if parent_ts is not None else None)
 
             # Check for failure/error elements
             failure_elem = testcase.find("failure")
@@ -103,8 +110,8 @@ class CocotbParser:
                 "status": status,
                 "framework": "cocotb",
                 "duration_ms": int(time_sec * 1000),  # Convert to ms
-                "seed": None,
-                "simulator": None,
+                "seed": seed_val,
+                "simulator": sim_attr,
                 "dut": None,
                 "evidence": [
                     {

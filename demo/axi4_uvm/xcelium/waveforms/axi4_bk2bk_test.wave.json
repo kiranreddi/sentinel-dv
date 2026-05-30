@@ -1,0 +1,210 @@
+{
+  "test_name": "axi4_uvm_xcelium.axi4_bk2bk_test",
+  "simulator": "vcs",
+  "dut": "axi4_slave",
+  "start_time_ns": 0,
+  "end_time_ns": 325000,
+  "signals": [
+    {
+      "name": "ACLK",
+      "width": 1,
+      "type": "clock",
+      "transitions": 65000,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "ARESETn",
+      "width": 1,
+      "type": "reset",
+      "transitions": 2,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "AWVALID",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "AWREADY",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "AWADDR",
+      "width": 32,
+      "type": "data",
+      "transitions": 32,
+      "toggle_pct": 67.4
+    },
+    {
+      "name": "AWLEN",
+      "width": 8,
+      "type": "data",
+      "transitions": 32,
+      "toggle_pct": 55.0
+    },
+    {
+      "name": "AWBURST",
+      "width": 2,
+      "type": "control",
+      "transitions": 18,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "WVALID",
+      "width": 1,
+      "type": "control",
+      "transitions": 120,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "WREADY",
+      "width": 1,
+      "type": "control",
+      "transitions": 120,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "WDATA",
+      "width": 32,
+      "type": "data",
+      "transitions": 98,
+      "toggle_pct": 82.1
+    },
+    {
+      "name": "WSTRB",
+      "width": 4,
+      "type": "data",
+      "transitions": 32,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "WLAST",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "BVALID",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "BREADY",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "BRESP",
+      "width": 2,
+      "type": "data",
+      "transitions": 32,
+      "toggle_pct": 50.0
+    },
+    {
+      "name": "ARVALID",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "ARREADY",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "ARADDR",
+      "width": 32,
+      "type": "data",
+      "transitions": 32,
+      "toggle_pct": 67.4
+    },
+    {
+      "name": "RVALID",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "RREADY",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    },
+    {
+      "name": "RDATA",
+      "width": 32,
+      "type": "data",
+      "transitions": 32,
+      "toggle_pct": 74.3
+    },
+    {
+      "name": "RLAST",
+      "width": 1,
+      "type": "control",
+      "transitions": 64,
+      "toggle_pct": 100.0
+    }
+  ],
+  "highlights": [
+    {
+      "group": "write_handshake",
+      "signals": [
+        "AWVALID",
+        "AWREADY",
+        "WVALID",
+        "WREADY",
+        "WLAST"
+      ],
+      "note": "32 write transactions observed"
+    },
+    {
+      "group": "read_handshake",
+      "signals": [
+        "ARVALID",
+        "ARREADY",
+        "RVALID",
+        "RREADY",
+        "RLAST"
+      ],
+      "note": "32 read transactions observed"
+    },
+    {
+      "group": "response_channel",
+      "signals": [
+        "BVALID",
+        "BREADY",
+        "BRESP"
+      ],
+      "note": "All OKAY responses \u2014 no errors in this test"
+    },
+    {
+      "group": "uncovered_toggles",
+      "signals": [
+        "AWADDR",
+        "AWLEN",
+        "AWBURST"
+      ],
+      "note": "Upper address bits and long burst lengths never exercised"
+    }
+  ],
+  "metadata": {
+    "total_transitions": 1082,
+    "simulation_cycles": 32500,
+    "clock_period_ns": 10
+  }
+}

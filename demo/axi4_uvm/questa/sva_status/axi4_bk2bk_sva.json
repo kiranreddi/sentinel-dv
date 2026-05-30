@@ -1,0 +1,49 @@
+{
+  "test_name": "axi4_uvm_questa.axi4_bk2bk_test",
+  "simulator": "vcs",
+  "sva_status": [
+    {
+      "name": "CHK_AWVALID_STABLE",
+      "status": "pass",
+      "attempts": 247,
+      "failures": 0,
+      "vacuous": false
+    },
+    {
+      "name": "CHK_ARVALID_STABLE",
+      "status": "pass",
+      "attempts": 189,
+      "failures": 0,
+      "vacuous": false
+    },
+    {
+      "name": "CHK_WVALID_STABLE",
+      "status": "pass",
+      "attempts": 312,
+      "failures": 0,
+      "vacuous": false
+    },
+    {
+      "name": "CHK_BRESP_ACCEPTED",
+      "status": "pass",
+      "attempts": 32,
+      "failures": 0,
+      "vacuous": false
+    },
+    {
+      "name": "CHK_RLAST_ON_FINAL",
+      "status": "pass",
+      "attempts": 32,
+      "failures": 0,
+      "vacuous": false
+    },
+    {
+      "name": "CHK_RESP_AFTER_DATA",
+      "status": "vacuous",
+      "attempts": 0,
+      "failures": 0,
+      "vacuous": true,
+      "note": "Property never triggered \u2014 wstate==W_RESP with wbeat_cnt==0 never occurred in this test"
+    }
+  ]
+}
