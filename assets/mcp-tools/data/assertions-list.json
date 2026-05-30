@@ -9,6 +9,153 @@
     "schema_version": "1.0.0",
     "assertions": [
       {
+        "assertion_id": "a_c0ae7a3d319c",
+        "language": "sva",
+        "name": "CHK_ARVALID_STABLE",
+        "scope": "axi4_tb_top.dut",
+        "file": "axi4_slave.sv",
+        "line": 146,
+        "signals": [
+          "ACLK",
+          "ARESETn",
+          "ARVALID",
+          "ARREADY"
+        ],
+        "tags": [
+          "axi4",
+          "handshake",
+          "protocol",
+          "read-address"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert ARVALID before the handshake"
+        }
+      },
+      {
+        "assertion_id": "a_11ed387e66f6",
+        "language": "sva",
+        "name": "CHK_AWVALID_STABLE",
+        "scope": "axi4_tb_top.dut",
+        "file": "axi4_slave.sv",
+        "line": 138,
+        "signals": [
+          "ACLK",
+          "ARESETn",
+          "AWVALID",
+          "AWREADY"
+        ],
+        "tags": [
+          "axi4",
+          "handshake",
+          "protocol",
+          "write-address"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert AWVALID before the handshake"
+        }
+      },
+      {
+        "assertion_id": "a_39857bc021fc",
+        "language": "sva",
+        "name": "CHK_BRESP_ACCEPTED",
+        "scope": "axi4_tb_top.dut",
+        "file": "axi4_slave.sv",
+        "line": 162,
+        "signals": [
+          "ACLK",
+          "ARESETn",
+          "BVALID",
+          "BREADY"
+        ],
+        "tags": [
+          "axi4",
+          "protocol",
+          "timeout",
+          "write-response"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "AXI4 compliance: BVALID must be accepted within a bounded number of cycles"
+        }
+      },
+      {
+        "assertion_id": "a_825670dc11bc",
+        "language": "sva",
+        "name": "CHK_RESP_AFTER_DATA",
+        "scope": "axi4_tb_top.dut",
+        "file": "axi4_slave.sv",
+        "line": 178,
+        "signals": [
+          "ACLK",
+          "ARESETn",
+          "wstate",
+          "wbeat_cnt"
+        ],
+        "tags": [
+          "axi4",
+          "ordering",
+          "protocol",
+          "write-response"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "Write response must only be issued after at least one write data beat has occurred"
+        }
+      },
+      {
+        "assertion_id": "a_6548339b9337",
+        "language": "sva",
+        "name": "CHK_RLAST_ON_FINAL",
+        "scope": "axi4_tb_top.dut",
+        "file": "axi4_slave.sv",
+        "line": 170,
+        "signals": [
+          "ACLK",
+          "ARESETn",
+          "RVALID",
+          "RREADY",
+          "RLAST",
+          "rbeat_cnt",
+          "rlen_q"
+        ],
+        "tags": [
+          "axi4",
+          "burst",
+          "protocol",
+          "read"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "AXI4 spec \u00a7A3.4.3: RLAST must be asserted on the final data beat of a read burst"
+        }
+      },
+      {
+        "assertion_id": "a_fe48551b6a35",
+        "language": "sva",
+        "name": "CHK_WVALID_STABLE",
+        "scope": "axi4_tb_top.dut",
+        "file": "axi4_slave.sv",
+        "line": 154,
+        "signals": [
+          "ACLK",
+          "ARESETn",
+          "WVALID",
+          "WREADY"
+        ],
+        "tags": [
+          "axi4",
+          "handshake",
+          "protocol",
+          "write-data"
+        ],
+        "intent": {
+          "protocol": "axi4",
+          "requirement": "AXI4 spec \u00a7A3.2.1: WVALID must not drop without handshake during a burst"
+        }
+      },
+      {
         "assertion_id": "a_03847f8e5b0f",
         "language": "sva",
         "name": "axi_awvalid_stable_chk",
@@ -50,7 +197,7 @@
     "pagination": {
       "page": 1,
       "page_size": 50,
-      "total_items": 2,
+      "total_items": 8,
       "total_pages": 1
     }
   }

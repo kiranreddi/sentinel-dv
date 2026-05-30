@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="440" viewBox="0 0 920 440">
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="455" viewBox="0 0 920 455">
   <rect width="100%" height="100%" fill="#0f1419" rx="8"/>
   <rect x="1" y="1" width="918" height="50" fill="#1a2332" rx="8"/>
   <circle cx="24" cy="26" r="6" fill="#ef4444"/>
@@ -11,21 +11,22 @@
 <text x="20" y="97" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">{</text>
 <text x="20" y="112" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;run_id&quot;: &quot;r_85b1d3f70e48&quot;</text>
 <text x="20" y="127" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">}</text>
-  <rect x="16" y="152" width="888" height="272" fill="#1a2332" stroke="#2d3a4f" rx="6"/>
+  <rect x="16" y="152" width="888" height="287" fill="#1a2332" stroke="#2d3a4f" rx="6"/>
   <text x="20" y="174" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">Response</text>
 <text x="20" y="189" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">{</text>
 <text x="20" y="204" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;run&quot;: {</text>
 <text x="20" y="219" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;run_id&quot;: &quot;r_85b1d3f70e48&quot;,</text>
 <text x="20" y="234" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;run_id_full&quot;: &quot;85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33&quot;,</text>
 <text x="20" y="249" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;suite&quot;: &quot;verilator_counter&quot;,</text>
-<text x="20" y="264" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;created_at&quot;: &quot;2026-05-29T05:21:10.979751Z&quot;,</text>
+<text x="20" y="264" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;created_at&quot;: &quot;2026-05-30T15:47:44.562808Z&quot;,</text>
 <text x="20" y="279" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;status&quot;: &quot;pass&quot;,</text>
 <text x="20" y="294" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;ci_system&quot;: null,</text>
 <text x="20" y="309" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;ci_build_id&quot;: null,</text>
 <text x="20" y="324" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;ci_job_url&quot;: null,</text>
 <text x="20" y="339" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;artifact_manifest_hash&quot;: null,</text>
-<text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;index_built_at&quot;: &quot;2026-05-29T05:21:10.980055Z&quot;</text>
-<text x="20" y="369" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  },</text>
-<text x="20" y="384" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;schema_version&quot;: &quot;1.0.0&quot;</text>
-<text x="20" y="399" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">}</text>
+<text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;index_built_at&quot;: &quot;2026-05-30T15:47:44.563579Z&quot;,</text>
+<text x="20" y="369" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;created_at_ms&quot;: 1780156064562</text>
+<text x="20" y="384" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  },</text>
+<text x="20" y="399" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;schema_version&quot;: &quot;1.0.0&quot;</text>
+<text x="20" y="414" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">}</text>
 </svg>

@@ -36,9 +36,9 @@
 <text x="20" y="489" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;note&quot;: &quot;counter increment window&quot;</text>
 <text x="20" y="504" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    }</text>
 <text x="20" y="519" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  ],</text>
-<text x="20" y="534" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;metadata&quot;: {</text>
-<text x="20" y="549" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;source&quot;: &quot;checked-in demo fixture&quot;,</text>
-<text x="20" y="564" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;generator&quot;: &quot;verilator-vcd-summary&quot;,</text>
-<text x="20" y="579" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;window&quot;: {</text>
+<text x="20" y="534" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;highlight_groups&quot;: {</text>
+<text x="20" y="549" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;reset_event&quot;: [</text>
+<text x="20" y="564" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      {</text>
+<text x="20" y="579" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">        &quot;time_ns&quot;: 1000,</text>
 <text x="20" y="594" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  …</text>
 </svg>

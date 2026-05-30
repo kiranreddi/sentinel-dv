@@ -1,28 +1,32 @@
 {
   "tool": "assertions.get",
   "arguments": {
-    "assertion_id": "a_03847f8e5b0f"
+    "assertion_id": "a_c0ae7a3d319c"
   },
   "response": {
     "schema_version": "1.0.0",
     "item": {
-      "assertion_id": "a_03847f8e5b0f",
+      "assertion_id": "a_c0ae7a3d319c",
       "language": "sva",
-      "name": "axi_awvalid_stable_chk",
-      "scope": "counter_tb",
-      "file": "counter.sv",
-      "line": 12,
+      "name": "CHK_ARVALID_STABLE",
+      "scope": "axi4_tb_top.dut",
+      "file": "axi4_slave.sv",
+      "line": 146,
       "signals": [
-        "clk",
-        "count"
+        "ACLK",
+        "ARESETn",
+        "ARVALID",
+        "ARREADY"
       ],
       "tags": [
         "axi4",
-        "vcs"
+        "handshake",
+        "protocol",
+        "read-address"
       ],
       "intent": {
         "protocol": "axi4",
-        "requirement": "demo assertion tagged for protocol filtering"
+        "requirement": "AXI4 spec \u00a7A3.2.1: master must not de-assert ARVALID before the handshake"
       }
     }
   }

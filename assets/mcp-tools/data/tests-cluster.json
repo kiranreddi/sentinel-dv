@@ -1,0 +1,153 @@
+{
+  "tool": "tests.cluster",
+  "arguments": {},
+  "response": {
+    "run_id": null,
+    "clusters": [
+      {
+        "signature": "expected count to wrap at n; observed n without wrap.",
+        "count": 4,
+        "test_ids": [
+          "t_e65285b55eec",
+          "t_731e321ad3c0",
+          "t_7f5785415392",
+          "t_5b4ce57ba531"
+        ],
+        "representative_test_id": "t_e65285b55eec",
+        "representative_message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      "
+      },
+      {
+        "signature": ": n",
+        "count": 2,
+        "test_ids": [
+          "t_d5c9e066a33f",
+          "t_d5c9e066a33f"
+        ],
+        "representative_test_id": "t_d5c9e066a33f",
+        "representative_message": ":   0"
+      },
+      {
+        "signature": "n uvm_fatal: n",
+        "count": 2,
+        "test_ids": [
+          "t_c63ff9530760",
+          "t_9f4d54c8e3af"
+        ],
+        "representative_test_id": "t_c63ff9530760",
+        "representative_message": "0  UVM_FATAL: 0"
+      },
+      {
+        "signature": "pop while empty: empty flag was n",
+        "count": 1,
+        "test_ids": [
+          "t_cf16259fcc9e"
+        ],
+        "representative_test_id": "t_cf16259fcc9e",
+        "representative_message": "\npop while empty: empty flag was 0\n      "
+      },
+      {
+        "signature": "[test] test failed",
+        "count": 1,
+        "test_ids": [
+          "t_3fb5c5afeb62"
+        ],
+        "representative_test_id": "t_3fb5c5afeb62",
+        "representative_message": "[TEST] TEST FAILED"
+      },
+      {
+        "signature": "uvm_error @ hex: uvm_test_top.env.scbd [scbd] fail: addr=addr exp=addr got=addr",
+        "count": 1,
+        "test_ids": [
+          "t_b439c1f1e40d"
+        ],
+        "representative_test_id": "t_b439c1f1e40d",
+        "representative_message": "\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] FAIL: addr=0x000001C0 exp=0xDEADBEEF got=0x00000000\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] SCOREBOARD MISMATCHES DETECTED\n"
+      },
+      {
+        "signature": "[scb] counter_scoreboard.sv:(n) @ n data mismatch: expected count=n got n",
+        "count": 1,
+        "test_ids": [
+          "t_bdf825c67e63"
+        ],
+        "representative_test_id": "t_bdf825c67e63",
+        "representative_message": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5"
+      },
+      {
+        "signature": "traceback (most recent call last): file \"test_counter.py\", line n, in test_over",
+        "count": 1,
+        "test_ids": [
+          "t_ce337fb0bfda"
+        ],
+        "representative_test_id": "t_ce337fb0bfda",
+        "representative_message": "\nTraceback (most recent call last):\n  File \"test_counter.py\", line 45, in test_overflow\n    assert dut.count.value == 0, \"Counter should wrap to 0\"\nAssertionError: Counter overflow not handled correct"
+      },
+      {
+        "signature": "uvm_test_top.axi_env.scoreboard [scb] axi data mismatch: aw beat n expected addr",
+        "count": 1,
+        "test_ids": [
+          "t_7dd03c3d152f"
+        ],
+        "representative_test_id": "t_7dd03c3d152f",
+        "representative_message": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF"
+      },
+      {
+        "signature": "[test] counter_tb.sv:(n) @ n test failed",
+        "count": 1,
+        "test_ids": [
+          "t_bdf825c67e63"
+        ],
+        "representative_test_id": "t_bdf825c67e63",
+        "representative_message": "[TEST] counter_tb.sv:(92) @ 1300 TEST FAILED"
+      },
+      {
+        "signature": "expected n-bit result; got value out of range.",
+        "count": 1,
+        "test_ids": [
+          "t_fed229b40a64"
+        ],
+        "representative_test_id": "t_fed229b40a64",
+        "representative_message": "\nExpected 16-bit result; got value out of range.\n      "
+      },
+      {
+        "signature": "[scb] data mismatch: expected count=n got n",
+        "count": 1,
+        "test_ids": [
+          "t_3fb5c5afeb62"
+        ],
+        "representative_test_id": "t_3fb5c5afeb62",
+        "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5"
+      },
+      {
+        "signature": "[test] (uvm_test_top): test failed",
+        "count": 1,
+        "test_ids": [
+          "t_81f11ef7e513"
+        ],
+        "representative_test_id": "t_81f11ef7e513",
+        "representative_message": "[TEST] (uvm_test_top): TEST FAILED"
+      },
+      {
+        "signature": "uvm_test_top.env.scoreboard [scb] data mismatch: expected count=n got n",
+        "count": 1,
+        "test_ids": [
+          "t_7a0a37762958"
+        ],
+        "representative_test_id": "t_7a0a37762958",
+        "representative_message": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5"
+      },
+      {
+        "signature": "uvm_test_top.apb_env.monitor [mon] assertion failed: pready_timeout after psel",
+        "count": 1,
+        "test_ids": [
+          "t_e79a0d869304"
+        ],
+        "representative_test_id": "t_e79a0d869304",
+        "representative_message": "uvm_test_top.apb_env.monitor [MON] ASSERTION FAILED: pready_timeout after psel"
+      }
+    ],
+    "total_failures_analysed": 20,
+    "unique_clusters": 15,
+    "note": "15 root-cause cluster(s) explain 20 failure(s). Top cluster accounts for 20.0% of failures. Fix the representative failure in each cluster first.",
+    "schema_version": "1.0.0"
+  }
+}

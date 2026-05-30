@@ -1,0 +1,45 @@
+{
+  "tool": "regression.health",
+  "arguments": {
+    "suite": "verilator_counter"
+  },
+  "response": {
+    "health_score": 71.2,
+    "band": "coverage-gaps",
+    "band_symbol": "\ud83d\udfe0",
+    "component_scores": {
+      "pass_rate": 33.3,
+      "coverage": 81.2,
+      "assertion_health": 85.0,
+      "flakiness": 100.0,
+      "cross_sim_consistency": 100.0
+    },
+    "weights": {
+      "pass_rate": 0.3,
+      "coverage": 0.35,
+      "assertion_health": 0.15,
+      "flakiness": 0.1,
+      "cross_sim_consistency": 0.1
+    },
+    "raw_data": {
+      "total_tests": 3,
+      "passed_tests": 1,
+      "failed_tests": 2,
+      "overall_coverage": 81.25,
+      "coverage_by_kind": {
+        "functional": 81.25
+      },
+      "total_assertions": 10,
+      "vacuous_assertions": 3,
+      "failing_assertions": 0,
+      "flaky_tests": 0,
+      "divergent_tests": 0
+    },
+    "recommendations": [
+      "Pass rate is 33% (2 failures). Use tests.cluster to find root causes.",
+      "3 assertion(s) fire vacuously \u2014 the antecedent is never triggered. Add targeted stimulus."
+    ],
+    "note": "\ud83d\udfe0 Health score: 71.2/100 (coverage-gaps). Breakdown \u2014 pass_rate: 33%, coverage: 81%, assertions: 85%, flakiness: 100%, cross-sim: 100%.",
+    "schema_version": "1.0.0"
+  }
+}

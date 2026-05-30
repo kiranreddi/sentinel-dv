@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="560" viewBox="0 0 920 560">
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="620" viewBox="0 0 920 620">
   <rect width="100%" height="100%" fill="#0f1419" rx="8"/>
   <rect x="1" y="1" width="918" height="50" fill="#1a2332" rx="8"/>
   <circle cx="24" cy="26" r="6" fill="#ef4444"/>
@@ -9,31 +9,35 @@
   <rect x="16" y="52" width="888" height="92" fill="#1a2332" stroke="#2d3a4f" rx="6"/>
   <text x="20" y="82" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">Request</text>
 <text x="20" y="97" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">{</text>
-<text x="20" y="112" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;assertion_id&quot;: &quot;a_03847f8e5b0f&quot;</text>
+<text x="20" y="112" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;assertion_id&quot;: &quot;a_c0ae7a3d319c&quot;</text>
 <text x="20" y="127" fill="#94a3b8" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">}</text>
-  <rect x="16" y="152" width="888" height="392" fill="#1a2332" stroke="#2d3a4f" rx="6"/>
+  <rect x="16" y="152" width="888" height="452" fill="#1a2332" stroke="#2d3a4f" rx="6"/>
   <text x="20" y="174" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">Response</text>
 <text x="20" y="189" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">{</text>
 <text x="20" y="204" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;schema_version&quot;: &quot;1.0.0&quot;,</text>
 <text x="20" y="219" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;item&quot;: {</text>
-<text x="20" y="234" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;assertion_id&quot;: &quot;a_03847f8e5b0f&quot;,</text>
+<text x="20" y="234" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;assertion_id&quot;: &quot;a_c0ae7a3d319c&quot;,</text>
 <text x="20" y="249" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;language&quot;: &quot;sva&quot;,</text>
-<text x="20" y="264" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;name&quot;: &quot;axi_awvalid_stable_chk&quot;,</text>
-<text x="20" y="279" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;scope&quot;: &quot;counter_tb&quot;,</text>
-<text x="20" y="294" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;file&quot;: &quot;counter.sv&quot;,</text>
-<text x="20" y="309" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;line&quot;: 12,</text>
+<text x="20" y="264" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;name&quot;: &quot;CHK_ARVALID_STABLE&quot;,</text>
+<text x="20" y="279" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;scope&quot;: &quot;axi4_tb_top.dut&quot;,</text>
+<text x="20" y="294" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;file&quot;: &quot;axi4_slave.sv&quot;,</text>
+<text x="20" y="309" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;line&quot;: 146,</text>
 <text x="20" y="324" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;signals&quot;: [</text>
-<text x="20" y="339" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;clk&quot;,</text>
-<text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;count&quot;</text>
-<text x="20" y="369" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    ],</text>
-<text x="20" y="384" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;tags&quot;: [</text>
-<text x="20" y="399" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;axi4&quot;,</text>
-<text x="20" y="414" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;vcs&quot;</text>
-<text x="20" y="429" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    ],</text>
-<text x="20" y="444" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;intent&quot;: {</text>
-<text x="20" y="459" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;protocol&quot;: &quot;axi4&quot;,</text>
-<text x="20" y="474" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;requirement&quot;: &quot;demo assertion tagged for protocol filtering&quot;</text>
-<text x="20" y="489" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    }</text>
-<text x="20" y="504" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  }</text>
-<text x="20" y="519" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">}</text>
+<text x="20" y="339" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;ACLK&quot;,</text>
+<text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;ARESETn&quot;,</text>
+<text x="20" y="369" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;ARVALID&quot;,</text>
+<text x="20" y="384" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;ARREADY&quot;</text>
+<text x="20" y="399" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    ],</text>
+<text x="20" y="414" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;tags&quot;: [</text>
+<text x="20" y="429" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;axi4&quot;,</text>
+<text x="20" y="444" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;handshake&quot;,</text>
+<text x="20" y="459" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;protocol&quot;,</text>
+<text x="20" y="474" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;read-address&quot;</text>
+<text x="20" y="489" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    ],</text>
+<text x="20" y="504" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    &quot;intent&quot;: {</text>
+<text x="20" y="519" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;protocol&quot;: &quot;axi4&quot;,</text>
+<text x="20" y="534" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;requirement&quot;: &quot;AXI4 spec \u00a7A3.2.1: master must not de-assert ARVALID before</text>
+<text x="20" y="549" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">the handshake&quot;</text>
+<text x="20" y="564" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    }</text>
+<text x="20" y="579" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  …</text>
 </svg>

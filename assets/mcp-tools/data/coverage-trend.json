@@ -1,0 +1,30 @@
+{
+  "tool": "coverage.trend",
+  "arguments": {
+    "suite": "verilator_counter"
+  },
+  "response": {
+    "suite": "verilator_counter",
+    "kind": null,
+    "trend": [
+      {
+        "run_id": "r_85b1d3f70e48",
+        "suite": "verilator_counter",
+        "created_at": "2026-05-30T15:47:44.562808Z",
+        "kind": "functional",
+        "covered_pct": 81.25,
+        "metric_count": 2,
+        "delta_pct": null
+      }
+    ],
+    "summary": {
+      "runs_analysed": 1,
+      "oldest_pct": 81.25,
+      "latest_pct": 81.25,
+      "total_delta_pct": 0.0,
+      "direction": "stable"
+    },
+    "note": "Coverage regressed by 0.0% over 1 run(s). Positive delta_pct = more bins covered than previous run.",
+    "schema_version": "1.0.0"
+  }
+}
