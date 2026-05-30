@@ -417,12 +417,12 @@ class CoverageReportParser:
 
         # Primary: extract table rows with coverage type and percentage
         # Xcelium HTML uses patterns like: >Line Coverage<...>72.45%<
-        _XCOV_ROW = re.compile(
+        xcov_row = re.compile(
             r">\s*((?:Line|Branch|Toggle|Statement|Functional|Assertion|FSM|Expression)"
             r"(?:\s+Coverage)?)\s*<.*?>\s*([\d.]+)\s*%\s*<",
             re.IGNORECASE | re.DOTALL,
         )
-        _KIND_XCEL = {
+        kind_xcel = {
             "line": "line",
             "branch": "branch",
             "toggle": "toggle",
@@ -433,10 +433,10 @@ class CoverageReportParser:
             "expression": "branch",
         }
         seen: set[str] = set()
-        for m in _XCOV_ROW.finditer(content):
+        for m in xcov_row.finditer(content):
             raw_kind = m.group(1).lower().replace(" coverage", "").strip()
             pct = float(m.group(2))
-            kind_name = _KIND_XCEL.get(raw_kind, raw_kind)
+            kind_name = kind_xcel.get(raw_kind, raw_kind)
             if kind_name not in seen:
                 seen.add(kind_name)
                 metrics.append(
