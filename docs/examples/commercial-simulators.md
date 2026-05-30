@@ -17,7 +17,7 @@ python scripts/verify_all_mcp_tools.py --sim questa
 python scripts/verify_all_mcp_tools.py --sim cadence
 ```
 
-Each command indexes a temporary copy of the fixture, starts the in-process FastMCP client, and calls all 15 registered tools.
+Each command indexes a temporary copy of the fixture, starts the in-process FastMCP client, and calls all 26 registered tools.
 
 ## Use your own simulator exports
 

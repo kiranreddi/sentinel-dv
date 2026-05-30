@@ -237,8 +237,13 @@ def main() -> int:
         print("Index stats:", stats)
 
         captured = _capture_tools(db)
-        if len(captured) != 15:
-            print(f"warning: expected 15 tools, captured {len(captured)}", file=sys.stderr)
+        from sentinel_dv.registry import TOOL_COUNT
+
+        if len(captured) != TOOL_COUNT:
+            print(
+                f"warning: expected {TOOL_COUNT} tools, captured {len(captured)}",
+                file=sys.stderr,
+            )
 
         for tool_name, arguments, response in captured:
             slug = _slug(tool_name)

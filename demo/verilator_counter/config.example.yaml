@@ -14,6 +14,18 @@ adapters:
   assertions: true
   coverage: true
   waveform_summary: true
+  live_sim: true
+  live_sim_max_age_seconds: 300
+
+# Optional: enable command-generation tools (runs.submit, tests.replay, sim.status)
+submit:
+  enabled: true
+  default_simulator: verilator
+  templates:
+    - simulator: verilator
+      template: "make run SUITE={suite} SEED={seed}"
+      replay_template: "make run TEST={test_name} SEED={seed}"
+      default_args: ""
 
 security:
   max_page_size: 200

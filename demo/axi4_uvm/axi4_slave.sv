@@ -1,5 +1,5 @@
 // axi4_slave.sv — AXI4-Lite Slave with functional coverage groups and SVA properties
-// Designed for sentinel-dv MCP verification demo (all 21 tools)
+// Designed for sentinel-dv MCP verification demo (all 26 tools)
 
 `timescale 1ns/1ps
 

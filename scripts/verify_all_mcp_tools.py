@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Verify all 15 Sentinel DV MCP tools.
+Verify all Sentinel DV MCP tools (see sentinel_dv.registry.TOOL_NAMES).
 
 Usage (from repository root):
   python scripts/verify_all_mcp_tools.py --in-place
@@ -58,12 +58,25 @@ async def _run_single_project_mcp(config_path: Path, db_path: Path, suite: str) 
         for tool_name, arguments in calls:
             result = await client.call_tool(tool_name, arguments)
             payload = mcp_payload(result)
-            if payload.get("error"):
+            if _tool_failure(payload, tool_name):
                 _print_fail(f"{tool_name}: {payload['error']}")
                 failures += 1
             else:
                 _print_ok(tool_name)
     return failures
+
+
+_FEATURE_GATED_TOOLS = frozenset({"runs.submit", "tests.replay", "sim.status"})
+_ALLOWED_DEMO_ERRORS = frozenset({"CONFIG_ERROR", "NOT_FOUND"})
+
+
+def _tool_failure(payload: dict, tool_name: str) -> bool:
+    """True when the tool failed; feature-gated CONFIG/NOT_FOUND on demos is OK."""
+    err = payload.get("error")
+    if not err:
+        return False
+    code = err.get("code", "") if isinstance(err, dict) else str(err)
+    return not (tool_name in _FEATURE_GATED_TOOLS and code in _ALLOWED_DEMO_ERRORS)
 
 
 async def _run_multi_project_mcp(config_path: Path, db_path: Path) -> int:
@@ -78,7 +91,7 @@ async def _run_multi_project_mcp(config_path: Path, db_path: Path) -> int:
         for tool_name, arguments in tool_call_matrix(fix):
             result = await client.call_tool(tool_name, arguments)
             payload = mcp_payload(result)
-            if payload.get("error"):
+            if _tool_failure(payload, tool_name):
                 _print_fail(f"{tool_name}: {payload['error']}")
                 failures += 1
             else:

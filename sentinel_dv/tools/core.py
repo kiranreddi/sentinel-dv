@@ -663,18 +663,20 @@ def generate_submit_command(
     elif submit_cfg.slurm_partition:
         scheduler_cmd = f"sbatch -p {shlex.quote(submit_cfg.slurm_partition)} {cmd}"
 
-    return {
-        "suite": suite,
-        "simulator": sim_name,
-        "seed": seed,
-        "command": cmd,
-        "scheduler_command": scheduler_cmd,
-        "dry_run": True,
-        "note": (
-            "This is a generated command. Sentinel DV never executes it. "
-            "Review and run it in your shell or CI pipeline."
-        ),
-    }
+    return detail_response(
+        {
+            "suite": suite,
+            "simulator": sim_name,
+            "seed": seed,
+            "command": cmd,
+            "scheduler_command": scheduler_cmd,
+            "dry_run": True,
+            "note": (
+                "This is a generated command. Sentinel DV never executes it. "
+                "Review and run it in your shell or CI pipeline."
+            ),
+        }
+    )
 
 
 # ==============================================================================
@@ -976,22 +978,24 @@ def generate_replay_command(
             "which may not reproduce the exact failure."
         )
 
-    return {
-        "test_id": test_id,
-        "test_name": test_name,
-        "suite": suite,
-        "simulator": sim_name,
-        "seed": seed,
-        "dut_top": dut_top,
-        "command": cmd,
-        "scheduler_command": scheduler_cmd,
-        "dry_run": True,
-        "note": (
-            "This is a generated command. Sentinel DV never executes it. "
-            "Review and run it in your shell or CI pipeline."
-        ),
-        "warning": warning,
-    }
+    return detail_response(
+        {
+            "test_id": test_id,
+            "test_name": test_name,
+            "suite": suite,
+            "simulator": sim_name,
+            "seed": seed,
+            "dut_top": dut_top,
+            "command": cmd,
+            "scheduler_command": scheduler_cmd,
+            "dry_run": True,
+            "note": (
+                "This is a generated command. Sentinel DV never executes it. "
+                "Review and run it in your shell or CI pipeline."
+            ),
+            "warning": warning,
+        }
+    )
 
 
 # ==============================================================================

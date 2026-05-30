@@ -1,6 +1,8 @@
-# MCP tools reference (all 21)
+# MCP tools reference (all 26)
 
-Sentinel DV exposes **21 read-only MCP tools**. Every tool returns JSON with `schema_version` (currently `1.0.0`) or a structured `error` object.
+Sentinel DV exposes **26 read-only MCP tools** (v1.x discovery/analysis/regression/waveform, v2.0 submission/live-sim/SVA/replay/gaps, v2.1 DV intelligence). Every tool returns JSON with `schema_version` (currently `1.0.0`) or a structured `error` object.
+
+See [Tool overview](overview.md) for categories and [MCP tool gallery](mcp-tool-gallery.md) for visual examples.
 
 **Prerequisites:** `sentinel-dv-index --config config.yaml --index-all` before querying.
 

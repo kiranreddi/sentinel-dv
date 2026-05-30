@@ -223,7 +223,7 @@ Sentinel DV currently supports **full indexing only**:
 
 ## Using MCP Tools
 
-Sentinel DV provides **15** read-only MCP tools. The canonical reference—with parameters, JSON examples, and suggested tool chains—is **[MCP tools reference](tools/mcp-tools-reference.md)**.
+Sentinel DV provides **26** read-only MCP tools. The canonical reference—with parameters, JSON examples, and suggested tool chains—is **[MCP tools reference](tools/mcp-tools-reference.md)**.
 
 For a **visual walkthrough** (SVG cards with real request/response payloads from the bundled `demo/` index), see **[MCP tool gallery](tools/mcp-tool-gallery.md)**. Regenerate with `python scripts/generate_mcp_tool_gallery.py`.
 
@@ -234,8 +234,10 @@ For a **visual walkthrough** (SVG cards with real request/response payloads from
 | Analysis | `failures.list`, `assertions.failures`, `coverage.summary` |
 | Regression | `regressions.summary`, `runs.diff` |
 | Waveforms | `wave.signals`, `wave.summary` |
+| v2.0 workflow | `runs.submit`, `sim.status`, `assertions.sva_status`, `assertions.vacuity`, `tests.replay`, `coverage.gaps` |
+| v2.1 DV intelligence | `coverage.trend`, `runs.cross_sim`, `tests.cluster`, `regression.health`, `coverage.advisor` |
 
-Category guides: [Discovery](tools/discovery.md) · [Detail](tools/detail.md) · [Analysis](tools/analysis.md) · [Regression](tools/regression.md) · [Waveforms](tools/waveforms.md)
+Category guides: [Discovery](tools/discovery.md) · [Detail](tools/detail.md) · [Analysis](tools/analysis.md) · [Regression](tools/regression.md) · [Waveforms](tools/waveforms.md) · [Tool overview](tools/overview.md) (v2.0 / v2.1 sections)
 
 **Waveform tools:** enable `adapters.waveform_summary: true`, index `*.wave.json` and/or `*.vcd`, then call `wave.signals` / `wave.summary` with optional `start_time_ns` / `end_time_ns` (nanoseconds). See [Waveform summaries](guides/waveforms.md) and [Verilator + VCD](examples/verilator-counter.md).
 

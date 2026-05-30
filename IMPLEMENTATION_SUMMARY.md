@@ -7,7 +7,7 @@
 
 | Area | Status |
 |------|--------|
-| MCP server | 15 read-only FastMCP tools in `sentinel_dv/server.py` |
+| MCP server | 26 read-only FastMCP tools in `sentinel_dv/server.py` |
 | Indexing | DuckDB-backed store and artifact scanner in `sentinel_dv/indexing/` |
 | Adapters | UVM logs, cocotb/JUnit XML, assertion reports, coverage summaries, waveform JSON, and VCD summaries |
 | Security | Configured artifact roots, path containment checks, bounded responses, bounded evidence, and redaction |

@@ -30,6 +30,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (Nothing yet.)
 
+## [2.1.0] - 2026-06-02
+
+### Added
+
+- **DV Intelligence tools** — `coverage.trend`, `runs.cross_sim`, `tests.cluster`, `regression.health`, `coverage.advisor` (protocol-aware SV constraint snippets for AXI4/AHB/APB/CHI).
+- Coverage HTML parsers for VCS URG (`dashboard.html`) and Questa vcover (`overalldu.js`).
+- Unit tests in `tests/unit/test_beyond_spec.py`; gallery assets for all 26 tools.
+
+### Changed
+
+- Tool count: **21 → 26** (5 new DV Intelligence tools).
+- Documentation aligned to 26 tools across README, examples, MkDocs, and MCP reference.
+
+### Fixed
+
+- UVM log parser false positives from count-summary lines; passing tests no longer marked fail via `UVM_FATAL` in summaries.
+- MCP output schema validation for error responses (`item` optional in `_ITEM_ENVELOPE`).
+- `runs.submit` and `tests.replay` responses include `schema_version` via `detail_response()`.
+
 ## [1.3.2] - 2026-05-29
 
 ### Added

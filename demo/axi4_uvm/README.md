@@ -1,7 +1,7 @@
 # AXI4 UVM Three-Simulator Demo
 
 A complete AXI4-Lite slave UVM verification environment demonstrating all
-21 sentinel-dv MCP tools against **VCS**, **Questa**, and **Xcelium** simulation results.
+26 sentinel-dv MCP tools against **VCS**, **Questa**, and **Xcelium** simulation results.
 
 ## Design under test
 

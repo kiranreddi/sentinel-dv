@@ -45,7 +45,7 @@ def indexed_demo(tmp_path):
 class TestVerilatorAllMcpToolsCore:
     """Call sentinel_dv.tools.core directly (same handlers as MCP server)."""
 
-    def test_all_fifteen_tools(self, indexed_demo):
+    def test_all_mcp_tools_core(self, indexed_demo):
         work, db, _cfg, suite, _stats = indexed_demo
         with IndexStore(db) as store:
             runs = core.list_runs(store, suite=suite)
