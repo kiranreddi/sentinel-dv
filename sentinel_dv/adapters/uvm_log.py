@@ -77,10 +77,10 @@ class UVMLogParser:
     # This is the most common format in VCS simulation logs
     VCS_NATIVE_PATTERN = re.compile(
         r"^(UVM_(?:INFO|WARNING|ERROR|FATAL))\s+"  # severity
-        r"(?:\S+\.sv[h]?\(\d+\)\s+)?"             # optional file(line)
-        r"@\s*(\d+)\s*(?:[a-z]+\s*)?"             # @ time [unit]
-        r":\s*(\S+)\s+"                            # : component
-        r"(.+?)$",                                 # message
+        r"(?:\S+\.sv[h]?\(\d+\)\s+)?"  # optional file(line)
+        r"@\s*(\d+)\s*(?:[a-z]+\s*)?"  # @ time [unit]
+        r":\s*(\S+)\s+"  # : component
+        r"(.+?)$",  # message
         re.MULTILINE,
     )
 
@@ -141,9 +141,7 @@ class UVMLogParser:
     )
 
     TEST_FAILED_PATTERN = re.compile(
-        r"\bTEST\s+FAILED\b"
-        r"|\bFINAL\s+RESULT\s*:\s*FAIL\b"
-        r"|\bSIMULATION\s+FAILED\b",
+        r"\bTEST\s+FAILED\b" r"|\bFINAL\s+RESULT\s*:\s*FAIL\b" r"|\bSIMULATION\s+FAILED\b",
         re.IGNORECASE,
     )
     # NOTE: UVM_FATAL is intentionally NOT in TEST_FAILED_PATTERN — it would
