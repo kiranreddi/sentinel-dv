@@ -590,9 +590,7 @@ class ArtifactIndexer:
         except OSError:
             return False
 
-    def _index_sva_status_artifact(
-        self, store: IndexStore, path: Path, stats: IndexStats
-    ) -> None:
+    def _index_sva_status_artifact(self, store: IndexStore, path: Path, stats: IndexStats) -> None:
         """Index a *_sva.json file into the sva_run_status table."""
         if not self._artifact_within_limit(path):
             return

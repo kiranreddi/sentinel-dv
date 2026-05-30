@@ -323,8 +323,8 @@ def assert_tool_ok(payload: dict[str, Any], tool_name: str) -> None:
     CONFIG_ERROR or NOT_FOUND that is expected and acceptable in tests that use the
     demo fixtures (which don't have submit templates or live_status files).
     """
-    _ALLOWED_DEMO_ERRORS = {"CONFIG_ERROR", "NOT_FOUND"}
-    _FEATURE_GATED_TOOLS = {
+    allowed_demo_errors = {"CONFIG_ERROR", "NOT_FOUND"}
+    feature_gated_tools = {
         "runs.submit",
         "tests.replay",
         "sim.status",
@@ -333,7 +333,7 @@ def assert_tool_ok(payload: dict[str, Any], tool_name: str) -> None:
     if payload.get("error"):
         err = payload["error"]
         error_code = err.get("code", "") if isinstance(err, dict) else str(err)
-        if tool_name in _FEATURE_GATED_TOOLS and error_code in _ALLOWED_DEMO_ERRORS:
+        if tool_name in feature_gated_tools and error_code in allowed_demo_errors:
             return  # Expected — these tools need config flags not set in demo fixtures
         raise AssertionError(f"{tool_name} failed: {payload['error']}")
     assert payload.get("schema_version"), f"{tool_name} missing schema_version"
@@ -364,9 +364,9 @@ def verify_core_tools(store: IndexStore, fix: ProjectFixtures) -> None:
         if result.get("error"):
             err = result["error"]
             error_code = err.get("code", "") if isinstance(err, dict) else str(err)
-            _FEATURE_GATED = {"runs.submit", "tests.replay", "sim.status"}
-            _OK_CODES = {"CONFIG_ERROR", "NOT_FOUND"}
-            if tool_name in _FEATURE_GATED and error_code in _OK_CODES:
+            feature_gated = {"runs.submit", "tests.replay", "sim.status"}
+            ok_codes = {"CONFIG_ERROR", "NOT_FOUND"}
+            if tool_name in feature_gated and error_code in ok_codes:
                 continue
             raise AssertionError(f"{tool_name} failed: {result['error']}")
 

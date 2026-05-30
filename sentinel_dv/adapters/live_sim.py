@@ -91,7 +91,9 @@ class LiveSimAdapter:
         candidates.sort(key=lambda x: x[0], reverse=True)
         return candidates[0][1]
 
-    def read(self, suite: str | None = None, status_path: Path | None = None) -> LiveSimProgress | None:
+    def read(
+        self, suite: str | None = None, status_path: Path | None = None
+    ) -> LiveSimProgress | None:
         """Read and parse live simulation progress.
 
         Args:

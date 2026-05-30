@@ -1793,9 +1793,16 @@ class IndexStore:
         ).fetchall()
 
         cols = [
-            "id", "assertion_id", "test_id", "run_id",
-            "status", "pass_count", "fail_count", "vacuous_count",
-            "assertion_name", "scope",
+            "id",
+            "assertion_id",
+            "test_id",
+            "run_id",
+            "status",
+            "pass_count",
+            "fail_count",
+            "vacuous_count",
+            "assertion_name",
+            "scope",
         ]
         return [dict(zip(cols, row, strict=False)) for row in rows]
 
@@ -1927,6 +1934,7 @@ class IndexStore:
 
         # Aggregate per (run_id, kind)
         from collections import defaultdict
+
         buckets: dict[tuple[str, str], dict[str, Any]] = defaultdict(
             lambda: {"total": 0.0, "count": 0}
         )
@@ -1961,7 +1969,12 @@ class IndexStore:
             prev = prev_pct.get(cov_kind)
             delta = round(covered_pct - prev, 2) if prev is not None else None
             prev_pct[cov_kind] = covered_pct
-            entry = {**meta[key], "covered_pct": covered_pct, "metric_count": b["count"], "delta_pct": delta}
+            entry = {
+                **meta[key],
+                "covered_pct": covered_pct,
+                "metric_count": b["count"],
+                "delta_pct": delta,
+            }
             result.append(entry)
         return result
 
@@ -2073,8 +2086,14 @@ class IndexStore:
             return msg[:80].strip().lower()
 
         from collections import defaultdict
+
         clusters: dict[str, dict[str, Any]] = defaultdict(
-            lambda: {"count": 0, "test_ids": [], "representative_test_id": None, "representative_message": None}
+            lambda: {
+                "count": 0,
+                "test_ids": [],
+                "representative_test_id": None,
+                "representative_message": None,
+            }
         )
         for test_id, message, summary, _ in rows:
             raw = message or summary or ""
@@ -2133,7 +2152,7 @@ class IndexStore:
             """,
             run_params,
         ).fetchone()
-        total_tests, passed_tests, failed_tests = (test_counts or (0, 0, 0))
+        total_tests, passed_tests, failed_tests = test_counts or (0, 0, 0)
 
         # -- coverage --------------------------------------------------------
         cov_rows = self._conn.execute(
@@ -2155,9 +2174,7 @@ class IndexStore:
                 cov = m.get("covered")
                 if cov is not None:
                     cov_totals.setdefault(cov_kind, []).append(float(cov))
-        coverage_by_kind = {
-            k: round(sum(v) / len(v), 2) for k, v in cov_totals.items() if v
-        }
+        coverage_by_kind = {k: round(sum(v) / len(v), 2) for k, v in cov_totals.items() if v}
         overall_coverage = (
             round(sum(coverage_by_kind.values()) / len(coverage_by_kind), 2)
             if coverage_by_kind
@@ -2175,22 +2192,18 @@ class IndexStore:
         ).fetchone()
         failing_assertions = (row[0] if row else 0) or 0
 
-        row = self._conn.execute(
-            "SELECT COUNT(DISTINCT assertion_id) FROM assertions"
-        ).fetchone()
+        row = self._conn.execute("SELECT COUNT(DISTINCT assertion_id) FROM assertions").fetchone()
         total_assertions = (row[0] if row else 0) or 0
 
         # -- flakiness (tests with both pass and fail across runs) -----------
-        row = self._conn.execute(
-            """
+        row = self._conn.execute("""
             SELECT COUNT(*) FROM (
                 SELECT name
                 FROM tests
                 GROUP BY name
                 HAVING COUNT(DISTINCT status) > 1
             )
-            """
-        ).fetchone()
+            """).fetchone()
         flaky_count = (row[0] if row else 0) or 0
 
         # -- cross-sim divergence -------------------------------------------
@@ -2208,4 +2221,3 @@ class IndexStore:
             "flaky_tests": int(flaky_count),
             "divergent_tests": int(divergent_count),
         }
-

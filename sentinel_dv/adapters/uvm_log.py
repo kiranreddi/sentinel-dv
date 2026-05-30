@@ -91,16 +91,15 @@ class UVMLogParser:
     # Test name extraction — ranked from most specific to least
     TEST_NAME_PATTERN = re.compile(
         r'(?:Running test|RNTST]\s+Running test)\s+["\']?(\w+)["\']?'
-        r'|(?:\+test_name=)(\w+)'
-        r'|(?:\+UVM_TESTNAME=)(\w+)'
+        r"|(?:\+test_name=)(\w+)"
+        r"|(?:\+UVM_TESTNAME=)(\w+)"
         r'|(?:TEST|test_name|Starting test)[\s:]+["\']?(\w+)["\']?',
         re.IGNORECASE,
     )
 
     # Seed extraction patterns
     SEED_PATTERN = re.compile(
-        r'(?:ntb_random_seed|test_seed)[=\s]+(\d+)'
-        r'|(?:Simulation seed:\s*)(\d+)',
+        r"(?:ntb_random_seed|test_seed)[=\s]+(\d+)" r"|(?:Simulation seed:\s*)(\d+)",
         re.IGNORECASE,
     )
 

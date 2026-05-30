@@ -29,7 +29,6 @@ from sentinel_dv.tools.core import (
 )
 from sentinel_dv.tools.errors import ToolError
 
-
 # ---------------------------------------------------------------------------
 # Config fixture (needed by core.py clamp_pagination etc.)
 # ---------------------------------------------------------------------------
@@ -81,10 +80,10 @@ def _make_store(tmp_path: Path) -> IndexStore:
     t3 = "t_vcs_002"
     t4 = "t_questa_002"
     for tid, rid, sim, status in [
-        (t1, run_vcs,    "vcs",   "fail"),
-        (t2, run_questa, "questa","pass"),
-        (t3, run_vcs,    "vcs",   "pass"),
-        (t4, run_questa, "questa","pass"),
+        (t1, run_vcs, "vcs", "fail"),
+        (t2, run_questa, "questa", "pass"),
+        (t3, run_vcs, "vcs", "pass"),
+        (t4, run_questa, "questa", "pass"),
     ]:
         store.insert_test(
             test_id=tid,
@@ -101,7 +100,7 @@ def _make_store(tmp_path: Path) -> IndexStore:
     common_msg = "UVM_FATAL: Assertion CHK_AWVALID_STABLE failed at time 1000ns"
     for fid, tid, rid, msg in [
         ("f_001", t1, run_vcs, common_msg),
-        ("f_002", t1, run_vcs, common_msg),          # same signature
+        ("f_002", t1, run_vcs, common_msg),  # same signature
         ("f_003", t1, run_vcs, "UVM_ERROR: TIMEOUT waiting for bready"),
     ]:
         store.insert_failure(
@@ -122,7 +121,9 @@ def _make_store(tmp_path: Path) -> IndexStore:
         {"name": "cp_awburst.incr", "scope": "dut", "covered": 100.0, "hits": 5, "total": 5},
     ]
     store.insert_coverage_summary(
-        run_id=run_vcs, kind="functional", metrics=cov_metrics,
+        run_id=run_vcs,
+        kind="functional",
+        metrics=cov_metrics,
     )
     # Second run with slightly higher coverage
     cov_metrics2 = [
@@ -130,7 +131,9 @@ def _make_store(tmp_path: Path) -> IndexStore:
         {"name": "cp_awburst.incr", "scope": "dut", "covered": 100.0, "hits": 5, "total": 5},
     ]
     store.insert_coverage_summary(
-        run_id=run_questa, kind="functional", metrics=cov_metrics2,
+        run_id=run_questa,
+        kind="functional",
+        metrics=cov_metrics2,
     )
 
     return store
@@ -197,14 +200,20 @@ class TestCrossSimComparison:
         with IndexStore(db) as store:
             # Two runs, same result on both sims
             for rid, sim, status in [
-                ("r1", "vcs",   "pass"),
-                ("r2", "questa","pass"),
+                ("r1", "vcs", "pass"),
+                ("r2", "questa", "pass"),
             ]:
-                store.insert_run(run_id=rid, run_id_full=rid, suite="s", status="pass", created_at="2024-01-01")
+                store.insert_run(
+                    run_id=rid, run_id_full=rid, suite="s", status="pass", created_at="2024-01-01"
+                )
                 store.insert_test(
-                    test_id=f"t_{rid}", test_id_full=f"t_{rid}",
-                    run_id=rid, framework="uvm",
-                    name="same_test", status=status, sim_vendor=sim,
+                    test_id=f"t_{rid}",
+                    test_id_full=f"t_{rid}",
+                    run_id=rid,
+                    framework="uvm",
+                    name="same_test",
+                    status=status,
+                    sim_vendor=sim,
                     created_at="2024-01-01T10:00:00",
                 )
             r = get_cross_sim_comparison(store)
@@ -266,7 +275,13 @@ class TestRegressionHealth:
         with _make_store(tmp_path) as store:
             r = get_regression_health(store)
             comps = r["component_scores"]
-            for key in ("pass_rate", "coverage", "assertion_health", "flakiness", "cross_sim_consistency"):
+            for key in (
+                "pass_rate",
+                "coverage",
+                "assertion_health",
+                "flakiness",
+                "cross_sim_consistency",
+            ):
                 assert key in comps
                 assert 0 <= comps[key] <= 100
 
@@ -278,10 +293,16 @@ class TestRegressionHealth:
     def test_perfect_score_all_pass(self, tmp_path):
         db = tmp_path / "perfect.db"
         with IndexStore(db) as store:
-            store.insert_run(run_id="r1", run_id_full="r1", suite="s", status="pass", created_at="2024-01-01")
+            store.insert_run(
+                run_id="r1", run_id_full="r1", suite="s", status="pass", created_at="2024-01-01"
+            )
             store.insert_test(
-                test_id="t1", test_id_full="t1", run_id="r1",
-                framework="uvm", name="mytest", status="pass",
+                test_id="t1",
+                test_id_full="t1",
+                run_id="r1",
+                framework="uvm",
+                name="mytest",
+                status="pass",
                 created_at="2024-01-01T10:00:00",
             )
             r = get_regression_health(store)
@@ -341,6 +362,7 @@ class TestBuildAdvisories:
     def _make_gap(self, name: str, pct: float = 0.0):
         """Create a minimal gap-like object."""
         from sentinel_dv.schemas.coverage import CoverageGap
+
         return CoverageGap(
             metric_name=name,
             scope="dut",

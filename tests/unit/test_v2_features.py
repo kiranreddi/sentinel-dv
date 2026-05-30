@@ -26,7 +26,6 @@ from sentinel_dv.schemas.submission import ReplayResponse, SubmitResponse
 from sentinel_dv.tools import core
 from sentinel_dv.tools.errors import ToolError
 
-
 # ==============================================================================
 # Feature 1: Regression Job Submission
 # ==============================================================================
@@ -73,7 +72,9 @@ def test_generate_submit_command_basic(tmp_path: Path, submit_config: SentinelDV
     assert result["seed"] == 42
 
 
-def test_generate_submit_command_simulator_override(tmp_path: Path, submit_config: SentinelDVConfig) -> None:
+def test_generate_submit_command_simulator_override(
+    tmp_path: Path, submit_config: SentinelDVConfig
+) -> None:
     """Simulator override works correctly."""
     with IndexStore(tmp_path / "test.db") as store:
         result = core.generate_submit_command(store, suite="fifo_test", simulator="questa")
@@ -82,7 +83,9 @@ def test_generate_submit_command_simulator_override(tmp_path: Path, submit_confi
     assert "vsim" in result["command"]
 
 
-def test_generate_submit_command_invalid_suite(tmp_path: Path, submit_config: SentinelDVConfig) -> None:
+def test_generate_submit_command_invalid_suite(
+    tmp_path: Path, submit_config: SentinelDVConfig
+) -> None:
     """Rejects suite names with unsafe characters."""
     with IndexStore(tmp_path / "test.db") as store:
         with pytest.raises(ToolError) as exc_info:
@@ -105,7 +108,9 @@ def test_generate_submit_command_disabled(tmp_path: Path) -> None:
     assert exc_info.value.code == "CONFIG_ERROR"
 
 
-def test_generate_submit_command_unknown_simulator(tmp_path: Path, submit_config: SentinelDVConfig) -> None:
+def test_generate_submit_command_unknown_simulator(
+    tmp_path: Path, submit_config: SentinelDVConfig
+) -> None:
     """Raises CONFIG_ERROR for unknown simulator."""
     with IndexStore(tmp_path / "test.db") as store:
         with pytest.raises(ToolError) as exc_info:
@@ -113,12 +118,12 @@ def test_generate_submit_command_unknown_simulator(tmp_path: Path, submit_config
     assert exc_info.value.code == "CONFIG_ERROR"
 
 
-def test_generate_submit_command_shell_quoting(tmp_path: Path, submit_config: SentinelDVConfig) -> None:
+def test_generate_submit_command_shell_quoting(
+    tmp_path: Path, submit_config: SentinelDVConfig
+) -> None:
     """extra_args are shell-quoted — no injection possible."""
     with IndexStore(tmp_path / "test.db") as store:
-        result = core.generate_submit_command(
-            store, suite="axi4", extra_args="--foo=bar"
-        )
+        result = core.generate_submit_command(store, suite="axi4", extra_args="--foo=bar")
 
     assert result["dry_run"] is True
     assert "--foo=bar" in result["command"]
@@ -181,6 +186,7 @@ def test_live_sim_adapter_stale_detection(tmp_path: Path) -> None:
     # Set mtime to 1 hour ago
     old_mtime = time.time() - 3700
     import os
+
     os.utime(status_file, (old_mtime, old_mtime))
 
     adapter = LiveSimAdapter(artifact_roots=[tmp_path], max_age_seconds=300)
@@ -310,8 +316,15 @@ def test_generate_replay_command_with_seed(tmp_path: Path, submit_config: Sentin
     with IndexStore(db) as store:
         store.insert_run("r_001", "R_001_full", "axi4_regression", "2026-01-25T14:00:00Z", "fail")
         store.insert_test(
-            "t_001", "T_001_full", "r_001", "uvm", "axi_burst_test",
-            "fail", "2026-01-25T14:00:00Z", seed=12345, sim_vendor="vcs"
+            "t_001",
+            "T_001_full",
+            "r_001",
+            "uvm",
+            "axi_burst_test",
+            "fail",
+            "2026-01-25T14:00:00Z",
+            seed=12345,
+            sim_vendor="vcs",
         )
         result = core.generate_replay_command(store, test_id="t_001")
 
@@ -321,14 +334,23 @@ def test_generate_replay_command_with_seed(tmp_path: Path, submit_config: Sentin
     assert result["warning"] is None
 
 
-def test_generate_replay_command_no_seed_warning(tmp_path: Path, submit_config: SentinelDVConfig) -> None:
+def test_generate_replay_command_no_seed_warning(
+    tmp_path: Path, submit_config: SentinelDVConfig
+) -> None:
     """Replay command warns when no seed recorded."""
     db = tmp_path / "test.db"
     with IndexStore(db) as store:
         store.insert_run("r_001", "R_001_full", "axi4_regression", "2026-01-25T14:00:00Z", "fail")
         store.insert_test(
-            "t_001", "T_001_full", "r_001", "uvm", "axi_burst_test",
-            "fail", "2026-01-25T14:00:00Z", seed=None, sim_vendor="vcs"
+            "t_001",
+            "T_001_full",
+            "r_001",
+            "uvm",
+            "axi_burst_test",
+            "fail",
+            "2026-01-25T14:00:00Z",
+            seed=None,
+            sim_vendor="vcs",
         )
         result = core.generate_replay_command(store, test_id="t_001")
 
@@ -360,7 +382,13 @@ def test_generate_recommendations_empty() -> None:
 def test_generate_recommendations_all_covered() -> None:
     """Fully covered metrics produce no gaps."""
     metrics = [
-        {"name": "axi.awlen_bins", "scope": "tb.env", "covered": 100.0, "kind": "functional", "bins_missed": []},
+        {
+            "name": "axi.awlen_bins",
+            "scope": "tb.env",
+            "covered": 100.0,
+            "kind": "functional",
+            "bins_missed": [],
+        },
     ]
     gaps = generate_recommendations(metrics=metrics, threshold_pct=100.0)
     assert gaps == []
@@ -369,8 +397,20 @@ def test_generate_recommendations_all_covered() -> None:
 def test_generate_recommendations_gap_detected() -> None:
     """Gaps are correctly identified."""
     metrics = [
-        {"name": "axi.awlen_bins", "scope": "tb.env", "covered": 87.5, "kind": "functional", "bins_missed": ["awlen_15"]},
-        {"name": "axi.error_resp", "scope": "tb.env", "covered": 0.0, "kind": "functional", "bins_missed": []},
+        {
+            "name": "axi.awlen_bins",
+            "scope": "tb.env",
+            "covered": 87.5,
+            "kind": "functional",
+            "bins_missed": ["awlen_15"],
+        },
+        {
+            "name": "axi.error_resp",
+            "scope": "tb.env",
+            "covered": 0.0,
+            "kind": "functional",
+            "bins_missed": [],
+        },
     ]
     gaps = generate_recommendations(metrics=metrics, threshold_pct=100.0)
     assert len(gaps) == 2
@@ -383,9 +423,27 @@ def test_generate_recommendations_gap_detected() -> None:
 def test_generate_recommendations_sorted_by_priority() -> None:
     """Gaps are sorted high → medium → low."""
     metrics = [
-        {"name": "axi.burst_bins", "scope": "tb", "covered": 60.0, "kind": "functional", "bins_missed": []},
-        {"name": "axi.error_inject", "scope": "tb", "covered": 10.0, "kind": "functional", "bins_missed": []},
-        {"name": "axi.parity", "scope": "tb", "covered": 55.0, "kind": "functional", "bins_missed": []},
+        {
+            "name": "axi.burst_bins",
+            "scope": "tb",
+            "covered": 60.0,
+            "kind": "functional",
+            "bins_missed": [],
+        },
+        {
+            "name": "axi.error_inject",
+            "scope": "tb",
+            "covered": 10.0,
+            "kind": "functional",
+            "bins_missed": [],
+        },
+        {
+            "name": "axi.parity",
+            "scope": "tb",
+            "covered": 55.0,
+            "kind": "functional",
+            "bins_missed": [],
+        },
     ]
     gaps = generate_recommendations(metrics=metrics, threshold_pct=100.0)
 

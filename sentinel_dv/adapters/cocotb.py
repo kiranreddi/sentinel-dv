@@ -113,7 +113,9 @@ class CocotbParser:
             parent_ts = next(
                 (ts for ts in root.findall(".//testsuite") if testcase in list(ts)), None
             )
-            sim_attr = testcase.get("simulator") or (parent_ts.get("simulator") if parent_ts is not None else None)
+            sim_attr = testcase.get("simulator") or (
+                parent_ts.get("simulator") if parent_ts is not None else None
+            )
 
             # Auto-detect framework and simulator
             framework = _detect_framework(classname, name)

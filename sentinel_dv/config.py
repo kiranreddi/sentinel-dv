@@ -124,7 +124,9 @@ class SubmitConfig(BaseModel):
         default_factory=list,
         description="Per-simulator command templates",
     )
-    lsf_queue: str | None = Field(None, description="LSF queue name (wraps generated command in bsub)")
+    lsf_queue: str | None = Field(
+        None, description="LSF queue name (wraps generated command in bsub)"
+    )
     slurm_partition: str | None = Field(None, description="SLURM partition name (wraps in sbatch)")
 
 
@@ -262,7 +264,6 @@ def load_config(path: str | Path) -> SentinelDVConfig:
 
 def resolve_config(config_path: str | Path | None = None) -> SentinelDVConfig:
     """Resolve configuration from explicit path, env, or repository defaults."""
-    import warnings
 
     if config_path is not None:
         return load_config(config_path)

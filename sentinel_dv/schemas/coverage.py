@@ -146,6 +146,7 @@ class CoverageGapsResponse(BaseModel):
     )
     total_metrics: int = Field(..., ge=0, description="Total coverage metrics evaluated")
     gaps_found: int = Field(..., ge=0, description="Number of gaps found")
-    gaps: list[CoverageGap] = Field(..., description="Gaps ordered by priority then coverage percentage")
+    gaps: list[CoverageGap] = Field(
+        ..., description="Gaps ordered by priority then coverage percentage"
+    )
     note: str = Field(..., description="Guidance note on interpreting and acting on gaps")
-

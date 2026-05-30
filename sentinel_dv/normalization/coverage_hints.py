@@ -150,7 +150,7 @@ def generate_recommendations(
         List of :class:`~sentinel_dv.schemas.coverage.CoverageGap` instances,
         sorted by priority (high→medium→low) then by coverage percentage ascending.
     """
-    _PRIORITY_ORDER: dict[GapPriority, int] = {"high": 0, "medium": 1, "low": 2}
+    priority_order: dict[GapPriority, int] = {"high": 0, "medium": 1, "low": 2}
     gaps: list[CoverageGap] = []
 
     for metric in metrics:
@@ -164,6 +164,7 @@ def generate_recommendations(
         bins_missed: list[str] = metric.get("bins_missed") or []
         if isinstance(bins_missed, str):
             import json as _json
+
             try:
                 bins_missed = _json.loads(bins_missed)
             except Exception:
@@ -184,5 +185,5 @@ def generate_recommendations(
             )
         )
 
-    gaps.sort(key=lambda g: (_PRIORITY_ORDER[g.priority], g.covered_pct))
+    gaps.sort(key=lambda g: (priority_order[g.priority], g.covered_pct))
     return gaps[:max_gaps]

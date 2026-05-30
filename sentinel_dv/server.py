@@ -469,7 +469,9 @@ def coverage_gaps(
 @_readonly_tool("coverage.trend")
 def coverage_trend(
     suite: str | None = Field(default=None, description="Filter by suite name."),
-    kind: str | None = Field(default=None, description="Coverage kind (functional|code|toggle|...)."),
+    kind: str | None = Field(
+        default=None, description="Coverage kind (functional|code|toggle|...)."
+    ),
     limit: int = Field(default=20, description="Maximum number of runs to include (1–100)."),
 ) -> dict[str, Any]:
     """Show coverage trajectory across sequential runs — are you closing coverage?"""

@@ -9,7 +9,9 @@ class SubmitRequest(BaseModel):
     """Request model for runs.submit command generation."""
 
     suite: str = Field(..., description="Suite name from existing runs")
-    simulator: str | None = Field(None, description="Simulator override. Defaults to submit.default_simulator.")
+    simulator: str | None = Field(
+        None, description="Simulator override. Defaults to submit.default_simulator."
+    )
     seed: int | None = Field(None, ge=0, description="Integer seed to reproduce a specific test")
     test_filter: str | None = Field(None, description="Glob or regex test name filter")
     extra_args: str | None = Field(None, description="Extra simulator arguments appended verbatim")
@@ -38,7 +40,9 @@ class ReplayResponse(BaseModel):
     simulator: str = Field(..., description="Simulator used in the replay command")
     seed: int | None = Field(None, description="Seed embedded in the command")
     dut_top: str | None = Field(None, description="DUT top module, if indexed")
-    command: str = Field(..., description="Generated replay command (bounded by max_command_length)")
+    command: str = Field(
+        ..., description="Generated replay command (bounded by max_command_length)"
+    )
     scheduler_command: str | None = Field(
         None, description="LSF or SLURM wrapped form, if scheduler configured"
     )

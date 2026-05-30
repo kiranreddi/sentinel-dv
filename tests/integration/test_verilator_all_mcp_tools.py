@@ -163,7 +163,10 @@ def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
                     "assertions.failures",
                     {"test_id": wave_test["test_id"], "include_evidence": True, "page": 1},
                 ),
-                ("assertions.sva_status", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
+                (
+                    "assertions.sva_status",
+                    {"run_id": pass_run["run_id"], "page": 1, "page_size": 50},
+                ),
                 ("assertions.vacuity", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
                 ("coverage.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
                 ("coverage.summary", {"run_id": pass_run["run_id"]}),

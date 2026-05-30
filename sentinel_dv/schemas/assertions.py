@@ -145,4 +145,3 @@ class VacuousAssertion(BaseModel):
     recommendation: str = Field(
         ..., description="Actionable recommendation to exercise the antecedent"
     )
-

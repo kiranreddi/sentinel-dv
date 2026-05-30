@@ -624,9 +624,7 @@ def generate_submit_command(
 
     # Resolve simulator
     sim_name = (simulator or submit_cfg.default_simulator).lower()
-    template_obj = next(
-        (t for t in submit_cfg.templates if t.simulator.lower() == sim_name), None
-    )
+    template_obj = next((t for t in submit_cfg.templates if t.simulator.lower() == sim_name), None)
     if template_obj is None:
         available = [t.simulator for t in submit_cfg.templates]
         raise ToolError(
@@ -919,19 +917,15 @@ def generate_replay_command(
 
     # Validate names
     if not re.fullmatch(r"[a-zA-Z0-9_\-\.]+", suite):
-        raise ToolError("INVALID_INPUT", f"Suite name '{suite}' from index contains unsafe characters.")
+        raise ToolError(
+            "INVALID_INPUT", f"Suite name '{suite}' from index contains unsafe characters."
+        )
     if not re.fullmatch(r"[a-zA-Z0-9_\-\.]+", test_name):
         raise ToolError("INVALID_INPUT", f"Test name '{test_name}' contains unsafe characters.")
 
     # Resolve simulator
-    sim_name = (
-        simulator
-        or test.get("sim_vendor")
-        or submit_cfg.default_simulator
-    ).lower()
-    template_obj = next(
-        (t for t in submit_cfg.templates if t.simulator.lower() == sim_name), None
-    )
+    sim_name = (simulator or test.get("sim_vendor") or submit_cfg.default_simulator).lower()
+    template_obj = next((t for t in submit_cfg.templates if t.simulator.lower() == sim_name), None)
     if template_obj is None:
         available = [t.simulator for t in submit_cfg.templates]
         raise ToolError(
@@ -1124,42 +1118,52 @@ def get_coverage_trend(
     """
     valid_kinds = {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
     if kind and kind not in valid_kinds:
-        raise ToolError("INVALID_INPUT", f"Invalid kind '{kind}'. Choose from: {sorted(valid_kinds)}.")
+        raise ToolError(
+            "INVALID_INPUT", f"Invalid kind '{kind}'. Choose from: {sorted(valid_kinds)}."
+        )
     if not 1 <= limit <= 100:
         raise ToolError("INVALID_INPUT", "limit must be between 1 and 100.")
 
     rows = store.coverage_trend(suite=suite, kind=kind, limit=limit)
 
     if not rows:
-        return detail_response({
-            "suite": suite, "kind": kind, "trend": [],
-            "note": "No coverage data indexed. Run sentinel-dv-index with adapters.coverage enabled.",
-        })
+        return detail_response(
+            {
+                "suite": suite,
+                "kind": kind,
+                "trend": [],
+                "note": "No coverage data indexed. Run sentinel-dv-index with adapters.coverage enabled.",
+            }
+        )
 
     # Summary stats
     recent = rows[-1]["covered_pct"] if rows else 0.0
     oldest = rows[0]["covered_pct"] if rows else 0.0
     total_delta = round(recent - oldest, 2)
     improving = total_delta > 0
-    runs_seen = len(set(r["run_id"] for r in rows))
+    runs_seen = len({r["run_id"] for r in rows})
 
-    return detail_response({
-        "suite": suite,
-        "kind": kind,
-        "trend": rows,
-        "summary": {
-            "runs_analysed": runs_seen,
-            "oldest_pct": oldest,
-            "latest_pct": recent,
-            "total_delta_pct": total_delta,
-            "direction": "improving" if improving else ("stable" if total_delta == 0 else "regressing"),
-        },
-        "note": (
-            f"Coverage {'improved' if improving else 'regressed'} by {abs(total_delta):.1f}% "
-            f"over {runs_seen} run(s). "
-            "Positive delta_pct = more bins covered than previous run."
-        ),
-    })
+    return detail_response(
+        {
+            "suite": suite,
+            "kind": kind,
+            "trend": rows,
+            "summary": {
+                "runs_analysed": runs_seen,
+                "oldest_pct": oldest,
+                "latest_pct": recent,
+                "total_delta_pct": total_delta,
+                "direction": (
+                    "improving" if improving else ("stable" if total_delta == 0 else "regressing")
+                ),
+            },
+            "note": (
+                f"Coverage {'improved' if improving else 'regressed'} by {abs(total_delta):.1f}% "
+                f"over {runs_seen} run(s). "
+                "Positive delta_pct = more bins covered than previous run."
+            ),
+        }
+    )
 
 
 def get_cross_sim_comparison(
@@ -1193,19 +1197,21 @@ def get_cross_sim_comparison(
     for r in rows:
         sim_pairs.add((r["sim_a"], r["sim_b"]))
 
-    return detail_response({
-        "suite_prefix": suite_prefix,
-        "divergent_tests": rows,
-        "unique_divergent_names": len(by_test),
-        "simulator_pairs_analysed": [{"sim_a": a, "sim_b": b} for a, b in sorted(sim_pairs)],
-        "note": (
-            f"{len(by_test)} test(s) produce different pass/fail outcomes across simulators. "
-            "These are high-priority investigation targets — simulator divergence at tape-out "
-            "is a sign-off blocker. Check for X-propagation, race conditions, or tool bugs."
-            if rows else
-            "No cross-simulator divergence detected. All shared test names produce consistent results."
-        ),
-    })
+    return detail_response(
+        {
+            "suite_prefix": suite_prefix,
+            "divergent_tests": rows,
+            "unique_divergent_names": len(by_test),
+            "simulator_pairs_analysed": [{"sim_a": a, "sim_b": b} for a, b in sorted(sim_pairs)],
+            "note": (
+                f"{len(by_test)} test(s) produce different pass/fail outcomes across simulators. "
+                "These are high-priority investigation targets — simulator divergence at tape-out "
+                "is a sign-off blocker. Check for X-propagation, race conditions, or tool bugs."
+                if rows
+                else "No cross-simulator divergence detected. All shared test names produce consistent results."
+            ),
+        }
+    )
 
 
 def cluster_test_failures(
@@ -1237,19 +1243,21 @@ def cluster_test_failures(
     total_failures = sum(c["count"] for c in clusters)
     top_cluster_pct = round(clusters[0]["count"] / total_failures * 100, 1) if clusters else 0.0
 
-    return detail_response({
-        "run_id": run_id,
-        "clusters": clusters,
-        "total_failures_analysed": total_failures,
-        "unique_clusters": len(clusters),
-        "note": (
-            f"{len(clusters)} root-cause cluster(s) explain {total_failures} failure(s). "
-            f"Top cluster accounts for {top_cluster_pct:.1f}% of failures. "
-            "Fix the representative failure in each cluster first."
-            if clusters else
-            "No failures found. Run is clean or no failure messages were indexed."
-        ),
-    })
+    return detail_response(
+        {
+            "run_id": run_id,
+            "clusters": clusters,
+            "total_failures_analysed": total_failures,
+            "unique_clusters": len(clusters),
+            "note": (
+                f"{len(clusters)} root-cause cluster(s) explain {total_failures} failure(s). "
+                f"Top cluster accounts for {top_cluster_pct:.1f}% of failures. "
+                "Fix the representative failure in each cluster first."
+                if clusters
+                else "No failures found. Run is clean or no failure messages were indexed."
+            ),
+        }
+    )
 
 
 def get_regression_health(
@@ -1355,23 +1363,25 @@ def get_regression_health(
     if not recommendations:
         recommendations.append("No critical issues detected. Ready for sign-off review.")
 
-    return detail_response({
-        "health_score": health_score,
-        "band": band,
-        "band_symbol": band_symbol,
-        "component_scores": scores,
-        "weights": weights,
-        "raw_data": data,
-        "recommendations": recommendations,
-        "note": (
-            f"{band_symbol} Health score: {health_score}/100 ({band}). "
-            f"Breakdown — pass_rate: {pass_rate_score:.0f}%, "
-            f"coverage: {coverage_score:.0f}%, "
-            f"assertions: {assertion_score:.0f}%, "
-            f"flakiness: {flakiness_score:.0f}%, "
-            f"cross-sim: {cross_sim_score:.0f}%."
-        ),
-    })
+    return detail_response(
+        {
+            "health_score": health_score,
+            "band": band,
+            "band_symbol": band_symbol,
+            "component_scores": scores,
+            "weights": weights,
+            "raw_data": data,
+            "recommendations": recommendations,
+            "note": (
+                f"{band_symbol} Health score: {health_score}/100 ({band}). "
+                f"Breakdown — pass_rate: {pass_rate_score:.0f}%, "
+                f"coverage: {coverage_score:.0f}%, "
+                f"assertions: {assertion_score:.0f}%, "
+                f"flakiness: {flakiness_score:.0f}%, "
+                f"cross-sim: {cross_sim_score:.0f}%."
+            ),
+        }
+    )
 
 
 def get_coverage_advisor(
@@ -1399,39 +1409,46 @@ def get_coverage_advisor(
         Dict with 'advisories' list, each containing: bin_name, covered_pct,
         constraint_sv, sequence_hint, protocol_hint.
     """
-    from sentinel_dv.normalization.coverage_hints import generate_recommendations
     from sentinel_dv.normalization.coverage_advisor import build_advisories
+    from sentinel_dv.normalization.coverage_hints import generate_recommendations
 
     valid_kinds = {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
     if kind and kind not in valid_kinds:
-        raise ToolError("INVALID_INPUT", f"Invalid kind '{kind}'. Choose from: {sorted(valid_kinds)}.")
+        raise ToolError(
+            "INVALID_INPUT", f"Invalid kind '{kind}'. Choose from: {sorted(valid_kinds)}."
+        )
     if not 1 <= max_recommendations <= 25:
         raise ToolError("INVALID_INPUT", "max_recommendations must be between 1 and 25.")
 
     metrics = store.query_coverage_metrics(suite=suite, kind=kind)
     if not metrics:
-        return detail_response({
-            "suite": suite, "kind": kind, "advisories": [],
-            "note": "No coverage metrics indexed.",
-        })
+        return detail_response(
+            {
+                "suite": suite,
+                "kind": kind,
+                "advisories": [],
+                "note": "No coverage metrics indexed.",
+            }
+        )
 
     gaps = generate_recommendations(metrics, threshold_pct=100.0)
     high_gaps = [g for g in gaps if g.priority == "high"][:max_recommendations]
 
     advisories = build_advisories(high_gaps)
 
-    return detail_response({
-        "suite": suite,
-        "kind": kind,
-        "total_gaps": len(gaps),
-        "high_priority_gaps": len(high_gaps),
-        "advisories": advisories,
-        "note": (
-            f"{len(advisories)} targeted constraint/sequence snippet(s) generated for "
-            f"high-priority coverage gaps (0–25% covered). "
-            "Each advisory includes ready-to-use SystemVerilog code. "
-            "Paste the constraint_sv block into your test's constraint block to "
-            "direct stimulus toward the uncovered bin."
-        ),
-    })
-
+    return detail_response(
+        {
+            "suite": suite,
+            "kind": kind,
+            "total_gaps": len(gaps),
+            "high_priority_gaps": len(high_gaps),
+            "advisories": advisories,
+            "note": (
+                f"{len(advisories)} targeted constraint/sequence snippet(s) generated for "
+                f"high-priority coverage gaps (0–25% covered). "
+                "Each advisory includes ready-to-use SystemVerilog code. "
+                "Paste the constraint_sv block into your test's constraint block to "
+                "direct stimulus toward the uncovered bin."
+            ),
+        }
+    )

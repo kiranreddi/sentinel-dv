@@ -15,7 +15,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from sentinel_dv.normalization.coverage_hints import CoverageGap
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -247,14 +247,16 @@ def build_advisories(gaps: list[Any]) -> list[dict[str, Any]]:
         else:
             constraint_sv, sequence_hint, protocol = _generic_constraint(metric_name, scope)
 
-        advisories.append({
-            "bin_name": metric_name,
-            "scope": scope,
-            "covered_pct": covered_pct,
-            "priority": priority,
-            "protocol_hint": protocol,
-            "constraint_sv": constraint_sv,
-            "sequence_hint": sequence_hint,
-        })
+        advisories.append(
+            {
+                "bin_name": metric_name,
+                "scope": scope,
+                "covered_pct": covered_pct,
+                "priority": priority,
+                "protocol_hint": protocol,
+                "constraint_sv": constraint_sv,
+                "sequence_hint": sequence_hint,
+            }
+        )
 
     return advisories
