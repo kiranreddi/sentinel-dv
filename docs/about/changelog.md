@@ -7,6 +7,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.1.0] - 2026-06-02
+
+### Added
+
+- **DV Intelligence Tool 1 — Coverage Trend** (`coverage.trend`): time-series coverage trajectory across runs. Computes per-run coverage percentages with deltas and characterizes trend direction as `improving`, `stalling`, or `declining`.
+- **DV Intelligence Tool 2 — Cross-Simulator Divergence** (`runs.cross_sim`): detects tests that pass on one simulator vendor but fail on another. Surfaces `critical` divergences that must be resolved before sign-off.
+- **DV Intelligence Tool 3 — Failure Clustering** (`tests.cluster`): groups failures by root-cause signature using message and category similarity, reducing hundreds of failures to a handful of actionable clusters for faster triage.
+- **DV Intelligence Tool 4 — Regression Health Score** (`regression.health`): composite 0–100 DV readiness score with weighted sub-scores for pass rate (30%), coverage (35%), assertion health (15%), flakiness (10%), and cross-simulator consistency (10%). Outputs `band`: `sign-off-ready` | `minor-issues` | `coverage-gaps` | `not-ready`.
+- **DV Intelligence Tool 5 — Coverage Advisor** (`coverage.advisor`): generates ready-to-paste SystemVerilog constraint and UVM sequence snippets for uncovered bins. Protocol-aware for AXI4, AHB, APB, CHI, PCIe naming patterns.
+- `sentinel_dv/normalization/coverage_advisor.py`: new module — `_PROTOCOL_RULES` knowledge base + `build_advisories()` entry point.
+- New store methods: `coverage_trend()`, `cross_sim_divergence()`, `cluster_failures()`, `regression_health_data()`.
+- Gallery assets regenerated for all 26 tools (5 new SVG cards).
+- 25 new unit tests in `tests/unit/test_beyond_spec.py`.
+
+### Changed
+
+- Tool count: **21 → 26** (5 new DV Intelligence tools).
+- `sentinel_dv/registry.py`: 5 new tool names added to `TOOL_NAMES`.
+- `sentinel_dv/demo_fixtures.py`: `tool_call_matrix()` and `invoke_core_tool()` updated with the 5 new tools.
+- `docs/tools/overview.md`: updated tool count, added v2.1.0 section and decision guide entries.
+- `docs/tools/mcp-tools-reference.md`: updated tool count, added v2.1.0 tool chain table and full reference for all 5 new tools.
+
 ## [2.0.0] - 2026-06-01
 
 ### Added
@@ -21,19 +43,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - New schemas: `submission.py` (`SubmitRequest`, `SubmitResponse`, `ReplayResponse`), `live_sim.py` (`LiveSimProgress`), extended `assertions.py` (`SVAStatus`, `SVARunStatus`, `VacuousAssertion`), extended `coverage.py` (`GapPriority`, `CoverageGap`, `CoverageGapsResponse`).
 - Config additions: `SecurityLimits.max_command_length`, `SecurityLimits.max_coverage_gaps`, `AdaptersConfig.live_sim`, `AdaptersConfig.live_sim_max_age_seconds`, `SimulatorTemplate`, `SubmitConfig`.
 - Example: `examples/live_sim_writer.py` — reference harness to write `live_status.json` while a simulator runs.
-- Gallery assets regenerated for all 21 tools.
 
-### Changed
-
-- Tool count: **15 → 21** (6 new tools across 3 new MCP namespaces: `runs.submit`, `sim.status`, `assertions.sva_status`, `assertions.vacuity`, `tests.replay`, `coverage.gaps`).
-- `validate.list_response()` accepts optional `extra: dict | None` kwarg for tool-specific top-level fields.
-- Install **`sentinel-dv>=2.0.0`** for all v2 features.
-
-## [Unreleased]
-
-### Added
-
-- (Nothing yet.)
 
 ## [1.3.2] - 2026-05-29
 

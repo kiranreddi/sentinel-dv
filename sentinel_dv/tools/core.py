@@ -1094,3 +1094,344 @@ def get_coverage_gaps(
         },
     )
 
+
+# =============================================================================
+# DV Intelligence tools — beyond-spec, v2.1.0
+# =============================================================================
+
+
+def get_coverage_trend(
+    store: IndexStore,
+    suite: str | None = None,
+    kind: str | None = None,
+    limit: int = 20,
+) -> dict[str, Any]:
+    """Show coverage trajectory across sequential runs (oldest → newest).
+
+    Answers the key management question: "Are we closing coverage?"
+
+    Each row represents one run's average coverage percentage for a kind,
+    plus delta_pct vs the previous run (positive = improving).
+
+    Args:
+        store: Index store.
+        suite: Filter to one suite.
+        kind: Filter to one coverage kind (functional|code|toggle|...).
+        limit: Maximum runs to include.
+
+    Returns:
+        Dict with 'trend' list and summary fields.
+    """
+    valid_kinds = {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
+    if kind and kind not in valid_kinds:
+        raise ToolError("INVALID_INPUT", f"Invalid kind '{kind}'. Choose from: {sorted(valid_kinds)}.")
+    if not 1 <= limit <= 100:
+        raise ToolError("INVALID_INPUT", "limit must be between 1 and 100.")
+
+    rows = store.coverage_trend(suite=suite, kind=kind, limit=limit)
+
+    if not rows:
+        return detail_response({
+            "suite": suite, "kind": kind, "trend": [],
+            "note": "No coverage data indexed. Run sentinel-dv-index with adapters.coverage enabled.",
+        })
+
+    # Summary stats
+    recent = rows[-1]["covered_pct"] if rows else 0.0
+    oldest = rows[0]["covered_pct"] if rows else 0.0
+    total_delta = round(recent - oldest, 2)
+    improving = total_delta > 0
+    runs_seen = len(set(r["run_id"] for r in rows))
+
+    return detail_response({
+        "suite": suite,
+        "kind": kind,
+        "trend": rows,
+        "summary": {
+            "runs_analysed": runs_seen,
+            "oldest_pct": oldest,
+            "latest_pct": recent,
+            "total_delta_pct": total_delta,
+            "direction": "improving" if improving else ("stable" if total_delta == 0 else "regressing"),
+        },
+        "note": (
+            f"Coverage {'improved' if improving else 'regressed'} by {abs(total_delta):.1f}% "
+            f"over {runs_seen} run(s). "
+            "Positive delta_pct = more bins covered than previous run."
+        ),
+    })
+
+
+def get_cross_sim_comparison(
+    store: IndexStore,
+    suite_prefix: str | None = None,
+    limit: int = 100,
+) -> dict[str, Any]:
+    """Find tests that diverge across simulators (pass on one, fail on another).
+
+    Essential for multi-simulator sign-off: surfaces any test whose outcome is
+    simulator-dependent, which often indicates X-propagation differences,
+    race conditions, or tool-specific elaboration bugs.
+
+    Args:
+        store: Index store.
+        suite_prefix: Optional suite prefix filter (e.g. 'axi4_uvm').
+        limit: Max divergent tests to return.
+
+    Returns:
+        Dict with 'divergent_tests' list and summary counts.
+    """
+    rows = store.cross_sim_divergence(suite_prefix=suite_prefix, limit=limit)
+
+    # Build a per-test summary
+    by_test: dict[str, list[dict[str, Any]]] = {}
+    for r in rows:
+        name = r["test_name"]
+        by_test.setdefault(name, []).append(r)
+
+    sim_pairs: set[tuple[str, str]] = set()
+    for r in rows:
+        sim_pairs.add((r["sim_a"], r["sim_b"]))
+
+    return detail_response({
+        "suite_prefix": suite_prefix,
+        "divergent_tests": rows,
+        "unique_divergent_names": len(by_test),
+        "simulator_pairs_analysed": [{"sim_a": a, "sim_b": b} for a, b in sorted(sim_pairs)],
+        "note": (
+            f"{len(by_test)} test(s) produce different pass/fail outcomes across simulators. "
+            "These are high-priority investigation targets — simulator divergence at tape-out "
+            "is a sign-off blocker. Check for X-propagation, race conditions, or tool bugs."
+            if rows else
+            "No cross-simulator divergence detected. All shared test names produce consistent results."
+        ),
+    })
+
+
+def cluster_test_failures(
+    store: IndexStore,
+    run_id: str | None = None,
+    max_clusters: int = 15,
+) -> dict[str, Any]:
+    """Group test failures by root-cause signature to cut triage time.
+
+    Instead of investigating 500 individual failures, this tool clusters them
+    by normalised error message, surfacing the top root causes with counts.
+    Engineers can fix one root cause and watch an entire cluster disappear.
+
+    Args:
+        store: Index store.
+        run_id: Limit clustering to one run; None = all indexed failures.
+        max_clusters: Maximum clusters to return (sorted by count desc).
+
+    Returns:
+        Dict with 'clusters' list and summary.
+    """
+    if run_id:
+        validate_id(run_id, "run_id")
+    if not 1 <= max_clusters <= 50:
+        raise ToolError("INVALID_INPUT", "max_clusters must be between 1 and 50.")
+
+    clusters = store.cluster_failures(run_id=run_id, max_clusters=max_clusters)
+
+    total_failures = sum(c["count"] for c in clusters)
+    top_cluster_pct = round(clusters[0]["count"] / total_failures * 100, 1) if clusters else 0.0
+
+    return detail_response({
+        "run_id": run_id,
+        "clusters": clusters,
+        "total_failures_analysed": total_failures,
+        "unique_clusters": len(clusters),
+        "note": (
+            f"{len(clusters)} root-cause cluster(s) explain {total_failures} failure(s). "
+            f"Top cluster accounts for {top_cluster_pct:.1f}% of failures. "
+            "Fix the representative failure in each cluster first."
+            if clusters else
+            "No failures found. Run is clean or no failure messages were indexed."
+        ),
+    })
+
+
+def get_regression_health(
+    store: IndexStore,
+    run_id: str | None = None,
+    suite: str | None = None,
+) -> dict[str, Any]:
+    """Return a composite DV health score (0–100) with weighted breakdown.
+
+    Aggregates pass rate, coverage, assertion quality, flakiness, and
+    cross-simulator consistency into a single readiness metric.
+
+    Score bands:
+      90–100  ✅ Sign-off ready
+      75–89   🟡 Minor issues — review gaps before proceeding
+      50–74   🟠 Significant gaps — coverage closure needed
+      0–49    🔴 Not ready — critical failures or very low coverage
+
+    Args:
+        store: Index store.
+        run_id: Score a specific run; None = aggregate across all runs.
+        suite: Filter to a specific suite.
+
+    Returns:
+        Dict with health_score, band, component_scores, and recommendations.
+    """
+    data = store.regression_health_data(run_id=run_id, suite=suite)
+
+    # Component scores (each 0–100)
+    total = data["total_tests"]
+    passed = data["passed_tests"]
+    pass_rate_score = round(passed / total * 100, 1) if total else 0.0
+
+    cov = data["overall_coverage"]
+    coverage_score = round(cov, 1) if cov is not None else 0.0
+
+    total_ass = data["total_assertions"]
+    vacuous = data["vacuous_assertions"]
+    failing_ass = data["failing_assertions"]
+    if total_ass:
+        ass_penalty = min(100.0, (vacuous * 5 + failing_ass * 20))
+        assertion_score = max(0.0, round(100.0 - ass_penalty, 1))
+    else:
+        assertion_score = 100.0  # no assertions → neutral
+
+    flaky = data["flaky_tests"]
+    flakiness_score = max(0.0, round(100.0 - (flaky / max(total, 1)) * 200, 1))
+
+    divergent = data["divergent_tests"]
+    cross_sim_score = max(0.0, round(100.0 - (divergent / max(total, 1)) * 200, 1))
+
+    # Weighted composite (weights sum to 1.0)
+    weights = {
+        "pass_rate": 0.30,
+        "coverage": 0.35,
+        "assertion_health": 0.15,
+        "flakiness": 0.10,
+        "cross_sim_consistency": 0.10,
+    }
+    scores = {
+        "pass_rate": pass_rate_score,
+        "coverage": coverage_score,
+        "assertion_health": assertion_score,
+        "flakiness": flakiness_score,
+        "cross_sim_consistency": cross_sim_score,
+    }
+    health_score = round(sum(scores[k] * weights[k] for k in weights), 1)
+
+    if health_score >= 90:
+        band = "sign-off-ready"
+        band_symbol = "✅"
+    elif health_score >= 75:
+        band = "minor-issues"
+        band_symbol = "🟡"
+    elif health_score >= 50:
+        band = "coverage-gaps"
+        band_symbol = "🟠"
+    else:
+        band = "not-ready"
+        band_symbol = "🔴"
+
+    recommendations: list[str] = []
+    if pass_rate_score < 95:
+        recommendations.append(
+            f"Pass rate is {pass_rate_score:.0f}% ({data['failed_tests']} failures). "
+            "Use tests.cluster to find root causes."
+        )
+    if coverage_score < 80:
+        recommendations.append(
+            f"Overall coverage is {coverage_score:.0f}%. "
+            "Use coverage.advisor to generate constraints for uncovered bins."
+        )
+    if vacuous > 0:
+        recommendations.append(
+            f"{vacuous} assertion(s) fire vacuously — "
+            "the antecedent is never triggered. Add targeted stimulus."
+        )
+    if divergent > 0:
+        recommendations.append(
+            f"{divergent} test(s) diverge across simulators. "
+            "Use runs.cross_sim to investigate before tape-out."
+        )
+    if not recommendations:
+        recommendations.append("No critical issues detected. Ready for sign-off review.")
+
+    return detail_response({
+        "health_score": health_score,
+        "band": band,
+        "band_symbol": band_symbol,
+        "component_scores": scores,
+        "weights": weights,
+        "raw_data": data,
+        "recommendations": recommendations,
+        "note": (
+            f"{band_symbol} Health score: {health_score}/100 ({band}). "
+            f"Breakdown — pass_rate: {pass_rate_score:.0f}%, "
+            f"coverage: {coverage_score:.0f}%, "
+            f"assertions: {assertion_score:.0f}%, "
+            f"flakiness: {flakiness_score:.0f}%, "
+            f"cross-sim: {cross_sim_score:.0f}%."
+        ),
+    })
+
+
+def get_coverage_advisor(
+    store: IndexStore,
+    suite: str | None = None,
+    kind: str | None = None,
+    max_recommendations: int = 10,
+) -> dict[str, Any]:
+    """Generate SystemVerilog constraint/UVM sequence snippets for uncovered bins.
+
+    Goes beyond listing gaps — produces ready-to-use SV constraint code and
+    UVM sequence hints that DV engineers can drop directly into their testbench
+    to hit specific uncovered coverage bins.
+
+    Protocol-aware: recognises AXI4, AHB, APB, CHI, PCIe coverpoint naming
+    patterns and generates idiomatic constraints.
+
+    Args:
+        store: Index store.
+        suite: Filter to a specific suite.
+        kind: Coverage kind filter.
+        max_recommendations: Max advisories to return (1–25).
+
+    Returns:
+        Dict with 'advisories' list, each containing: bin_name, covered_pct,
+        constraint_sv, sequence_hint, protocol_hint.
+    """
+    from sentinel_dv.normalization.coverage_hints import generate_recommendations
+    from sentinel_dv.normalization.coverage_advisor import build_advisories
+
+    valid_kinds = {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
+    if kind and kind not in valid_kinds:
+        raise ToolError("INVALID_INPUT", f"Invalid kind '{kind}'. Choose from: {sorted(valid_kinds)}.")
+    if not 1 <= max_recommendations <= 25:
+        raise ToolError("INVALID_INPUT", "max_recommendations must be between 1 and 25.")
+
+    metrics = store.query_coverage_metrics(suite=suite, kind=kind)
+    if not metrics:
+        return detail_response({
+            "suite": suite, "kind": kind, "advisories": [],
+            "note": "No coverage metrics indexed.",
+        })
+
+    gaps = generate_recommendations(metrics, threshold_pct=100.0)
+    high_gaps = [g for g in gaps if g.priority == "high"][:max_recommendations]
+
+    advisories = build_advisories(high_gaps)
+
+    return detail_response({
+        "suite": suite,
+        "kind": kind,
+        "total_gaps": len(gaps),
+        "high_priority_gaps": len(high_gaps),
+        "advisories": advisories,
+        "note": (
+            f"{len(advisories)} targeted constraint/sequence snippet(s) generated for "
+            f"high-priority coverage gaps (0–25% covered). "
+            "Each advisory includes ready-to-use SystemVerilog code. "
+            "Paste the constraint_sv block into your test's constraint block to "
+            "direct stimulus toward the uncovered bin."
+        ),
+    })
+

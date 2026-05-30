@@ -4,7 +4,7 @@ Sentinel DV exposes **21 read-only MCP tools**. Every tool returns JSON with `sc
 
 **Prerequisites:** `sentinel-dv-index --config config.yaml --index-all` before querying.
 
-**End-to-end examples (all 21 tools):**
+**End-to-end examples (all 26 tools):**
 
 - **Multi-project:** index `demo/` (UVM, cocotb, Verilator, VCS, Questa, Cadence) — `python scripts/verify_all_mcp_tools.py` — see [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md)
 - **Simulator fixtures:** [VCS, Questa, and Cadence examples](../examples/commercial-simulators.md) — `python examples/simulator_matrix.py --sim all`
@@ -392,3 +392,102 @@ Prioritized list of under-covered bins with actionable recommendations. The heur
 | Waveform slice | `tests.list` → `wave.summary` (optionally `include_signals: true`) |
 | Replay failing test | `tests.list` → `tests.replay` |
 | Monitor live sim | `sim.status` (requires `live_sim_writer.py` harness) |
+
+## DV Intelligence tool chains (v2.1.0)
+
+| Goal | Tools |
+|------|--------|
+| Sign-off readiness check | `regression.health` → `coverage.trend` → `runs.cross_sim` |
+| Coverage acceleration | `coverage.gaps` → `coverage.advisor` → `runs.submit` |
+| Failure triage at scale | `tests.cluster` → `failures.list` (per cluster) |
+| Cross-simulator confidence | `runs.cross_sim` → `assertions.failures` (for divergent tests) |
+| Coverage trending | `coverage.trend` → `coverage.summary` (for stalled runs) |
+
+---
+
+## v2.1.0 DV Intelligence Tools
+
+### coverage.trend
+
+Computes coverage percentage over time for a suite, grouped by coverage kind (functional, line, toggle, branch).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `suite` | string? | Suite name (defaults to all) |
+| `kind` | string? | Coverage kind filter |
+| `window_days` | int | Look-back window (default 30) |
+
+```json
+{ "suite": "axi_burst", "kind": "functional", "window_days": 14 }
+```
+
+Response includes `trend` list (one point per run, with `run_id`, `created_at`, `coverage_pct`, `delta_pct`) and `summary` with `direction` (`improving` | `stalling` | `declining` | `insufficient_data`).
+
+---
+
+### runs.cross_sim
+
+Detects tests that diverge across simulators — pass on one vendor but fail on another.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `suite` | string? | Scope to a suite |
+| `name_pattern` | string? | Filter test names |
+
+```json
+{ "suite": "axi_burst" }
+```
+
+Response includes `divergent_tests` list with `test_name`, `sim_a`, `result_a`, `sim_b`, `result_b`, and `severity` (`critical` | `warning`).
+
+---
+
+### tests.cluster
+
+Groups failures by root-cause signature using message and category similarity, reducing hundreds of failures to a handful of actionable clusters.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `suite` | string? | Scope to a suite |
+| `min_cluster_size` | int | Minimum failures per cluster (default 1) |
+
+```json
+{ "suite": "axi_burst", "min_cluster_size": 2 }
+```
+
+Response includes `clusters` list. Each cluster has `signature`, `category`, `count`, `representative_message`, and `test_ids`.
+
+---
+
+### regression.health
+
+Returns a composite 0–100 DV readiness score broken down into weighted sub-scores for pass rate, coverage, assertion health, flakiness, and cross-simulator consistency.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `suite` | string? | Scope to a suite |
+| `window_days` | int | Look-back window (default 30) |
+
+```json
+{ "suite": "axi_burst", "window_days": 7 }
+```
+
+Response includes `score` (0–100), `band` (`sign-off-ready` | `minor-issues` | `coverage-gaps` | `not-ready`), and `components` dict with individual sub-scores.
+
+---
+
+### coverage.advisor
+
+Generates ready-to-paste SystemVerilog constraint and UVM sequence snippets for uncovered bins. Protocol-aware: recognises AXI4, AHB, APB, CHI, PCIe naming patterns.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `suite` | string? | Scope to a suite |
+| `kind` | string? | Coverage kind filter |
+| `max_recommendations` | int | Max snippets (1–25, default 10) |
+
+```json
+{ "suite": "axi_burst", "kind": "functional", "max_recommendations": 5 }
+```
+
+Response includes `advisories` list. Each entry has `bin_name`, `coverpoint`, `protocol`, `sv_constraint`, `uvm_hint`, and `priority`.

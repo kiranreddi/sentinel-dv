@@ -461,6 +461,60 @@ def coverage_gaps(
     )
 
 
+# =============================================================================
+# DV Intelligence tools — v2.1.0
+# =============================================================================
+
+
+@_readonly_tool("coverage.trend")
+def coverage_trend(
+    suite: str | None = Field(default=None, description="Filter by suite name."),
+    kind: str | None = Field(default=None, description="Coverage kind (functional|code|toggle|...)."),
+    limit: int = Field(default=20, description="Maximum number of runs to include (1–100)."),
+) -> dict[str, Any]:
+    """Show coverage trajectory across sequential runs — are you closing coverage?"""
+    return core.get_coverage_trend(get_store(), suite=suite, kind=kind, limit=limit)
+
+
+@_readonly_tool("runs.cross_sim")
+def runs_cross_sim(
+    suite_prefix: str | None = Field(default=None, description="Filter by suite name prefix."),
+    limit: int = Field(default=100, description="Max divergent tests to return."),
+) -> dict[str, Any]:
+    """Find tests that pass on one simulator but fail on another — sign-off critical."""
+    return core.get_cross_sim_comparison(get_store(), suite_prefix=suite_prefix, limit=limit)
+
+
+@_readonly_tool("tests.cluster")
+def tests_cluster(
+    run_id: str | None = Field(default=None, description="Limit to one run; None = all runs."),
+    max_clusters: int = Field(default=15, description="Maximum clusters to return (1–50)."),
+) -> dict[str, Any]:
+    """Group failing tests by root-cause signature — turns 500 failures into 5 root causes."""
+    return core.cluster_test_failures(get_store(), run_id=run_id, max_clusters=max_clusters)
+
+
+@_readonly_tool("regression.health")
+def regression_health(
+    run_id: str | None = Field(default=None, description="Score a specific run."),
+    suite: str | None = Field(default=None, description="Filter to a specific suite."),
+) -> dict[str, Any]:
+    """Composite DV health score (0–100): pass rate + coverage + assertions + flakiness + cross-sim."""
+    return core.get_regression_health(get_store(), run_id=run_id, suite=suite)
+
+
+@_readonly_tool("coverage.advisor")
+def coverage_advisor(
+    suite: str | None = Field(default=None, description="Filter by suite name."),
+    kind: str | None = Field(default=None, description="Coverage kind filter."),
+    max_recommendations: int = Field(default=10, description="Max advisories to return (1–25)."),
+) -> dict[str, Any]:
+    """Generate SystemVerilog constraint + UVM sequence snippets to hit uncovered bins."""
+    return core.get_coverage_advisor(
+        get_store(), suite=suite, kind=kind, max_recommendations=max_recommendations
+    )
+
+
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for the MCP server."""
     parser = argparse.ArgumentParser(description="Sentinel DV MCP server")

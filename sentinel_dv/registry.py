@@ -24,6 +24,12 @@ TOOL_NAMES: tuple[str, ...] = (
     "sim.status",
     "wave.signals",
     "wave.summary",
+    # DV Intelligence tools — v2.1.0
+    "coverage.trend",
+    "runs.cross_sim",
+    "tests.cluster",
+    "regression.health",
+    "coverage.advisor",
 )
 
 TOOL_COUNT = len(TOOL_NAMES)

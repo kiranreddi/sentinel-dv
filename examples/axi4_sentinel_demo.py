@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """AXI4 UVM three-simulator sentinel-dv demo.
 
-Demonstrates all 21 MCP tools against a realistic AXI4-Lite slave
+Demonstrates all 26 MCP tools against a realistic AXI4-Lite slave
 UVM testbench indexed from VCS, Questa, and Xcelium simulation results.
 
 Usage::
@@ -10,7 +10,7 @@ Usage::
     sentinel-dv-index --config config.yaml --index-all
     python ../../examples/axi4_sentinel_demo.py
 
-Expected output: a full verification report across all 21 tools.
+Expected output: a full verification report across all 26 tools.
 """
 
 from __future__ import annotations
@@ -25,11 +25,16 @@ sys.path.insert(0, str(REPO_ROOT))
 from sentinel_dv.config import load_config
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.tools.core import (
+    cluster_test_failures,
     compare_runs,
     generate_replay_command,
     generate_submit_command,
+    get_coverage_advisor,
     get_coverage_gaps,
     get_coverage_summary,
+    get_coverage_trend,
+    get_cross_sim_comparison,
+    get_regression_health,
     get_run_details,
     get_regression_summary,
     get_sim_status,
@@ -220,6 +225,39 @@ def main() -> int:  # noqa: PLR0915
                 d = diff["diff"]
                 print(f"      Test delta: +{d.get('new_passes',0)} pass, +{d.get('new_failures',0)} fail")
 
+        # ── Section 7: DV Intelligence (v2.1.0) ──────────────────────────────
+        _header("7 · DV Intelligence (coverage.trend / runs.cross_sim / tests.cluster / regression.health / coverage.advisor)")
+
+        trend = track("coverage.trend",
+                      lambda: get_coverage_trend(store, suite=suite))
+        if "summary" in trend:
+            s = trend["summary"]
+            print(f"      Coverage direction: {s.get('direction','?')}, "
+                  f"latest={s.get('latest_pct','?')}%")
+
+        xsim = track("runs.cross_sim",
+                     lambda: get_cross_sim_comparison(store, suite=suite))
+        if "divergent_tests" in xsim:
+            nd = len(xsim["divergent_tests"])
+            print(f"      Cross-sim divergences: {nd}")
+
+        clusters = track("tests.cluster",
+                         lambda: cluster_test_failures(store, suite=suite))
+        if "clusters" in clusters:
+            print(f"      Failure clusters: {len(clusters['clusters'])}")
+
+        health = track("regression.health",
+                       lambda: get_regression_health(store, suite=suite))
+        if "score" in health:
+            print(f"      Health score: {health['score']}/100 ({health.get('band','?')})")
+
+        advisor = track("coverage.advisor",
+                        lambda: get_coverage_advisor(store, suite=suite, max_recommendations=3))
+        if "advisories" in advisor:
+            print(f"      Coverage advisories: {len(advisor['advisories'])}")
+            for adv in advisor["advisories"][:2]:
+                print(f"        • {adv.get('bin_name','?')} [{adv.get('protocol','?')}]")
+
         # ── Summary ──────────────────────────────────────────────────────────
         _header("Summary")
         total = len(passed) + len(failed) + len(skipped)
@@ -233,7 +271,7 @@ def main() -> int:  # noqa: PLR0915
         if failed:
             print(f"{FAIL}  Some tools failed — see details above.")
             return 1
-        print(f"{PASS}  All sentinel-dv tools verified against AXI4 UVM data.")
+        print(f"{PASS}  All 26 sentinel-dv tools verified against AXI4 UVM data.")
         return 0
 
 

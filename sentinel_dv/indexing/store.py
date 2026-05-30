@@ -1854,14 +1854,7 @@ class IndexStore:
         self,
         run_id: str,
     ) -> dict[str, int]:
-        """Return counts of assertions per status category for a run.
-
-        Args:
-            run_id: Run identifier.
-
-        Returns:
-            Dict mapping status -> count.
-        """
+        """Return counts of assertions per status category for a run."""
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
@@ -1876,4 +1869,343 @@ class IndexStore:
             [run_id],
         ).fetchall()
         return {row[0]: row[1] for row in rows}
+
+    # ------------------------------------------------------------------
+    # DV-intelligence methods (beyond-spec tools)
+    # ------------------------------------------------------------------
+
+    def coverage_trend(
+        self,
+        suite: str | None = None,
+        kind: str | None = None,
+        limit: int = 30,
+    ) -> list[dict[str, Any]]:
+        """Return per-run coverage averages ordered by run date (oldest first).
+
+        One row per (run_id, kind) pair so callers can plot trajectory.
+
+        Args:
+            suite: Filter by suite name.
+            kind: Filter to one coverage kind.
+            limit: Maximum runs to return.
+
+        Returns:
+            List of dicts with keys: run_id, suite, created_at, kind,
+            covered_pct, metric_count, delta_pct (vs previous run).
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        clauses: list[str] = []
+        params: list[Any] = []
+        if suite:
+            clauses.append("r.suite = ?")
+            params.append(suite)
+        if kind:
+            clauses.append("cs.kind = ?")
+            params.append(kind)
+        where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+        params.append(limit)
+
+        rows = self._conn.execute(
+            f"""
+            SELECT
+                r.run_id,
+                COALESCE(r.suite, 'unknown') AS suite,
+                r.created_at,
+                cs.kind,
+                cs.metrics_json,
+                COUNT(*) OVER (PARTITION BY r.run_id, cs.kind) AS row_count
+            FROM coverage_summaries cs
+            JOIN runs r ON cs.run_id = r.run_id
+            {where}
+            ORDER BY r.created_at ASC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+
+        # Aggregate per (run_id, kind)
+        from collections import defaultdict
+        buckets: dict[tuple[str, str], dict[str, Any]] = defaultdict(
+            lambda: {"total": 0.0, "count": 0}
+        )
+        meta: dict[tuple[str, str], dict[str, Any]] = {}
+        for run_id, run_suite, created_at, cov_kind, metrics_raw, _ in rows:
+            key = (run_id, cov_kind)
+            if key not in meta:
+                meta[key] = {
+                    "run_id": run_id,
+                    "suite": run_suite,
+                    "created_at": created_at,
+                    "kind": cov_kind,
+                }
+            try:
+                metrics_list = json.loads(metrics_raw) if metrics_raw else []
+            except (json.JSONDecodeError, TypeError):
+                continue
+            for m in metrics_list:
+                cov = m.get("covered")
+                if cov is not None:
+                    buckets[key]["total"] += float(cov)
+                    buckets[key]["count"] += 1
+
+        ordered = sorted(meta.keys(), key=lambda k: meta[k]["created_at"])
+        result: list[dict[str, Any]] = []
+        prev_pct: dict[str, float | None] = {}  # keyed by kind
+        for key in ordered:
+            run_id, cov_kind = key
+            b = buckets[key]
+            covered_pct = (b["total"] / b["count"]) if b["count"] else 0.0
+            covered_pct = round(covered_pct, 2)
+            prev = prev_pct.get(cov_kind)
+            delta = round(covered_pct - prev, 2) if prev is not None else None
+            prev_pct[cov_kind] = covered_pct
+            entry = {**meta[key], "covered_pct": covered_pct, "metric_count": b["count"], "delta_pct": delta}
+            result.append(entry)
+        return result
+
+    def cross_sim_divergence(
+        self,
+        suite_prefix: str | None = None,
+        limit: int = 200,
+    ) -> list[dict[str, Any]]:
+        """Find tests whose pass/fail status diverges across simulators.
+
+        Matches tests by name (ignoring suite prefix), groups by sim_vendor,
+        returns rows where at least one sim passes and another fails.
+
+        Args:
+            suite_prefix: Optional filter on suite name prefix.
+            limit: Max divergent tests returned.
+
+        Returns:
+            List of dicts: test_name, sim_a, status_a, sim_b, status_b,
+            run_id_a, run_id_b.
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        params: list[Any] = []
+        suite_filter = ""
+        if suite_prefix:
+            suite_filter = "AND (r.suite LIKE ?)"
+            params.append(f"{suite_prefix}%")
+
+        params.append(limit)
+
+        rows = self._conn.execute(
+            f"""
+            SELECT
+                t1.name,
+                t1.sim_vendor AS sim_a,
+                t1.status    AS status_a,
+                t1.run_id    AS run_id_a,
+                t2.sim_vendor AS sim_b,
+                t2.status    AS status_b,
+                t2.run_id    AS run_id_b
+            FROM tests t1
+            JOIN tests t2
+                ON  t1.name = t2.name
+                AND t1.sim_vendor IS NOT NULL
+                AND t2.sim_vendor IS NOT NULL
+                AND t1.sim_vendor < t2.sim_vendor
+                AND t1.status != t2.status
+            JOIN runs r ON t1.run_id = r.run_id
+            WHERE 1=1 {suite_filter}
+            ORDER BY t1.name ASC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+
+        cols = ["test_name", "sim_a", "status_a", "run_id_a", "sim_b", "status_b", "run_id_b"]
+        return [dict(zip(cols, row, strict=False)) for row in rows]
+
+    def cluster_failures(
+        self,
+        run_id: str | None = None,
+        max_clusters: int = 20,
+    ) -> list[dict[str, Any]]:
+        """Cluster test failures by normalised error signature.
+
+        Groups failures with similar error messages so engineers can identify
+        the root cause behind many simultaneous failures.
+
+        Args:
+            run_id: Limit to a single run; None means all runs.
+            max_clusters: Maximum number of distinct clusters to return.
+
+        Returns:
+            List of dicts: signature, count, representative_test_id,
+            representative_message, test_ids.
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        params: list[Any] = []
+        where = ""
+        if run_id:
+            where = "WHERE f.run_id = ?"
+            params.append(run_id)
+
+        rows = self._conn.execute(
+            f"""
+            SELECT f.test_id, f.message, f.summary, f.failure_id
+            FROM failures f
+            {where}
+            ORDER BY f.failure_id ASC
+            """,
+            params,
+        ).fetchall()
+
+        import re
+
+        def _normalise(msg: str) -> str:
+            """Strip addresses/IDs/timestamps to expose structural signature."""
+            if not msg:
+                return "unknown"
+            msg = re.sub(r"0x[0-9a-fA-F]+", "ADDR", msg)
+            msg = re.sub(r"\b[0-9a-fA-F]{6,}\b", "HEX", msg)
+            msg = re.sub(r"\d{4}-\d{2}-\d{2}[T ]\S+", "TIMESTAMP", msg)
+            msg = re.sub(r"\b\d+\b", "N", msg)
+            msg = re.sub(r"\s+", " ", msg)
+            return msg[:80].strip().lower()
+
+        from collections import defaultdict
+        clusters: dict[str, dict[str, Any]] = defaultdict(
+            lambda: {"count": 0, "test_ids": [], "representative_test_id": None, "representative_message": None}
+        )
+        for test_id, message, summary, _ in rows:
+            raw = message or summary or ""
+            sig = _normalise(raw[:200])
+            c = clusters[sig]
+            c["count"] += 1
+            if c["representative_test_id"] is None:
+                c["representative_test_id"] = test_id
+                c["representative_message"] = raw[:200]
+            c["test_ids"].append(test_id)
+
+        sorted_clusters = sorted(clusters.items(), key=lambda kv: kv[1]["count"], reverse=True)
+        return [
+            {"signature": sig, **data, "test_ids": data["test_ids"][:50]}
+            for sig, data in sorted_clusters[:max_clusters]
+        ]
+
+    def regression_health_data(
+        self,
+        run_id: str | None = None,
+        suite: str | None = None,
+    ) -> dict[str, Any]:
+        """Collect raw data for the regression health score computation.
+
+        Returns all metrics needed by `get_regression_health()` in core.py.
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        # -- pass rate -------------------------------------------------------
+        run_filter_clause = ""
+        run_params: list[Any] = []
+        suite_filter_clause = ""
+        suite_params: list[Any] = []
+
+        if run_id:
+            run_filter_clause = "WHERE t.run_id = ?"
+            run_params.append(run_id)
+        elif suite:
+            run_filter_clause = "WHERE r.suite = ?"
+            run_params.append(suite)
+
+        if suite:
+            suite_filter_clause = "WHERE r.suite = ?"
+            suite_params.append(suite)
+
+        test_counts = self._conn.execute(
+            f"""
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN t.status = 'pass' THEN 1 ELSE 0 END) AS passed,
+                SUM(CASE WHEN t.status = 'fail' THEN 1 ELSE 0 END) AS failed
+            FROM tests t
+            LEFT JOIN runs r ON t.run_id = r.run_id
+            {run_filter_clause}
+            """,
+            run_params,
+        ).fetchone()
+        total_tests, passed_tests, failed_tests = (test_counts or (0, 0, 0))
+
+        # -- coverage --------------------------------------------------------
+        cov_rows = self._conn.execute(
+            f"""
+            SELECT cs.metrics_json, cs.kind
+            FROM coverage_summaries cs
+            JOIN runs r ON cs.run_id = r.run_id
+            {suite_filter_clause}
+            """,
+            suite_params,
+        ).fetchall()
+        cov_totals: dict[str, list[float]] = {}
+        for metrics_raw, cov_kind in cov_rows:
+            try:
+                metrics_list = json.loads(metrics_raw) if metrics_raw else []
+            except (json.JSONDecodeError, TypeError):
+                continue
+            for m in metrics_list:
+                cov = m.get("covered")
+                if cov is not None:
+                    cov_totals.setdefault(cov_kind, []).append(float(cov))
+        coverage_by_kind = {
+            k: round(sum(v) / len(v), 2) for k, v in cov_totals.items() if v
+        }
+        overall_coverage = (
+            round(sum(coverage_by_kind.values()) / len(coverage_by_kind), 2)
+            if coverage_by_kind
+            else None
+        )
+
+        # -- assertion health ------------------------------------------------
+        row = self._conn.execute(
+            "SELECT COUNT(*) FROM sva_run_status WHERE vacuous_count > 0 OR status = 'vacuous'"
+        ).fetchone()
+        vacuous_count = (row[0] if row else 0) or 0
+
+        row = self._conn.execute(
+            "SELECT COUNT(*) FROM sva_run_status WHERE fail_count > 0 OR status = 'fail'"
+        ).fetchone()
+        failing_assertions = (row[0] if row else 0) or 0
+
+        row = self._conn.execute(
+            "SELECT COUNT(DISTINCT assertion_id) FROM assertions"
+        ).fetchone()
+        total_assertions = (row[0] if row else 0) or 0
+
+        # -- flakiness (tests with both pass and fail across runs) -----------
+        row = self._conn.execute(
+            """
+            SELECT COUNT(*) FROM (
+                SELECT name
+                FROM tests
+                GROUP BY name
+                HAVING COUNT(DISTINCT status) > 1
+            )
+            """
+        ).fetchone()
+        flaky_count = (row[0] if row else 0) or 0
+
+        # -- cross-sim divergence -------------------------------------------
+        divergent_count = len(self.cross_sim_divergence(limit=500))
+
+        return {
+            "total_tests": int(total_tests or 0),
+            "passed_tests": int(passed_tests or 0),
+            "failed_tests": int(failed_tests or 0),
+            "overall_coverage": overall_coverage,
+            "coverage_by_kind": coverage_by_kind,
+            "total_assertions": int(total_assertions),
+            "vacuous_assertions": int(vacuous_count),
+            "failing_assertions": int(failing_assertions),
+            "flaky_tests": int(flaky_count),
+            "divergent_tests": int(divergent_count),
+        }
 

@@ -185,6 +185,12 @@ async def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
                     "end_time_ns": 3000,
                 },
             ),
+            # DV Intelligence tools — v2.1.0
+            ("coverage.trend", {"suite": suite}),
+            ("runs.cross_sim", {}),
+            ("tests.cluster", {}),
+            ("regression.health", {"suite": suite}),
+            ("coverage.advisor", {"suite": suite}),
         ]
         assert len(calls) == len(expected_tool_names())
 

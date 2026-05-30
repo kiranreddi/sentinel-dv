@@ -7,5 +7,5 @@ from sentinel_dv.demo_fixtures import expected_tool_names
 
 
 def test_tool_names_match_demo_fixture() -> None:
-    assert registry.TOOL_COUNT == 21
+    assert registry.TOOL_COUNT == 26
     assert set(registry.TOOL_NAMES) == set(expected_tool_names())

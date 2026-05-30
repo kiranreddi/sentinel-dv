@@ -254,6 +254,12 @@ def tool_call_matrix(fix: ProjectFixtures) -> list[tuple[str, dict[str, Any]]]:
             "wave.summary",
             {"test_id": fix.wave_test_id, "start_time_ns": 1000, "end_time_ns": 25000},
         ),
+        # DV Intelligence tools — v2.1.0
+        ("coverage.trend", {"suite": fix.regression_suite}),
+        ("runs.cross_sim", {}),
+        ("tests.cluster", {}),
+        ("regression.health", {"suite": fix.regression_suite}),
+        ("coverage.advisor", {"suite": fix.regression_suite}),
     ]
 
 
@@ -286,6 +292,12 @@ def invoke_core_tool(store: IndexStore, tool_name: str, args: dict[str, Any]) ->
         "sim.status": lambda: core.get_sim_status(store, **args),
         "wave.signals": lambda: core.wave_signals(store, **args),
         "wave.summary": lambda: core.wave_summary(store, **args),
+        # DV Intelligence tools — v2.1.0
+        "coverage.trend": lambda: core.get_coverage_trend(store, **args),
+        "runs.cross_sim": lambda: core.get_cross_sim_comparison(store),
+        "tests.cluster": lambda: core.cluster_test_failures(store),
+        "regression.health": lambda: core.get_regression_health(store, **args),
+        "coverage.advisor": lambda: core.get_coverage_advisor(store, **args),
     }
     try:
         return dispatch[tool_name]()

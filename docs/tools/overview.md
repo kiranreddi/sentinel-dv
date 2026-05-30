@@ -1,6 +1,6 @@
 # Tool Overview
 
-Sentinel DV provides **21 MCP tools** organized into categories for verification intelligence.
+Sentinel DV provides **26 MCP tools** organized into categories for verification intelligence.
 
 ## Tool Categories
 
@@ -60,7 +60,7 @@ Full parameter reference: [MCP tools reference](mcp-tools-reference.md).
 
 Auto-generated **SVG cards** show real request/response JSON for every tool (from the multi-project `demo/` index):
 
-- **[Browse all 21 tools in the gallery](mcp-tool-gallery.md)** — embedded screenshots + full JSON
+- **[Browse all 26 tools in the gallery](mcp-tool-gallery.md)** — embedded screenshots + full JSON
 - [Interactive HTML preview](../assets/mcp-tools/gallery.html) — open in a new tab
 
 Regenerate after demo or API changes:
@@ -81,6 +81,18 @@ New in v2.0.0: job submission, live simulation monitoring, SVA formal status, se
 | [`assertions.vacuity`](#assertionsvacuity) | Vacuously-passing assertions | — |
 | [`tests.replay`](#testsreplay) | Seed-replay command for failing test | `submit.enabled: true` |
 | [`coverage.gaps`](#coveragegaps) | Prioritized coverage closure guidance | — |
+
+### 🧠 v2.1.0 DV Intelligence Tools
+
+New in v2.1.0: actionable intelligence tools that go beyond data reporting into automated DV decision support.
+
+| Tool | Purpose | Key Insight |
+|------|---------|-------------|
+| [`coverage.trend`](#coveragetrend) | Coverage trajectory over time | Identifies stalled or regressing coverage |
+| [`runs.cross_sim`](#runscross_sim) | Cross-simulator divergence detector | Finds tests that pass on one sim but fail on another |
+| [`tests.cluster`](#testscluster) | Failure root-cause clustering | Groups failures by common signature for faster triage |
+| [`regression.health`](#regressionhealth) | Composite DV readiness score | 0–100 sign-off readiness with weighted sub-scores |
+| [`coverage.advisor`](#coverageadvisor) | SV constraint code generator | Protocol-aware snippets (AXI4, AHB, APB, CHI) to hit uncovered bins |
 
 ---
 
@@ -202,7 +214,24 @@ All tools return structured errors:
 ```
 1. coverage.summary (identify low coverage runs)
 2. coverage.gaps    (get prioritized gap list with recommendations)
-3. runs.submit      (generate new run command to target gaps)
+3. coverage.advisor (get SV constraint code to hit specific uncovered bins)
+4. runs.submit      (generate new run command to target gaps)
+```
+
+### "Is my regression sign-off ready?"
+
+```
+1. regression.health (get 0–100 readiness score with breakdown)
+2. coverage.trend    (check if coverage is trending upward)
+3. runs.cross_sim    (verify no simulator divergence)
+```
+
+### "Why are so many tests failing?"
+
+```
+1. tests.cluster     (group failures by root-cause signature)
+2. failures.list     (drill into each cluster)
+3. assertions.failures (check correlated assertion failures)
 ```
 
 ### "Is my simulation still running?"

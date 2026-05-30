@@ -36,7 +36,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T04:01:56.006241Z",
+          "created_at": "2026-05-30T15:47:44.579321Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -47,7 +47,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-30T04:01:55.989538Z",
+          "created_at": "2026-05-30T15:47:44.562808Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -58,7 +58,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T04:01:55.958292Z",
+          "created_at": "2026-05-30T15:47:44.532363Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -93,14 +93,14 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "run_id": "r_85b1d3f70e48",
         "run_id_full": "85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33",
         "suite": "verilator_counter",
-        "created_at": "2026-05-30T04:01:55.989538Z",
+        "created_at": "2026-05-30T15:47:44.562808Z",
         "status": "pass",
         "ci_system": null,
         "ci_build_id": null,
         "ci_job_url": null,
         "artifact_manifest_hash": null,
-        "index_built_at": "2026-05-30T04:01:55.990338Z",
-        "created_at_ms": 1780113715989
+        "index_built_at": "2026-05-30T15:47:44.563579Z",
+        "created_at_ms": 1780156064562
       },
       "schema_version": "1.0.0"
     }
@@ -158,8 +158,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "sim_vendor": null,
           "sim_version": null,
           "dut_top": null,
-          "created_at": "2026-05-30T04:01:55.989538Z",
-          "created_at_ms": 1780113715989
+          "created_at": "2026-05-30T15:47:44.562808Z",
+          "created_at_ms": 1780156064562
         }
       ],
       "pagination": {
@@ -198,8 +198,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "sim_vendor": null,
         "sim_version": null,
         "dut_top": null,
-        "created_at": "2026-05-30T04:01:55.989538Z",
-        "created_at_ms": 1780113715989
+        "created_at": "2026-05-30T15:47:44.562808Z",
+        "created_at_ms": 1780156064562
       }
     }
     ```
@@ -1036,26 +1036,26 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "suite": "verilator_counter",
       "window_days": 30,
-      "as_of": "2026-05-30T04:01:56.810072Z",
+      "as_of": "2026-05-30T15:47:45.405708Z",
       "pass_rate": 33.33,
       "runs": [
         {
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T04:01:56.006241Z"
+          "created_at": "2026-05-30T15:47:44.579321Z"
         },
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-30T04:01:55.989538Z"
+          "created_at": "2026-05-30T15:47:44.562808Z"
         },
         {
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T04:01:55.958292Z"
+          "created_at": "2026-05-30T15:47:44.532363Z"
         }
       ],
       "top_signatures": [
@@ -1256,6 +1256,306 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "path": "verilator_counter/test_counter_sim.wave.json"
       },
       "source_path": "verilator_counter/test_counter_sim.wave.json",
+      "schema_version": "1.0.0"
+    }
+    ```
+
+## `coverage.trend`
+
+![MCP tool coverage.trend](../assets/mcp-tools/coverage-trend.svg)
+
+??? example "Request"
+    ```json
+    {
+      "suite": "verilator_counter"
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "suite": "verilator_counter",
+      "kind": null,
+      "trend": [
+        {
+          "run_id": "r_85b1d3f70e48",
+          "suite": "verilator_counter",
+          "created_at": "2026-05-30T15:47:44.562808Z",
+          "kind": "functional",
+          "covered_pct": 81.25,
+          "metric_count": 2,
+          "delta_pct": null
+        }
+      ],
+      "summary": {
+        "runs_analysed": 1,
+        "oldest_pct": 81.25,
+        "latest_pct": 81.25,
+        "total_delta_pct": 0.0,
+        "direction": "stable"
+      },
+      "note": "Coverage regressed by 0.0% over 1 run(s). Positive delta_pct = more bins covered than previous run.",
+      "schema_version": "1.0.0"
+    }
+    ```
+
+## `runs.cross_sim`
+
+![MCP tool runs.cross_sim](../assets/mcp-tools/runs-cross_sim.svg)
+
+??? example "Request"
+    ```json
+    {}
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "suite_prefix": null,
+      "divergent_tests": [],
+      "unique_divergent_names": 0,
+      "simulator_pairs_analysed": [],
+      "note": "No cross-simulator divergence detected. All shared test names produce consistent results.",
+      "schema_version": "1.0.0"
+    }
+    ```
+
+## `tests.cluster`
+
+![MCP tool tests.cluster](../assets/mcp-tools/tests-cluster.svg)
+
+??? example "Request"
+    ```json
+    {}
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "run_id": null,
+      "clusters": [
+        {
+          "signature": "expected count to wrap at n; observed n without wrap.",
+          "count": 4,
+          "test_ids": [
+            "t_e65285b55eec",
+            "t_731e321ad3c0",
+            "t_7f5785415392",
+            "t_5b4ce57ba531"
+          ],
+          "representative_test_id": "t_e65285b55eec",
+          "representative_message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      "
+        },
+        {
+          "signature": ": n",
+          "count": 2,
+          "test_ids": [
+            "t_d5c9e066a33f",
+            "t_d5c9e066a33f"
+          ],
+          "representative_test_id": "t_d5c9e066a33f",
+          "representative_message": ":   0"
+        },
+        {
+          "signature": "n uvm_fatal: n",
+          "count": 2,
+          "test_ids": [
+            "t_c63ff9530760",
+            "t_9f4d54c8e3af"
+          ],
+          "representative_test_id": "t_c63ff9530760",
+          "representative_message": "0  UVM_FATAL: 0"
+        },
+        {
+          "signature": "pop while empty: empty flag was n",
+          "count": 1,
+          "test_ids": [
+            "t_cf16259fcc9e"
+          ],
+          "representative_test_id": "t_cf16259fcc9e",
+          "representative_message": "\npop while empty: empty flag was 0\n      "
+        },
+        {
+          "signature": "[test] test failed",
+          "count": 1,
+          "test_ids": [
+            "t_3fb5c5afeb62"
+          ],
+          "representative_test_id": "t_3fb5c5afeb62",
+          "representative_message": "[TEST] TEST FAILED"
+        },
+        {
+          "signature": "uvm_error @ hex: uvm_test_top.env.scbd [scbd] fail: addr=addr exp=addr got=addr",
+          "count": 1,
+          "test_ids": [
+            "t_b439c1f1e40d"
+          ],
+          "representative_test_id": "t_b439c1f1e40d",
+          "representative_message": "\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] FAIL: addr=0x000001C0 exp=0xDEADBEEF got=0x00000000\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] SCOREBOARD MISMATCHES DETECTED\n"
+        },
+        {
+          "signature": "[scb] counter_scoreboard.sv:(n) @ n data mismatch: expected count=n got n",
+          "count": 1,
+          "test_ids": [
+            "t_bdf825c67e63"
+          ],
+          "representative_test_id": "t_bdf825c67e63",
+          "representative_message": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5"
+        },
+        {
+          "signature": "traceback (most recent call last): file \"test_counter.py\", line n, in test_over",
+          "count": 1,
+          "test_ids": [
+            "t_ce337fb0bfda"
+          ],
+          "representative_test_id": "t_ce337fb0bfda",
+          "representative_message": "\nTraceback (most recent call last):\n  File \"test_counter.py\", line 45, in test_overflow\n    assert dut.count.value == 0, \"Counter should wrap to 0\"\nAssertionError: Counter overflow not handled correct"
+        },
+        {
+          "signature": "uvm_test_top.axi_env.scoreboard [scb] axi data mismatch: aw beat n expected addr",
+          "count": 1,
+          "test_ids": [
+            "t_7dd03c3d152f"
+          ],
+          "representative_test_id": "t_7dd03c3d152f",
+          "representative_message": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF"
+        },
+        {
+          "signature": "[test] counter_tb.sv:(n) @ n test failed",
+          "count": 1,
+          "test_ids": [
+            "t_bdf825c67e63"
+          ],
+          "representative_test_id": "t_bdf825c67e63",
+          "representative_message": "[TEST] counter_tb.sv:(92) @ 1300 TEST FAILED"
+        },
+        {
+          "signature": "expected n-bit result; got value out of range.",
+          "count": 1,
+          "test_ids": [
+            "t_fed229b40a64"
+          ],
+          "representative_test_id": "t_fed229b40a64",
+          "representative_message": "\nExpected 16-bit result; got value out of range.\n      "
+        },
+        {
+          "signature": "[scb] data mismatch: expected count=n got n",
+          "count": 1,
+          "test_ids": [
+            "t_3fb5c5afeb62"
+          ],
+          "representative_test_id": "t_3fb5c5afeb62",
+          "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5"
+        },
+        {
+          "signature": "[test] (uvm_test_top): test failed",
+          "count": 1,
+          "test_ids": [
+            "t_81f11ef7e513"
+          ],
+          "representative_test_id": "t_81f11ef7e513",
+          "representative_message": "[TEST] (uvm_test_top): TEST FAILED"
+        },
+        {
+          "signature": "uvm_test_top.env.scoreboard [scb] data mismatch: expected count=n got n",
+          "count": 1,
+          "test_ids": [
+            "t_7a0a37762958"
+          ],
+          "representative_test_id": "t_7a0a37762958",
+          "representative_message": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5"
+        },
+        {
+          "signature": "uvm_test_top.apb_env.monitor [mon] assertion failed: pready_timeout after psel",
+          "count": 1,
+          "test_ids": [
+            "t_e79a0d869304"
+          ],
+          "representative_test_id": "t_e79a0d869304",
+          "representative_message": "uvm_test_top.apb_env.monitor [MON] ASSERTION FAILED: pready_timeout after psel"
+        }
+      ],
+      "total_failures_analysed": 20,
+      "unique_clusters": 15,
+      "note": "15 root-cause cluster(s) explain 20 failure(s). Top cluster accounts for 20.0% of failures. Fix the representative failure in each cluster first.",
+      "schema_version": "1.0.0"
+    }
+    ```
+
+## `regression.health`
+
+![MCP tool regression.health](../assets/mcp-tools/regression-health.svg)
+
+??? example "Request"
+    ```json
+    {
+      "suite": "verilator_counter"
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "health_score": 71.2,
+      "band": "coverage-gaps",
+      "band_symbol": "\ud83d\udfe0",
+      "component_scores": {
+        "pass_rate": 33.3,
+        "coverage": 81.2,
+        "assertion_health": 85.0,
+        "flakiness": 100.0,
+        "cross_sim_consistency": 100.0
+      },
+      "weights": {
+        "pass_rate": 0.3,
+        "coverage": 0.35,
+        "assertion_health": 0.15,
+        "flakiness": 0.1,
+        "cross_sim_consistency": 0.1
+      },
+      "raw_data": {
+        "total_tests": 3,
+        "passed_tests": 1,
+        "failed_tests": 2,
+        "overall_coverage": 81.25,
+        "coverage_by_kind": {
+          "functional": 81.25
+        },
+        "total_assertions": 10,
+        "vacuous_assertions": 3,
+        "failing_assertions": 0,
+        "flaky_tests": 0,
+        "divergent_tests": 0
+      },
+      "recommendations": [
+        "Pass rate is 33% (2 failures). Use tests.cluster to find root causes.",
+        "3 assertion(s) fire vacuously \u2014 the antecedent is never triggered. Add targeted stimulus."
+      ],
+      "note": "\ud83d\udfe0 Health score: 71.2/100 (coverage-gaps). Breakdown \u2014 pass_rate: 33%, coverage: 81%, assertions: 85%, flakiness: 100%, cross-sim: 100%.",
+      "schema_version": "1.0.0"
+    }
+    ```
+
+## `coverage.advisor`
+
+![MCP tool coverage.advisor](../assets/mcp-tools/coverage-advisor.svg)
+
+??? example "Request"
+    ```json
+    {
+      "suite": "verilator_counter"
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "suite": "verilator_counter",
+      "kind": null,
+      "total_gaps": 2,
+      "high_priority_gaps": 0,
+      "advisories": [],
+      "note": "0 targeted constraint/sequence snippet(s) generated for high-priority coverage gaps (0\u201325% covered). Each advisory includes ready-to-use SystemVerilog code. Paste the constraint_sv block into your test's constraint block to direct stimulus toward the uncovered bin.",
       "schema_version": "1.0.0"
     }
     ```

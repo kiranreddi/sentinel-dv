@@ -109,6 +109,12 @@ OUTPUT_SCHEMAS: dict[str, dict[str, Any]] = {
     "sim.status": _DETAIL_ENVELOPE,
     "wave.signals": _DETAIL_ENVELOPE,
     "wave.summary": _DETAIL_ENVELOPE,
+    # DV Intelligence tools — v2.1.0
+    "coverage.trend": _DETAIL_ENVELOPE,
+    "runs.cross_sim": _DETAIL_ENVELOPE,
+    "tests.cluster": _DETAIL_ENVELOPE,
+    "regression.health": _DETAIL_ENVELOPE,
+    "coverage.advisor": _DETAIL_ENVELOPE,
 }
 
 TOOL_DESCRIPTIONS: dict[str, str] = {
@@ -229,5 +235,43 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
         "recommendation}], gaps_found, total_metrics, note}`. "
         "Filter by `suite` or `kind`; adjust `threshold_pct` (default 100%). "
         "Priorities: high (< 25% or error/boundary metrics), medium, low."
+    ),
+    # DV Intelligence tools — v2.1.0
+    "coverage.trend": (
+        "Show coverage trajectory across sequential runs — are you closing or regressing? (read-only). "
+        "Returns `{trend: [{run_id, suite, created_at, kind, covered_pct, delta_pct}], "
+        "summary: {runs_analysed, oldest_pct, latest_pct, total_delta_pct, direction}}`. "
+        "Positive delta_pct means bins are being covered. "
+        "Use to answer: 'Is our regression campaign making progress?'"
+    ),
+    "runs.cross_sim": (
+        "Find tests whose pass/fail status diverges across simulators (read-only). "
+        "Returns `{divergent_tests: [{test_name, sim_a, status_a, sim_b, status_b}], "
+        "unique_divergent_names, simulator_pairs_analysed}`. "
+        "Any divergence is a tape-out sign-off blocker — often indicates X-propagation, "
+        "race conditions, or tool-specific bugs."
+    ),
+    "tests.cluster": (
+        "Group test failures by error signature to surface root causes (read-only). "
+        "Returns `{clusters: [{signature, count, representative_test_id, "
+        "representative_message, test_ids}], total_failures_analysed, unique_clusters}`. "
+        "Turns 500 individual failures into 5 actionable root causes. "
+        "Fix the representative failure in each cluster first."
+    ),
+    "regression.health": (
+        "Composite DV health score (0–100) with breakdown (read-only). "
+        "Returns `{health_score, band, component_scores, recommendations}`. "
+        "Score bands: 90–100 ✅ sign-off-ready, 75–89 🟡 minor issues, "
+        "50–74 🟠 coverage gaps, 0–49 🔴 not ready. "
+        "Components: pass_rate (30%), coverage (35%), assertion_health (15%), "
+        "flakiness (10%), cross_sim_consistency (10%)."
+    ),
+    "coverage.advisor": (
+        "Generate SystemVerilog constraints + UVM sequence hints to hit uncovered bins (read-only). "
+        "Returns `{advisories: [{bin_name, covered_pct, protocol_hint, "
+        "constraint_sv, sequence_hint}], total_gaps, high_priority_gaps}`. "
+        "Protocol-aware: recognises AXI4, AHB, APB, CHI patterns. "
+        "Each advisory includes ready-to-paste SV code. "
+        "Use after `coverage.gaps` to turn gap analysis into directed tests."
     ),
 }
