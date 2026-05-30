@@ -219,7 +219,7 @@ class CoverageReportParser:
                     "GROUP": "functional",
                     "SCORE": "code",
                 }
-                for col, val in zip(headers, values):
+                for col, val in zip(headers, values, strict=False):
                     kind_name = col_map.get(col.upper())
                     if kind_name:
                         metrics.append(
@@ -328,7 +328,7 @@ class CoverageReportParser:
             try:
                 data = json.loads(content[start:end])
                 ds = data.get("ds", {})
-                for key, (metric_name, kind_name) in self._QUESTA_DS_MAP.items():
+                for key, (metric_name, _kind_name) in self._QUESTA_DS_MAP.items():
                     entry = ds.get(key)
                     if entry and isinstance(entry, list) and len(entry) >= 3:
                         total_items, covered_items, pct = entry[0], entry[1], entry[2]
