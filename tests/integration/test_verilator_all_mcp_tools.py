@@ -1,4 +1,4 @@
-"""Exercise all 15 MCP tools against the Verilator counter walkthrough index."""
+"""Exercise all 26 MCP tools against the Verilator counter walkthrough index."""
 
 from __future__ import annotations
 
@@ -124,77 +124,81 @@ def test_index_in_repo_demo_dir(tmp_path):
     assert stats["runs"] >= 3
 
 
-@pytest.mark.asyncio
-async def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
+@pytest.mark.skipif(not verilator_available(), reason="verilator not available")
+def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
     """Invoke every registered MCP tool through FastMCP (stdio-equivalent in-process)."""
-    work, db, cfg, suite, _stats = indexed_demo
-    config_path = tmp_path / "config.yaml"
-    cfg.to_yaml(str(config_path))
-    server.init_server(config_path)
 
-    async with Client(server.mcp) as client:
-        listed = await client.list_tools()
-        names = {t.name for t in listed}
-        assert names == set(expected_tool_names())
+    async def _run():
+        work, db, cfg, suite, _stats = indexed_demo
+        config_path = tmp_path / "config.yaml"
+        cfg.to_yaml(str(config_path))
+        server.init_server(config_path)
 
-        with IndexStore(db) as store:
-            runs = core.list_runs(store, suite=suite)
-            pass_run = next(r for r in runs["runs"] if r["status"] == "pass")
-            fail_run = next(r for r in runs["runs"] if r["status"] == "fail")
-            wave_test = core.list_tests(store, run_id=pass_run["run_id"])["tests"][0]
-            uvm_test = core.list_tests(store, framework="uvm")["tests"][0]
-            assertion_id = core.list_assertions(store, protocol="axi4")["assertions"][0][
-                "assertion_id"
+        async with Client(server.mcp) as client:
+            listed = await client.list_tools()
+            names = {t.name for t in listed}
+            assert names == set(expected_tool_names())
+
+            with IndexStore(db) as store:
+                runs = core.list_runs(store, suite=suite)
+                pass_run = next(r for r in runs["runs"] if r["status"] == "pass")
+                fail_run = next(r for r in runs["runs"] if r["status"] == "fail")
+                wave_test = core.list_tests(store, run_id=pass_run["run_id"])["tests"][0]
+                uvm_test = core.list_tests(store, framework="uvm")["tests"][0]
+                assertion_id = core.list_assertions(store, protocol="axi4")["assertions"][0][
+                    "assertion_id"
+                ]
+
+            calls: list[tuple[str, dict]] = [
+                ("runs.list", {"suite": suite, "page": 1, "page_size": 50}),
+                ("runs.get", {"run_id": pass_run["run_id"]}),
+                ("runs.submit", {"suite": suite}),
+                ("tests.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
+                ("tests.get", {"test_id": wave_test["test_id"]}),
+                ("tests.topology", {"test_id": uvm_test["test_id"]}),
+                ("tests.replay", {"test_id": wave_test["test_id"]}),
+                ("assertions.list", {"protocol": "axi4", "page": 1, "page_size": 50}),
+                ("assertions.get", {"assertion_id": assertion_id}),
+                (
+                    "assertions.failures",
+                    {"test_id": wave_test["test_id"], "include_evidence": True, "page": 1},
+                ),
+                ("assertions.sva_status", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
+                ("assertions.vacuity", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
+                ("coverage.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
+                ("coverage.summary", {"run_id": pass_run["run_id"]}),
+                ("coverage.gaps", {"suite": suite, "threshold_pct": 100.0}),
+                ("failures.list", {"category": "scoreboard", "include_evidence": True}),
+                (
+                    "regressions.summary",
+                    {"suite": suite, "window_days": 30, "as_of": DEMO_AS_OF},
+                ),
+                (
+                    "runs.diff",
+                    {"base_run_id": fail_run["run_id"], "compare_run_id": pass_run["run_id"]},
+                ),
+                ("sim.status", {"suite": suite}),
+                ("wave.signals", {"test_id": wave_test["test_id"]}),
+                (
+                    "wave.summary",
+                    {
+                        "test_id": wave_test["test_id"],
+                        "start_time_ns": 2000,
+                        "end_time_ns": 3000,
+                    },
+                ),
+                # DV Intelligence tools — v2.1.0
+                ("coverage.trend", {"suite": suite}),
+                ("runs.cross_sim", {}),
+                ("tests.cluster", {}),
+                ("regression.health", {"suite": suite}),
+                ("coverage.advisor", {"suite": suite}),
             ]
+            assert len(calls) == len(expected_tool_names())
 
-        calls: list[tuple[str, dict]] = [
-            ("runs.list", {"suite": suite, "page": 1, "page_size": 50}),
-            ("runs.get", {"run_id": pass_run["run_id"]}),
-            ("runs.submit", {"suite": suite}),
-            ("tests.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
-            ("tests.get", {"test_id": wave_test["test_id"]}),
-            ("tests.topology", {"test_id": uvm_test["test_id"]}),
-            ("tests.replay", {"test_id": wave_test["test_id"]}),
-            ("assertions.list", {"protocol": "axi4", "page": 1, "page_size": 50}),
-            ("assertions.get", {"assertion_id": assertion_id}),
-            (
-                "assertions.failures",
-                {"test_id": wave_test["test_id"], "include_evidence": True, "page": 1},
-            ),
-            ("assertions.sva_status", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
-            ("assertions.vacuity", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
-            ("coverage.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
-            ("coverage.summary", {"run_id": pass_run["run_id"]}),
-            ("coverage.gaps", {"suite": suite, "threshold_pct": 100.0}),
-            ("failures.list", {"category": "scoreboard", "include_evidence": True}),
-            (
-                "regressions.summary",
-                {"suite": suite, "window_days": 30, "as_of": DEMO_AS_OF},
-            ),
-            (
-                "runs.diff",
-                {"base_run_id": fail_run["run_id"], "compare_run_id": pass_run["run_id"]},
-            ),
-            ("sim.status", {"suite": suite}),
-            ("wave.signals", {"test_id": wave_test["test_id"]}),
-            (
-                "wave.summary",
-                {
-                    "test_id": wave_test["test_id"],
-                    "start_time_ns": 2000,
-                    "end_time_ns": 3000,
-                },
-            ),
-            # DV Intelligence tools — v2.1.0
-            ("coverage.trend", {"suite": suite}),
-            ("runs.cross_sim", {}),
-            ("tests.cluster", {}),
-            ("regression.health", {"suite": suite}),
-            ("coverage.advisor", {"suite": suite}),
-        ]
-        assert len(calls) == len(expected_tool_names())
+            for tool_name, arguments in calls:
+                result = await client.call_tool(tool_name, arguments)
+                payload = mcp_payload(result)
+                assert_tool_ok(payload, tool_name)
 
-        for tool_name, arguments in calls:
-            result = await client.call_tool(tool_name, arguments)
-            payload = mcp_payload(result)
-            assert_tool_ok(payload, tool_name)
+    asyncio.run(_run())

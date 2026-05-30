@@ -64,7 +64,7 @@ class UVMLogParser:
         re.MULTILINE | re.IGNORECASE,
     )
 
-    # VCS specific patterns
+    # VCS specific patterns (file:line form)
     VCS_PATTERN = re.compile(
         r"(UVM_(?:INFO|WARNING|ERROR|FATAL))\s+"
         r"(?:@\s*(\d+)\s*([a-z]+)\s*)?"
@@ -75,20 +75,59 @@ class UVMLogParser:
         re.MULTILINE,
     )
 
+    # VCS Jenkins-style: UVM_ERROR <filepath>.svh @ <time_fs>: <component>  <msg>
+    VCS_JENKINS_PATTERN = re.compile(
+        r"^(UVM_(?:INFO|WARNING|ERROR|FATAL))\s+"
+        r"(?:\S+\.sv[h]?\s+)?"  # Optional filepath (no colon before @)
+        r"@\s*(\d+)\s*(?::\s*)?"  # @ time :
+        r"(\S+)\s+"  # component path
+        r"(.+?)$",  # message
+        re.MULTILINE,
+    )
+
     # Phase detection
     PHASE_PATTERN = re.compile(r'(?:UVM_INFO.*)?(?:phase|Phase)\s+["\']?(\w+)["\']?', re.IGNORECASE)
 
-    # Test name extraction
+    # Test name extraction — ranked from most specific to least
     TEST_NAME_PATTERN = re.compile(
-        r'(?:TEST|test_name|Running test|Starting test)[\s:]+["\']?(\w+)["\']?', re.IGNORECASE
+        r'(?:Running test|RNTST]\s+Running test)\s+["\']?(\w+)["\']?'
+        r'|(?:\+test_name=)(\w+)'
+        r'|(?:\+UVM_TESTNAME=)(\w+)'
+        r'|(?:TEST|test_name|Starting test)[\s:]+["\']?(\w+)["\']?',
+        re.IGNORECASE,
     )
 
-    # Test status patterns
+    # Seed extraction patterns
+    SEED_PATTERN = re.compile(
+        r'(?:ntb_random_seed|test_seed)[=\s]+(\d+)'
+        r'|(?:Simulation seed:\s*)(\d+)',
+        re.IGNORECASE,
+    )
+
+    # Simulator detection
+    SIMULATOR_PATTERNS: list[tuple[re.Pattern[str], str]] = [
+        (re.compile(r"Chronologic VCS simulator|VCS\s+version\s+\S+", re.IGNORECASE), "vcs"),
+        (re.compile(r"Questa Sim|ModelSim|vsim\s+\d", re.IGNORECASE), "questa"),
+        (re.compile(r"Xcelium|xrun\s+\d|XCELIUM", re.IGNORECASE), "xcelium"),
+        (re.compile(r"Riviera-PRO|ALDEC|vsimsa", re.IGNORECASE), "riviera"),
+    ]
+
+    # Test status patterns — anchored to avoid false positives
     TEST_PASSED_PATTERN = re.compile(
-        r"(?:TEST\s+PASSED|test\s+passed|PASS|All\s+tests\s+passed)", re.IGNORECASE
+        r"\bTEST\s+PASSED\b"
+        r"|\bAll\s+tests\s+passed\b"
+        r"|\bFINAL\s+RESULT\s*:\s*PASS\b"
+        r"|\$finish\b.*(?:PASSED|SUCCESS)",
+        re.IGNORECASE,
     )
 
-    TEST_FAILED_PATTERN = re.compile(r"(?:TEST\s+FAILED|test\s+failed|FAIL)", re.IGNORECASE)
+    TEST_FAILED_PATTERN = re.compile(
+        r"\bTEST\s+FAILED\b"
+        r"|\bFINAL\s+RESULT\s*:\s*FAIL\b"
+        r"|\bUVM_FATAL\b"
+        r"|\bSIMULATION\s+FAILED\b",
+        re.IGNORECASE,
+    )
 
     # Topology extraction
     COMPONENT_PATTERN = re.compile(r"(?:uvm_test_top|uvm_top)\.(\S+)", re.IGNORECASE)
@@ -137,6 +176,13 @@ class UVMLogParser:
         # Extract topology (return raw dict, IDs added during indexing)
         topology = self._extract_topology(content)
 
+        # Extract seed and simulator
+        seed = self._extract_seed(content, log_path)
+        simulator = self._extract_simulator(content)
+
+        # Extract duration from VCS report line: "CPU Time: NNN.NNN seconds"
+        duration_ms = self._extract_duration_ms(content)
+
         # Build test case dict (if we found a test name)
         # IDs and run ref will be added during indexing
         test = None
@@ -145,9 +191,9 @@ class UVMLogParser:
                 "name": test_name,
                 "status": test_status,
                 "framework": "uvm",
-                "duration_ms": None,  # Would need timing info from log
-                "seed": None,  # Would need seed info from command line or log
-                "simulator": None,
+                "duration_ms": duration_ms,
+                "seed": seed,
+                "simulator": simulator,
                 "dut": None,
                 "evidence": [
                     {
@@ -179,18 +225,17 @@ class UVMLogParser:
         lines = content.split("\n")
 
         for line_num, line in enumerate(lines, start=1):
-            # Try generic pattern
-            match = self.UVM_MSG_PATTERN.search(line)
+            # Try VCS Jenkins-style first (most specific for real CI logs):
+            # UVM_ERROR <filepath>.svh @ <time_fs>: <component>  <msg>
+            match = self.VCS_JENKINS_PATTERN.match(line)
             if match:
                 severity = match.group(1).upper()
-                time_str = match.group(2) or match.group(7)
-                time_unit = match.group(3)
-                component = match.group(4) or "unknown"
-                message = match.group(8).strip()
-
-                time_ns = self._parse_time(time_str, time_unit) if time_str else None
+                time_str = match.group(2)
+                component = match.group(3) or "unknown"
+                message = match.group(4).strip()
+                # VCS Jenkins logs report time in femtoseconds
+                time_ns = self._parse_time(time_str, "fs") if time_str else None
                 phase = self._extract_phase(message)
-
                 yield UVMMessage(
                     severity=severity,
                     component=component,
@@ -201,7 +246,7 @@ class UVMLogParser:
                 )
                 continue
 
-            # Try Questa pattern
+            # Try Questa pattern (# prefix)
             match = self.QUESTA_PATTERN.search(line)
             if match:
                 severity = match.group(1).upper()
@@ -223,8 +268,30 @@ class UVMLogParser:
                 )
                 continue
 
-            # Try VCS pattern
+            # Try VCS file:line pattern
             match = self.VCS_PATTERN.search(line)
+            if match:
+                severity = match.group(1).upper()
+                time_str = match.group(2) or match.group(7)
+                time_unit = match.group(3)
+                component = match.group(4) or "unknown"
+                message = match.group(8).strip()
+
+                time_ns = self._parse_time(time_str, time_unit) if time_str else None
+                phase = self._extract_phase(message)
+
+                yield UVMMessage(
+                    severity=severity,
+                    component=component,
+                    message=message,
+                    time_ns=time_ns,
+                    phase=phase,
+                    line_number=line_num,
+                )
+                continue
+
+            # Try generic pattern (fallback)
+            match = self.UVM_MSG_PATTERN.search(line)
             if match:
                 severity = match.group(1).upper()
                 time_str = match.group(2) or match.group(7)
@@ -286,13 +353,23 @@ class UVMLogParser:
         return match.group(1) if match else None
 
     def _extract_test_name(self, content: str) -> str | None:
-        """Extract test name from log content."""
+        """Extract test name from log content, preferring the most specific patterns."""
         match = self.TEST_NAME_PATTERN.search(content)
-        return match.group(1) if match else None
+        if match:
+            # Return first non-None group (patterns are ordered most-to-least specific)
+            return next((g for g in match.groups() if g is not None), None)
+        return None
 
     def _determine_test_status(self, content: str, messages: list[UVMMessage]) -> str:
         """
         Determine overall test status.
+
+        Priority order (highest to lowest):
+        1. FATAL messages → always fail
+        2. Explicit FAIL text (FINAL RESULT: FAIL, TEST FAILED) → fail
+        3. ERROR messages → fail
+        4. Explicit PASS text (TEST PASSED, FINAL RESULT: PASS) → pass
+        5. Default → pass
 
         Args:
             content: Full log content
@@ -301,25 +378,58 @@ class UVMLogParser:
         Returns:
             Status string ("pass", "fail", etc.)
         """
-        # Check for explicit pass/fail markers
-        if self.TEST_PASSED_PATTERN.search(content):
-            return "pass"
+        # UVM_FATAL always wins
+        if any(msg.severity == "UVM_FATAL" for msg in messages):
+            return "fail"
 
+        # Explicit fail markers beat everything
         if self.TEST_FAILED_PATTERN.search(content):
             return "fail"
 
-        # Check for UVM_FATAL (always fail)
-        has_fatal = any(msg.severity == "UVM_FATAL" for msg in messages)
-        if has_fatal:
+        # UVM_ERROR → fail (unless overridden by explicit PASS)
+        if any(msg.severity == "UVM_ERROR" for msg in messages):
             return "fail"
 
-        # Check for UVM_ERROR (usually fail)
-        has_error = any(msg.severity == "UVM_ERROR" for msg in messages)
-        if has_error:
-            return "fail"
+        # Explicit pass markers
+        if self.TEST_PASSED_PATTERN.search(content):
+            return "pass"
 
-        # Default to pass if no errors
+        # Default to pass if no errors detected
         return "pass"
+
+    def _extract_seed(self, content: str, log_path: Path) -> str | None:
+        """Extract simulation seed from log content or filename."""
+        # Try from log content first (most reliable)
+        m = self.SEED_PATTERN.search(content)
+        if m:
+            return m.group(1) or m.group(2)
+        # Fall back to filename convention: test_name_SEED.log
+        stem = log_path.stem  # e.g., "my_test_1234567890"
+        parts = stem.rsplit("_", 1)
+        if len(parts) == 2 and parts[1].isdigit() and len(parts[1]) >= 5:
+            return parts[1]
+        return None
+
+    def _extract_simulator(self, content: str) -> str | None:
+        """Detect simulator vendor from log header."""
+        # Only scan the first 100 lines for efficiency
+        header = "\n".join(content.split("\n")[:100])
+        for pattern, vendor in self.SIMULATOR_PATTERNS:
+            if pattern.search(header):
+                return vendor
+        return None
+
+    def _extract_duration_ms(self, content: str) -> int | None:
+        """Extract simulation CPU wall time in milliseconds."""
+        # VCS: "CPU Time: NNN.NNN seconds"
+        m = re.search(r"CPU\s+Time:\s+([\d.]+)\s+seconds", content, re.IGNORECASE)
+        if m:
+            return int(float(m.group(1)) * 1000)
+        # Questa: "# Total simulation time: NNN ns"
+        m = re.search(r"Total\s+simulation\s+time[:\s]+([\d.]+)\s+ns", content, re.IGNORECASE)
+        if m:
+            return int(float(m.group(1)) / 1_000_000)
+        return None
 
     def _extract_failures(self, messages: list[UVMMessage], log_path: Path) -> list[dict]:
         """
