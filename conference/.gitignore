@@ -1,0 +1,13 @@
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.vrb
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz

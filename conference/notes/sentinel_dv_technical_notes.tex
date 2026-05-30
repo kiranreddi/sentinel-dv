@@ -1,0 +1,543 @@
+% =============================================================================
+%  Sentinel DV — Technical White Paper & Implementation Notes
+%  DVCon USA / DAC 2026 Companion Document
+% =============================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{caption}
+\usepackage{parskip}
+
+% Colors
+\definecolor{codeblue}{RGB}{26,86,219}
+\definecolor{codegray}{RGB}{107,114,128}
+\definecolor{codegreen}{RGB}{5,122,85}
+\definecolor{codered}{RGB}{180,0,0}
+\definecolor{codeteal}{RGB}{6,148,162}
+\definecolor{codedark}{RGB}{17,24,39}
+
+\lstdefinestyle{yaml}{
+  backgroundcolor=\color{codedark!95!white},
+  basicstyle=\ttfamily\small\color{white},
+  keywordstyle=\color{codeteal}\bfseries,
+  stringstyle=\color{codegreen},
+  commentstyle=\color{codegray}\itshape,
+  breaklines=true, frame=none, numbers=left,
+  numberstyle=\tiny\color{codegray},
+  xleftmargin=1.5em,
+}
+
+\tcbset{codebox/.style={
+  colback=codedark!95!white, colframe=codeblue,
+  colupper=white, fontupper=\ttfamily\small,
+  boxrule=0.5pt, arc=3pt,
+}}
+
+\hypersetup{colorlinks=true, linkcolor=codeblue, citecolor=codegreen, urlcolor=codeblue}
+
+\titleformat{\section}{\large\bfseries\color{codeblue}}{{\arabic{section}.}}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{codedark}}{{\arabic{section}.\arabic{subsection}}}{0.4em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{}{0em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Sentinel DV Technical Notes}}
+\fancyhead[R]{\small\textit{DVCon/DAC 2026}}
+\fancyfoot[C]{\thepage}
+
+% =============================================================================
+\title{%
+  {\color{codeblue}\textbf{Sentinel DV}}\\[6pt]
+  \large Technical White Paper \& Implementation Notes\\[4pt]
+  \normalsize DVCon USA / DAC 2026 — Companion Document
+}
+\author{Open-Source Contribution \\ \texttt{\href{https://github.com/kiranreddi/sentinel-dv}{github.com/kiranreddi/sentinel-dv}}}
+\date{2026 \\ MIT License \quad \texttt{pip install sentinel-dv}}
+
+% =============================================================================
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\begin{abstract}
+This document provides detailed technical notes to accompany the Sentinel DV conference
+paper~\cite{sdv_paper}. It covers installation, configuration, tool API reference,
+adapter internals, intelligence algorithm details, and advanced deployment patterns.
+Intended for DV engineers evaluating or extending the framework.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Installation \& Quick Start}
+
+\subsection{Requirements}
+\begin{itemize}
+  \item Python 3.10, 3.11, or 3.12
+  \item No EDA tool licenses required (parsers consume log/HTML artifacts only)
+  \item Disk space: $\sim$50\,MB base, plus artifact storage
+  \item Network: none (all local; optional PyPI for install)
+\end{itemize}
+
+\subsection{Install}
+\begin{lstlisting}[style=yaml,numbers=none,xleftmargin=0em]
+pip install sentinel-dv
+\end{lstlisting}
+
+Or from source:
+\begin{lstlisting}[style=yaml,numbers=none,xleftmargin=0em]
+git clone https://github.com/kiranreddi/sentinel-dv\\
+cd sentinel-dv\\
+pip install -e ".[dev]"
+\end{lstlisting}
+
+\subsection{Minimal Configuration}
+
+Create \texttt{sentinel\_dv.yaml} in your project root:
+
+\begin{lstlisting}[style=yaml,caption={Minimal sentinel\_dv.yaml}]
+# Sentinel DV configuration
+artifact_roots:
+  - /path/to/sim/logs          # directory containing *.log UVM logs
+  - /path/to/coverage/report   # directory containing dashboard.html
+  - /path/to/regression/xmls   # directory containing results.xml
+
+db_path: ./sentinel_dv.db
+\end{lstlisting}
+
+\subsection{Start the MCP Server}
+\begin{lstlisting}[style=yaml,numbers=none,xleftmargin=0em]
+sentinel-dv serve --config sentinel\_dv.yaml
+\end{lstlisting}
+
+The server binds to \texttt{stdio} transport by default (required for Claude/VS~Code
+Copilot integration). Add \texttt{--transport sse --port 8765} for network access.
+
+\subsection{Connect an AI Client}
+
+For Claude Desktop (\texttt{\textasciitilde/.config/claude/claude\_desktop\_config.json}):
+\begin{lstlisting}[style=yaml,caption={Claude Desktop MCP config}]
+{
+  "mcpServers": {
+    "sentinel-dv": {
+      "command": "sentinel-dv",
+      "args": ["serve", "--config", "sentinel_dv.yaml"]
+    }
+  }
+}
+\end{lstlisting}
+
+For VS Code Copilot (\texttt{.vscode/mcp.json} in workspace):
+\begin{lstlisting}[style=yaml,caption={VS Code Copilot MCP config}]
+{
+  "inputs": [],
+  "servers": {
+    "sentinel-dv": {
+      "type": "stdio",
+      "command": "sentinel-dv",
+      "args": ["serve", "--config", "sentinel_dv.yaml"]
+    }
+  }
+}
+\end{lstlisting}
+
+% =============================================================================
+\section{Configuration Reference}
+
+\begin{lstlisting}[style=yaml,caption={Full sentinel\_dv.yaml reference}]
+# === Artifact Discovery ===
+artifact_roots:
+  - /path/to/primary/artifacts
+  - /path/to/coverage/reports
+
+# === Database ===
+db_path: ./sentinel_dv.db       # SQLite database path
+auto_index: true                 # Re-index on server start
+
+# === Coverage ===
+coverage:
+  html_glob_patterns:           # Glob patterns to find coverage HTML
+    - "*/coverage/report/dashboard.html"    # VCS URG
+    - "*/html_report/overalldu.js"          # Questa vcover
+    - "*/coverage/index.html"              # Generic
+  vcs_score_threshold: 75.0    # Warn if total < threshold
+  questa_score_threshold: 75.0
+
+# === Regression Health ===
+health:
+  pass_weight:      0.30
+  coverage_weight:  0.35
+  assertion_weight: 0.15
+  flakiness_weight: 0.10
+  cross_sim_weight: 0.10
+  target_coverage:  75.0        # %  used in health computation
+
+# === Path Redaction ===
+redact_paths: true
+redact_patterns:                # Additional regex patterns to redact
+  - '/home/[^/]+'
+  - '/workarea/[^/]+'
+
+# === Simulator Support ===
+simulators:
+  - vcs
+  - questa
+  - xcelium
+\end{lstlisting}
+
+% =============================================================================
+\section{MCP Tool API Reference}
+
+All tools communicate via JSON-RPC 2.0. Inputs and outputs are Pydantic-validated.
+Below is a condensed reference; full schemas are in
+\texttt{sentinel\_dv/tools/schemas.py}.
+
+\subsection{Run Tracking Tools}
+
+\subsubsection{\texttt{runs.list}}
+\textbf{Parameters:} \texttt{page} (int, default 1), \texttt{page\_size} (int, default 20),
+\texttt{simulator} (str, optional), \texttt{status} (str: pass/fail/all).\\
+\textbf{Returns:} \texttt{runs} (list), \texttt{total} (int), \texttt{page\_info} (object).
+
+\subsubsection{\texttt{runs.get}}
+\textbf{Parameters:} \texttt{run\_id} (str, required).\\
+\textbf{Returns:} Full run object under \texttt{run} key including test counts, timestamps,
+simulator, duration, log excerpts.
+
+\subsubsection{\texttt{runs.diff}}
+\textbf{Parameters:} \texttt{run\_id\_a}, \texttt{run\_id\_b} (str).\\
+\textbf{Returns:} \texttt{added\_failures}, \texttt{fixed\_tests}, \texttt{coverage\_delta}.
+
+\subsubsection{\texttt{runs.cross\_sim}}
+Compares the same test suite across VCS, Questa, and Xcelium.\\
+\textbf{Returns:} \texttt{simulators\_compared}, \texttt{divergent\_tests} list,
+\texttt{consistency\_score} (0--100).
+
+\subsection{Coverage Intelligence Tools}
+
+\subsubsection{\texttt{coverage.summary}}
+\textbf{Parameters:} \texttt{run\_id} (str, optional — uses latest if omitted).\\
+\textbf{Returns:} \texttt{summaries} list, each with \texttt{kind} (code/functional/assertion/plan),
+\texttt{metrics} list of \{name, covered, total\}.
+
+\textbf{Important:} Returns \texttt{summaries} (list), not \texttt{summary} (singular).
+
+\subsubsection{\texttt{coverage.trend}}
+\textbf{Parameters:} \texttt{window} (int, default 10 runs), \texttt{metric} (str, default "total").\\
+\textbf{Returns:} \texttt{data\_points} list, \texttt{summary.direction} (improving/declining/stable).
+
+\textbf{Important:} Direction is under \texttt{summary.direction}, not top-level.
+
+\subsubsection{\texttt{coverage.gaps}}
+\textbf{Parameters:} \texttt{threshold} (float, default 25.0 \%).\\
+\textbf{Returns:} \texttt{gaps} list with \texttt{scope}, \texttt{kind}, \texttt{covered\_pct}.
+
+\subsubsection{\texttt{coverage.advisor}}
+\textbf{Parameters:} \texttt{gap\_threshold} (float, default 25.0).\\
+\textbf{Returns:} \texttt{advisories} list with \texttt{priority}, \texttt{sv\_constraint},
+\texttt{uvm\_sequence}, \texttt{recommendation}.
+
+\subsection{Regression Health Tool}
+
+\subsubsection{\texttt{regression.health}}
+No required parameters. Returns:
+\begin{lstlisting}[style=yaml]
+{
+  "health_score": 77.5,          // 0-100 composite
+  "band": "minor-issues",        // sign-off-ready | minor-issues |
+                                 // coverage-gaps  | not-ready
+  "grade": "B+",
+  "components": {
+    "pass_rate":    94.2,
+    "coverage":     51.3,
+    "assertions":   100.0,
+    "flakiness":    98.1,
+    "cross_sim":    87.5
+  },
+  "recommendations": [...]       // ranked list of action items
+}
+\end{lstlisting}
+
+% =============================================================================
+\section{Adapter Layer Internals}
+
+\subsection{Multi-Simulator UVM Log Parser}
+
+File: \texttt{sentinel\_dv/adapters/uvm\_log.py}
+
+The parser uses five regex patterns, tried in priority order per log line:
+
+\begin{enumerate}
+  \item \textbf{VCS native}: \verb|UVM_ERROR file.sv(88) @ 500ns: comp [CAT] msg|
+  \item \textbf{Questa}: \verb|# UVM_ERROR @ 500 ns: comp.path [CAT] msg|
+  \item \textbf{Xcelium}: \verb|xcelium: UVM_ERROR @ 500ns: comp [CAT] msg|
+  \item \textbf{Generic UVM}: matches any remaining \verb|UVM_(ERROR|FATAL)| line
+  \item \textbf{Count-summary skip}: \verb|UVM_(ERROR|FATAL)\s*:\s*\d+| — \textbf{skipped}
+\end{enumerate}
+
+\textbf{False-positive elimination}: Pattern 5 matches the summary lines that VCS
+appends to every log (e.g., \texttt{UVM\_ERROR :\ \ \ 0}). Without this skip rule,
+73\% of reported failures are false positives.
+
+\subsection{VCS URG HTML Coverage Parser}
+
+File: \texttt{sentinel\_dv/adapters/coverage\_reports.py} — \texttt{\_parse\_urg\_html()}
+
+Algorithm:
+\begin{enumerate}
+  \item Read \texttt{dashboard.html}; content-sniff for ``Total Coverage Summary''
+  \item Locate the summary table via regex \verb|<table[^>]*>.*?</table>|
+  \item For each \verb|<tr>|, extract metric name and percentage value
+  \item Map vendor column names: SCORE→total, LINE→line, TOGGLE→toggle, etc.
+  \item Return \texttt{CoverageSummary} Pydantic object
+\end{enumerate}
+
+\textbf{Handled edge cases}: numeric locale formatting (\texttt{87.30} vs
+\texttt{87,30}), N/A values, missing columns (old URG versions omit verification
+plan).
+
+\subsection{Questa vcover JS Coverage Parser}
+
+File: \texttt{sentinel\_dv/adapters/coverage\_reports.py} — \texttt{\_parse\_questa\_overalldu()}
+
+The \texttt{overalldu.js} file is generated as a single-line JavaScript assignment:
+\begin{lstlisting}[style=yaml,numbers=none,xleftmargin=0em]
+var overallDu = \{``items'': [\{``type'': ``stmt'', ``covered'': 1024, ``total'': 1200, ...\}]\};
+\end{lstlisting}
+
+Standard regex fails on deeply nested structures. The parser uses a
+\textbf{balanced-brace scanner}:
+\begin{enumerate}
+  \item Locate the opening \texttt{\{} after the assignment
+  \item Walk characters, tracking brace depth; collect substring until depth returns to 0
+  \item Parse the extracted substring as JSON (after minor JS→JSON normalization)
+\end{enumerate}
+
+\textbf{Extracted fields}: stmt, branch, toggle, fsm, assertion, functional, total.
+Each yields \texttt{hit} and \texttt{total} counts for percentage computation.
+
+% =============================================================================
+\section{DV Intelligence Algorithms}
+
+\subsection{Regression Health Score}
+
+The composite health score $H \in [0, 100]$ is:
+\[
+H = w_P \cdot P + w_C \cdot C + w_A \cdot A + w_F \cdot (1 - F) + w_X \cdot X
+\]
+
+where weights $(w_P, w_C, w_A, w_F, w_X) = (0.30, 0.35, 0.15, 0.10, 0.10)$ are
+configurable via \texttt{sentinel\_dv.yaml}. Components:
+\begin{itemize}
+  \item $P$: pass rate = passing tests / total tests (0--100)
+  \item $C$: coverage score from \texttt{coverage.summary} total metric (0--100)
+  \item $A$: assertion health = 100 if no assertion failures, else scaled (0--100)
+  \item $F$: flakiness fraction = tests that diverge across simulator runs (0--1)
+  \item $X$: cross-simulator consistency from \texttt{runs.cross\_sim} (0--100)
+\end{itemize}
+
+Band thresholds are configurable. Default: 90/75/55 for sign-off/minor/gap bands.
+
+\subsection{Coverage Trend}
+
+For a window of $N$ consecutive coverage reports ordered by timestamp, the trend
+direction is determined by a simple linear regression slope on the total coverage
+percentage series. Threshold: $|\text{slope}| < 0.5\%$/run is classified as
+\texttt{stable}; positive slope as \texttt{improving}; negative as \texttt{declining}.
+
+\subsection{Test Clustering}
+
+Failing test error messages are classified by string-matching heuristics:
+\begin{itemize}
+  \item \texttt{timeout}: contains ``timeout'', ``TIMEOUT'', ``time limit''
+  \item \texttt{assertion}: UVM\_FATAL or SVA \texttt{ASSERT\_*} message
+  \item \texttt{data\_mismatch}: contains ``MISMATCH'', ``Expected'', ``got''
+  \item \texttt{uvm\_phase}: contains ``phase'', ``objection'', ``raise/drop''
+  \item \texttt{unknown}: fallback category
+\end{itemize}
+
+Within each cluster, the representative failure is the most frequently occurring
+message pattern. Cluster size ranks recommendations.
+
+\subsection{Coverage Advisor Protocol Detection}
+
+The advisor detects the underlying protocol from signal names in coverage gaps:
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Pattern in scope name} & \textbf{Protocol} \\
+\midrule
+\verb|awaddr|, \verb|araddr|, \verb|awburst| & AXI4 \\
+\verb|haddr|, \verb|htrans|, \verb|hburst| & AHB \\
+\verb|paddr|, \verb|penable|, \verb|psel| & APB \\
+\verb|txreq|, \verb|rxdat|, \verb|txrsp| & CHI \\
+\verb|tl_a_|, \verb|tl_d_| & TileLink \\
+\verb|pcie_|, \verb|gen3_| & PCIe \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{AXI4 UVM Demo}
+
+The repository includes a complete AXI4-Lite verification demo in
+\texttt{demo/axi4\_uvm/}.
+
+\subsection{Demo Structure}
+\begin{lstlisting}[style=yaml,numbers=none,xleftmargin=0em]
+demo/axi4\_uvm/\\
+  config.yaml           \# Sentinel DV config for the demo\\
+  vcs/                  \# VCS simulator artifacts\\
+    results.xml         \# JUnit-format test results\\
+    assertions/         \# Assertion JSON files\\
+    coverage/           \# dashboard.html (VCS URG)\\
+    waveforms/          \# .wave.json waveform summaries\\
+  questa/               \# Questa simulator artifacts (same layout)\\
+  xcelium/              \# Xcelium simulator artifacts (same layout)\\
+  README.md             \# How to run and use
+\end{lstlisting}
+
+\subsection{Test Cases}
+Four test cases cover the AXI4-Lite verification plan:
+\begin{enumerate}
+  \item \texttt{axi4\_bk2bk\_test}: Back-to-back write/read transactions
+  \item \texttt{axi4\_err\_resp\_test}: Error response checking (SLVERR/DECERR)
+  \item \texttt{axi4\_boundary\_test}: 4KB boundary alignment
+  \item \texttt{axi4\_stress\_test}: Random burst stress (reveals cross-sim divergence)
+\end{enumerate}
+
+\subsection{Running the Demo}
+\begin{lstlisting}[style=yaml,numbers=none,xleftmargin=0em]
+cd sentinel-dv\\
+sentinel-dv index --config demo/axi4\_uvm/config.yaml\\
+\# Then open Claude Desktop and ask:\\
+\# "What's the health of the AXI4 demo regression?"
+\end{lstlisting}
+
+Expected output: health score $\sim$72, band \texttt{coverage-gaps},
+3 divergent tests between Questa and VCS/Xcelium for \texttt{axi4\_stress\_test}.
+
+% =============================================================================
+\section{Extending Sentinel DV}
+
+\subsection{Adding a New Adapter}
+
+\begin{enumerate}
+  \item Create \texttt{sentinel\_dv/adapters/my\_format.py}
+  \item Implement \texttt{parse(path: str) -> List[Artifact]} function
+  \item Register in \texttt{sentinel\_dv/adapters/\_\_init\_\_.py}
+  \item Add glob patterns to \texttt{ARTIFACT\_GLOBS} in \texttt{indexer.py}
+  \item Write unit tests in \texttt{tests/unit/test\_my\_format.py}
+\end{enumerate}
+
+\subsection{Adding a New MCP Tool}
+
+\begin{enumerate}
+  \item Add tool function to appropriate module in \texttt{sentinel\_dv/tools/}
+  \item Decorate with \texttt{@mcp.tool()} from \texttt{fastmcp}
+  \item Define Pydantic input/output schemas in \texttt{tools/schemas.py}
+  \item Register in \texttt{sentinel\_dv/server.py}
+  \item Add integration test in \texttt{tests/integration/}
+\end{enumerate}
+
+% =============================================================================
+\section{CI/CD Integration}
+
+\subsection{GitHub Actions}
+\begin{lstlisting}[style=yaml,caption={.github/workflows/sentinel-dv.yml}]
+name: Sentinel DV Analysis
+on: [push]
+
+jobs:
+  dv-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Sentinel DV
+        run: pip install sentinel-dv
+      - name: Download sim artifacts
+        run: |
+          # Copy/mount your simulation artifacts
+          cp -r $ARTIFACT_DIR ./sim_artifacts
+      - name: Run Sentinel DV health check
+        run: |
+          sentinel-dv index --config .sentinel_dv.yaml
+          sentinel-dv check-health --min-score 70
+\end{lstlisting}
+
+\subsection{Jenkins Pipeline}
+\begin{lstlisting}[style=yaml,caption={Jenkinsfile snippet}]
+stage('DV Quality Gate') {
+    steps {
+        sh 'pip install sentinel-dv'
+        sh 'sentinel-dv index --config sentinel_dv.yaml'
+        sh 'sentinel-dv check-health --min-score ${params.MIN_HEALTH:-70}'
+    }
+}
+\end{lstlisting}
+
+% =============================================================================
+\section{Troubleshooting}
+
+\subsection{Common Issues}
+
+\noindent\textbf{Coverage not found}: Ensure the HTML files exist at the paths in
+\texttt{artifact\_roots}. Run \texttt{sentinel-dv list-artifacts} to see what
+was discovered.
+
+\noindent\textbf{0 runs indexed}: Check that \texttt{artifact\_roots} contains
+directories with \texttt{*.log} or \texttt{results.xml} files. VCS logs must
+contain \texttt{UVM\_ERROR} or \texttt{Errors:} lines to be detected as
+simulation logs.
+
+\noindent\textbf{Health score returns 0}: Run \texttt{regression.health} with
+\texttt{--debug} flag or check that at least one run is indexed with
+\texttt{runs.list}.
+
+\noindent\textbf{coverage.summary returns empty summaries}: The HTML parser
+requires the vendor-specific report format. Ensure you are using
+\texttt{urg -report} (VCS) or \texttt{vcover report -html} (Questa).
+
+% =============================================================================
+\section{Future Roadmap}
+
+\begin{itemize}
+  \item \textbf{v2.2.0}: Direct binary database parsing (UCDB via \texttt{questa-vpm}, VDB via \texttt{vcs-dv})
+  \item \textbf{v2.3.0}: FSDB/MXDB waveform signals and transitions
+  \item \textbf{v3.0.0}: Formal property synthesis from coverage gap analysis
+  \item \textbf{v3.1.0}: Cloud MCP endpoint + Docker image for CI/CD
+  \item \textbf{v3.2.0}: Test generation from failure clusters using LLM fine-tuning
+  \item \textbf{v4.0.0}: Testplan tracking with coverage closure metrics
+\end{itemize}
+
+\section*{References}
+
+\begin{thebibliography}{9}
+\bibitem{sdv_paper}
+Sentinel DV Conference Paper, DVCon USA 2026.
+\texttt{conference/paper/sentinel\_dv\_dvcon2026.pdf}
+
+\bibitem{mcp2024}
+Anthropic, ``Model Context Protocol,''
+\url{https://modelcontextprotocol.io}, 2024.
+
+\bibitem{fastmcp}
+J.~Lowin, ``FastMCP,'' \url{https://github.com/jlowin/fastmcp}, 2024.
+\end{thebibliography}
+
+\end{document}
