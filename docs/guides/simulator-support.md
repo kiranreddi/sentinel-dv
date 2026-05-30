@@ -9,7 +9,7 @@ Sentinel DV is **simulator-agnostic**. It indexes exported verification artifact
 | UVM logs | `*.log` | Parses common UVM report lines from VCS, Questa, Xcelium, Verilator, and generic logs. |
 | cocotb/JUnit | `results.xml`, `results_*.xml`, `junit.xml`, `*junit*.xml` | Produces tests and failure events. |
 | Assertions | `*.assert.json`, `*.assertions.txt`, `assertions*.rpt`, `vcs_assert*.log`, `vsim_assertions*.log`, `questa_assertions*.txt` | Produces assertion definitions and runtime failures. |
-| Coverage summaries | `coverage.json`, `coverage_summary.json`, `coverage.xml`, `*.cov.json`, `*.cov.txt`, `coverage.dat.summary` | Use exported summaries, not proprietary coverage databases directly. |
+| Coverage summaries | `coverage.json`, `coverage_summary.json`, `coverage.xml`, `*.cov.json`, `*.cov.txt`, `coverage.dat.summary`, `dashboard.html` (VCS URG), `overalldu.js` (Questa vcover) | Exported summaries or HTML/JS reports from URG/vcover are all supported. Raw proprietary databases (UCDB, VDB) are not parsed directly. |
 | Waveform summaries | `*.wave.json`, `*_waveform.json`, `waveform_summary.json`, `*.vcd` | VCD can be parsed directly; FSDB/WLF/SHM/VPD should be converted to bounded JSON summaries first. |
 
 ## Checked-in simulator examples
@@ -72,6 +72,7 @@ Recommended files for Sentinel DV:
 - `run.log` or `simv.log`
 - `assertions/*.assert.json` or bounded assertion report text
 - `coverage/coverage.json` or exported XML/text summaries
+- `coverage/report/dashboard.html` from `urg -report` — automatically detected and parsed for LINE, TOGGLE, ASSERT, GROUP, and SCORE percentages
 - `waveforms/*.wave.json` generated from VPD/FSDB/VCD as a bounded summary
 
 ### Questa
@@ -84,7 +85,16 @@ vsim -c work.tb -do "run -all; quit" -l vsim.log
 vcover report -html -output coverage_html coverage.ucdb
 ```
 
-For MCP use, export coverage/assertion/waveform data to bounded JSON/XML/text files before indexing. Raw WLF/UCDB files are not parsed directly.
+Point `artifact_roots` at the HTML report directory (the one that contains `files/overalldu.js`):
+
+```yaml
+artifact_roots:
+  - path/to/coverage_html/files   # contains overalldu.js — auto-detected and parsed
+```
+
+The `files/overalldu.js` data file is automatically detected (confirmed by a `var g_data` block with `"ds"` key) and parsed for statement, branch, toggle, assertion, functional, and total coverage percentages.
+
+For other coverage/assertion/waveform data, export to bounded JSON/XML/text files before indexing. Raw WLF/UCDB files are not parsed directly.
 
 ### Cadence Xcelium
 
