@@ -40,9 +40,7 @@ def server_indexed(tmp_path: Path):
     store.insert_test(
         pass_id, pass_full, run_id, "cocotb", "passing", "pass", "2026-05-20T10:01:00Z"
     )
-    store.insert_test(
-        fail_id, fail_full, run_id, "uvm", "failing", "fail", "2026-05-20T10:02:00Z"
-    )
+    store.insert_test(fail_id, fail_full, run_id, "uvm", "failing", "fail", "2026-05-20T10:02:00Z")
     store.insert_topology(fail_id, {"components": [{"name": "env", "type": "uvm_env"}]})
     failure_id, failure_full = generate_failure_id(
         test_id_full=fail_full,
@@ -74,9 +72,7 @@ def server_indexed(tmp_path: Path):
         intent_protocol="axi4",
         tags=["axi4"],
     )
-    store.insert_assertion_failure(
-        "a_axi", pass_id, run_id, "assert fail", time_ns=100
-    )
+    store.insert_assertion_failure("a_axi", pass_id, run_id, "assert fail", time_ns=100)
     store.insert_coverage_summary(
         run_id,
         "functional",
@@ -115,9 +111,7 @@ def test_server_handlers_smoke(server_indexed: dict) -> None:
     fail_id = server_indexed["fail_id"]
     assertion_id = server_indexed["assertion_id"]
 
-    runs = server.runs_list(
-        suite="nightly", status=None, ci_system=None, page=1, page_size=10
-    )
+    runs = server.runs_list(suite="nightly", status=None, ci_system=None, page=1, page_size=10)
     assert "runs" in runs
     assert runs["runs"][0]["run_id"] == run_id
 
@@ -135,16 +129,14 @@ def test_server_handlers_smoke(server_indexed: dict) -> None:
     )
     assert server.tests_get(test_id=pass_id)["item"]["name"] == "passing"
     assert server.tests_topology(test_id=fail_id)["item"]["components"]
-    assert (
-        server.assertions_list(
-            scope=None,
-            name_pattern=None,
-            protocol="axi4",
-            tag=None,
-            page=1,
-            page_size=50,
-        )["assertions"]
-    )
+    assert server.assertions_list(
+        scope=None,
+        name_pattern=None,
+        protocol="axi4",
+        tag=None,
+        page=1,
+        page_size=50,
+    )["assertions"]
     assert server.assertions_get(assertion_id=assertion_id)["item"]["name"] == "axi_valid"
     assert server.assertions_failures(
         run_id=None,
@@ -168,14 +160,9 @@ def test_server_handlers_smoke(server_indexed: dict) -> None:
     )["failures"]
     assert server.coverage_list(run_id=run_id, kind=None, page=1, page_size=50)["coverage"]
     assert server.coverage_summary(run_id=run_id, kind=None, include_evidence=False)["summaries"]
-    assert (
-        server.regressions_summary(suite="nightly", window_days=30, as_of=None)["pass_rate"]
-        >= 0
-    )
+    assert server.regressions_summary(suite="nightly", window_days=30, as_of=None)["pass_rate"] >= 0
     assert server.runs_diff(base_run_id=run_id, compare_run_id=run_id)["test_changes"] is not None
-    assert server.wave_signals(
-        test_id=pass_id, start_time_ns=None, end_time_ns=None
-    )["signals"]
+    assert server.wave_signals(test_id=pass_id, start_time_ns=None, end_time_ns=None)["signals"]
     summary = server.wave_summary(
         test_id=pass_id,
         start_time_ns=None,
@@ -187,9 +174,7 @@ def test_server_handlers_smoke(server_indexed: dict) -> None:
 
 
 def test_server_tool_wrapper_invalid_argument(server_indexed: dict) -> None:
-    result = server.runs_list(
-        suite=None, status=None, ci_system=None, page=1, page_size=5000
-    )
+    result = server.runs_list(suite=None, status=None, ci_system=None, page=1, page_size=5000)
     assert result["error"]["code"] == "INVALID_ARGUMENT"
 
 
@@ -211,7 +196,9 @@ def test_server_main_fails_without_config(monkeypatch: pytest.MonkeyPatch) -> No
     server.mcp.run.assert_not_called()
 
 
-def test_server_main_starts_with_config(server_indexed: dict, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_server_main_starts_with_config(
+    server_indexed: dict, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(server.mcp, "run", MagicMock())
     server.main(["--config", str(server_indexed["cfg_path"])])
     server.mcp.run.assert_called_once()

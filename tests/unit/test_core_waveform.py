@@ -72,9 +72,7 @@ def test_wave_summary_include_signals_and_signal_groups(tmp_path) -> None:
         assert len(result["signals"]) == 2
         assert result["truncated"] is True
 
-        windowed = core.wave_summary(
-            store, test_id, start_time_ns=1500, end_time_ns=2500
-        )
+        windowed = core.wave_summary(store, test_id, start_time_ns=1500, end_time_ns=2500)
         assert len(windowed["highlights"]) == 1
         assert windowed["metadata"]["window"]["start_time_ns"] == 1500
     finally:
@@ -92,7 +90,9 @@ def test_wave_invalid_time_window(tmp_path) -> None:
     store.connect()
     try:
         run_id, run_full = generate_run_id(suite="w", ci_system="x", ci_build_id="1")
-        test_id, test_full = generate_test_id(run_id_full=run_full, framework="cocotb", test_name="t")
+        test_id, test_full = generate_test_id(
+            run_id_full=run_full, framework="cocotb", test_name="t"
+        )
         store.insert_run(run_id, run_full, "w", "2026-05-20T10:00:00Z", "pass")
         store.insert_test(test_id, test_full, run_id, "cocotb", "t", "pass", "2026-05-20T10:01:00Z")
         store.insert_waveform_summary(

@@ -372,9 +372,7 @@ class IndexStore:
 
         existing = {
             row[0]
-            for row in self._conn.execute(
-                "SELECT sequence_name FROM duckdb_sequences()"
-            ).fetchall()
+            for row in self._conn.execute("SELECT sequence_name FROM duckdb_sequences()").fetchall()
         }
         for table, seq_name in _ID_SEQUENCES.items():
             if seq_name in existing:

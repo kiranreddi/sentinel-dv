@@ -27,7 +27,9 @@ def test_index_cli_missing_config_exits(tmp_path: Path) -> None:
     assert exc.value.code == 1
 
 
-def test_index_cli_index_all_empty_roots(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_index_cli_index_all_empty_roots(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     cfg = tmp_path / "config.yaml"
     cfg.write_text(
         f"artifact_roots: [{tmp_path!s}]\nindex:\n  type: duckdb\n  path: {tmp_path / 'idx.db'}\n",
