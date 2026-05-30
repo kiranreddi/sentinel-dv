@@ -1,0 +1,19 @@
+{
+  "tool": "assertions.sva_status",
+  "arguments": {
+    "run_id": "r_85b1d3f70e48",
+    "page": 1,
+    "page_size": 50
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "sva_status": [],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_items": 0,
+      "total_pages": 0
+    },
+    "counts": {}
+  }
+}

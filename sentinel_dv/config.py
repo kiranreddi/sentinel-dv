@@ -45,6 +45,18 @@ class SecurityLimits(BaseModel):
         le=536_870_912,
         description="Maximum artifact file size read during index or VCD re-parse (50MB default)",
     )
+    max_command_length: int = Field(
+        default=4096,
+        ge=256,
+        le=32768,
+        description="Maximum generated shell command length in characters",
+    )
+    max_coverage_gaps: int = Field(
+        default=100,
+        ge=1,
+        le=500,
+        description="Maximum coverage gap entries returned by coverage.gaps",
+    )
 
 
 class RedactionConfig(BaseModel):
@@ -72,6 +84,48 @@ class AdaptersConfig(BaseModel):
     assertions: bool = Field(default=True, description="Enable assertion adapter")
     coverage: bool = Field(default=True, description="Enable coverage adapter")
     waveform_summary: bool = Field(default=False, description="Enable waveform summary adapter")
+    live_sim: bool = Field(default=False, description="Enable live simulation status adapter")
+    live_sim_max_age_seconds: int = Field(
+        default=300,
+        ge=10,
+        le=3600,
+        description="Maximum age of live_status.json in seconds before reporting as stale",
+    )
+
+
+class SimulatorTemplate(BaseModel):
+    """Command template for a specific simulator."""
+
+    simulator: str = Field(..., description="Simulator name (vcs|questa|xcelium|verilator)")
+    template: str = Field(
+        ...,
+        description=(
+            "Shell command template. Available placeholders: "
+            "{suite}, {seed}, {test_filter}, {extra_args}, {artifact_root}"
+        ),
+    )
+    default_args: str = Field(default="", description="Default extra arguments")
+    replay_template: str | None = Field(
+        None,
+        description=(
+            "Template for single-test replay. Placeholders: "
+            "{test_name}, {seed}, {dut_top}, {suite}, {extra_args}, {artifact_root}. "
+            "Falls back to template with TESTFILTER={test_name} SEED={seed} if not set."
+        ),
+    )
+
+
+class SubmitConfig(BaseModel):
+    """Regression job submission configuration."""
+
+    enabled: bool = Field(default=False, description="Enable runs.submit and tests.replay tools")
+    default_simulator: str = Field(default="vcs", description="Default simulator name")
+    templates: list[SimulatorTemplate] = Field(
+        default_factory=list,
+        description="Per-simulator command templates",
+    )
+    lsf_queue: str | None = Field(None, description="LSF queue name (wraps generated command in bsub)")
+    slurm_partition: str | None = Field(None, description="SLURM partition name (wraps in sbatch)")
 
 
 class SentinelDVConfig(BaseModel):
@@ -87,6 +141,10 @@ class SentinelDVConfig(BaseModel):
     security: SecurityLimits = Field(default_factory=SecurityLimits, description="Security limits")
     redaction: RedactionConfig = Field(
         default_factory=RedactionConfig, description="Redaction configuration"
+    )
+    submit: SubmitConfig = Field(
+        default_factory=SubmitConfig,
+        description="Regression job submission and replay command generation",
     )
 
     @field_validator("artifact_roots")
@@ -204,6 +262,8 @@ def load_config(path: str | Path) -> SentinelDVConfig:
 
 def resolve_config(config_path: str | Path | None = None) -> SentinelDVConfig:
     """Resolve configuration from explicit path, env, or repository defaults."""
+    import warnings
+
     if config_path is not None:
         return load_config(config_path)
 
@@ -219,6 +279,41 @@ def resolve_config(config_path: str | Path | None = None) -> SentinelDVConfig:
         "No configuration found. Pass --config, set SENTINEL_DV_CONFIG, "
         "or place config.yaml in the working directory. "
         "Sentinel DV does not silently default to demo/ in production."
+    )
+
+
+def resolve_config_with_demo_fallback(
+    config_path: str | Path | None = None,
+    demo_root: Path | None = None,
+) -> SentinelDVConfig:
+    """Resolve config, falling back to demo data with a loud warning.
+
+    This variant is used by tests and the demo CLI. Production code should use
+    resolve_config() which raises instead of falling back silently.
+    """
+    import warnings
+
+    try:
+        return resolve_config(config_path)
+    except RuntimeError:
+        pass
+
+    if demo_root is None:
+        demo_root = Path(__file__).parent.parent / "demo"
+
+    if demo_root.is_dir():
+        warnings.warn(
+            f"No config.yaml found. Falling back to demo data at {demo_root}. "
+            "This is for development only. Set SENTINEL_DV_CONFIG or pass --config "
+            "for production use.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return SentinelDVConfig(artifact_roots=[str(demo_root)])
+
+    raise RuntimeError(
+        "No configuration found and demo/ directory does not exist. "
+        "Pass --config or set SENTINEL_DV_CONFIG."
     )
 
 

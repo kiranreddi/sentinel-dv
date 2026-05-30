@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from sentinel_dv import registry
 from sentinel_dv.config import SentinelDVConfig
 from sentinel_dv.server import init_server, mcp
 
@@ -24,23 +25,7 @@ def test_server_registers_all_documented_tools(tmp_path: Path):
         return {tool.name for tool in tools}
 
     names = asyncio.run(_names())
-    expected = {
-        "runs.list",
-        "runs.get",
-        "tests.list",
-        "tests.get",
-        "tests.topology",
-        "assertions.list",
-        "assertions.get",
-        "assertions.failures",
-        "failures.list",
-        "coverage.list",
-        "coverage.summary",
-        "regressions.summary",
-        "runs.diff",
-        "wave.signals",
-        "wave.summary",
-    }
+    expected = set(registry.TOOL_NAMES)
     assert expected == names
 
 

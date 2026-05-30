@@ -36,7 +36,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T05:21:10.984111Z",
+          "created_at": "2026-05-30T03:25:16.059604Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -47,7 +47,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-29T05:21:10.979751Z",
+          "created_at": "2026-05-30T03:25:16.041841Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -58,7 +58,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T05:21:10.968923Z",
+          "created_at": "2026-05-30T03:25:16.006324Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -93,15 +93,38 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "run_id": "r_85b1d3f70e48",
         "run_id_full": "85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33",
         "suite": "verilator_counter",
-        "created_at": "2026-05-29T05:21:10.979751Z",
+        "created_at": "2026-05-30T03:25:16.041841Z",
         "status": "pass",
         "ci_system": null,
         "ci_build_id": null,
         "ci_job_url": null,
         "artifact_manifest_hash": null,
-        "index_built_at": "2026-05-29T05:21:10.980055Z"
+        "index_built_at": "2026-05-30T03:25:16.042646Z",
+        "created_at_ms": 1780111516041
       },
       "schema_version": "1.0.0"
+    }
+    ```
+
+## `runs.submit`
+
+![MCP tool runs.submit](../assets/mcp-tools/runs-submit.svg)
+
+??? example "Request"
+    ```json
+    {
+      "suite": "verilator_counter"
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "schema_version": "1.0.0",
+      "error": {
+        "code": "CONFIG_ERROR",
+        "message": "Regression submission is not enabled. Set submit.enabled=true in config.yaml and configure at least one simulator template."
+      }
     }
     ```
 
@@ -135,7 +158,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "sim_vendor": null,
           "sim_version": null,
           "dut_top": null,
-          "created_at": "2026-05-29T05:21:10.979751Z"
+          "created_at": "2026-05-30T03:25:16.041841Z",
+          "created_at_ms": 1780111516041
         }
       ],
       "pagination": {
@@ -174,7 +198,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "sim_vendor": null,
         "sim_version": null,
         "dut_top": null,
-        "created_at": "2026-05-29T05:21:10.979751Z"
+        "created_at": "2026-05-30T03:25:16.041841Z",
+        "created_at_ms": 1780111516041
       }
     }
     ```
@@ -206,6 +231,28 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "monitors": []
         },
         "interfaces": []
+      }
+    }
+    ```
+
+## `tests.replay`
+
+![MCP tool tests.replay](../assets/mcp-tools/tests-replay.svg)
+
+??? example "Request"
+    ```json
+    {
+      "test_id": "t_3bb6bfc925aa"
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "schema_version": "1.0.0",
+      "error": {
+        "code": "CONFIG_ERROR",
+        "message": "Regression submission is not enabled. Set submit.enabled=true in config.yaml."
       }
     }
     ```
@@ -410,6 +457,61 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     }
     ```
 
+## `assertions.sva_status`
+
+![MCP tool assertions.sva_status](../assets/mcp-tools/assertions-sva_status.svg)
+
+??? example "Request"
+    ```json
+    {
+      "run_id": "r_85b1d3f70e48",
+      "page": 1,
+      "page_size": 50
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "schema_version": "1.0.0",
+      "sva_status": [],
+      "pagination": {
+        "page": 1,
+        "page_size": 50,
+        "total_items": 0,
+        "total_pages": 0
+      },
+      "counts": {}
+    }
+    ```
+
+## `assertions.vacuity`
+
+![MCP tool assertions.vacuity](../assets/mcp-tools/assertions-vacuity.svg)
+
+??? example "Request"
+    ```json
+    {
+      "run_id": "r_85b1d3f70e48",
+      "page": 1,
+      "page_size": 50
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "schema_version": "1.0.0",
+      "vacuous_assertions": [],
+      "pagination": {
+        "page": 1,
+        "page_size": 50,
+        "total_items": 0,
+        "total_pages": 0
+      }
+    }
+    ```
+
 ## `coverage.list`
 
 ![MCP tool coverage.list](../assets/mcp-tools/coverage-list.svg)
@@ -519,6 +621,60 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "total_summaries": 1,
       "truncated": false,
       "schema_version": "1.0.0"
+    }
+    ```
+
+## `coverage.gaps`
+
+![MCP tool coverage.gaps](../assets/mcp-tools/coverage-gaps.svg)
+
+??? example "Request"
+    ```json
+    {
+      "suite": "verilator_counter",
+      "threshold_pct": 100.0
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "schema_version": "1.0.0",
+      "gaps": [
+        {
+          "metric_name": "toggle",
+          "scope": "counter",
+          "kind": "functional",
+          "covered_pct": 75.0,
+          "bins_missed": [],
+          "priority": "low",
+          "recommendation": "Functional coverage gap in 'toggle' (scope: counter, 75.0% covered). Add constrained-random or directed tests targeting the uncovered bins. Consider increasing the test seed space or adding a dedicated directed test."
+        },
+        {
+          "metric_name": "line",
+          "scope": "counter",
+          "kind": "functional",
+          "covered_pct": 87.5,
+          "bins_missed": [
+            "line_12",
+            "line_15"
+          ],
+          "priority": "low",
+          "recommendation": "Functional coverage gap in 'line' (scope: counter, 87.5% covered). Add constrained-random or directed tests targeting the uncovered bins. Consider increasing the test seed space or adding a dedicated directed test. Specifically, target: 'line_12', 'line_15'."
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "page_size": 50,
+        "total_items": 2,
+        "total_pages": 1
+      },
+      "suite": "verilator_counter",
+      "kind": null,
+      "threshold_pct": 100.0,
+      "total_metrics": 2,
+      "gaps_found": 2,
+      "note": "Gaps are sorted by priority (high\u2192medium\u2192low) then by coverage percentage. Use tests.replay to reproduce specific failures. Showing page 1 of 1."
     }
     ```
 
@@ -696,26 +852,26 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "suite": "verilator_counter",
       "window_days": 30,
-      "as_of": "2026-05-29T05:21:11.130064Z",
+      "as_of": "2026-05-30T03:25:16.491435Z",
       "pass_rate": 33.33,
       "runs": [
         {
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T05:21:10.984111Z"
+          "created_at": "2026-05-30T03:25:16.059604Z"
         },
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-29T05:21:10.979751Z"
+          "created_at": "2026-05-30T03:25:16.041841Z"
         },
         {
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-29T05:21:10.968923Z"
+          "created_at": "2026-05-30T03:25:16.006324Z"
         }
       ],
       "top_signatures": [
@@ -773,6 +929,28 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         }
       ],
       "schema_version": "1.0.0"
+    }
+    ```
+
+## `sim.status`
+
+![MCP tool sim.status](../assets/mcp-tools/sim-status.svg)
+
+??? example "Request"
+    ```json
+    {
+      "suite": "verilator_counter"
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "schema_version": "1.0.0",
+      "error": {
+        "code": "CONFIG_ERROR",
+        "message": "Live simulation adapter is not enabled. Set adapters.live_sim=true in config.yaml."
+      }
     }
     ```
 
@@ -861,6 +1039,25 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "note": "counter increment window"
         }
       ],
+      "highlight_groups": {
+        "reset_event": [
+          {
+            "time_ns": 1000,
+            "signal": "rst",
+            "value": "0",
+            "note": "reset released"
+          }
+        ],
+        "event": [
+          {
+            "time_ns": 2500,
+            "signal": "count",
+            "value": "0x3",
+            "note": "counter increment window"
+          }
+        ]
+      },
+      "signal_groups": null,
       "metadata": {
         "source": "checked-in demo fixture",
         "generator": "verilator-vcd-summary",

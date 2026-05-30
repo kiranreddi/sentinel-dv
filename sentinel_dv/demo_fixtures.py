@@ -16,6 +16,7 @@ from sentinel_dv.indexing.indexer import ArtifactIndexer, IndexStats
 from sentinel_dv.indexing.store import IndexStore
 from sentinel_dv.registry import TOOL_NAMES
 from sentinel_dv.tools import core
+from sentinel_dv.tools.errors import ToolError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEMO_ROOT = REPO_ROOT / "demo"
@@ -224,14 +225,19 @@ def tool_call_matrix(fix: ProjectFixtures) -> list[tuple[str, dict[str, Any]]]:
     return [
         ("runs.list", {"suite": fix.regression_suite, "page": 1, "page_size": 200}),
         ("runs.get", {"run_id": fix.pass_run_id}),
+        ("runs.submit", {"suite": fix.regression_suite}),
         ("tests.list", {"run_id": fix.pass_run_id, "page": 1, "page_size": 100}),
         ("tests.get", {"test_id": fix.wave_test_id}),
         ("tests.topology", {"test_id": fix.uvm_topology_test_id}),
+        ("tests.replay", {"test_id": fix.wave_test_id}),
         ("assertions.list", {"protocol": "axi4", "page": 1, "page_size": 50}),
         ("assertions.get", {"assertion_id": fix.assertion_id}),
         ("assertions.failures", {"include_evidence": True, "page": 1, "page_size": 50}),
+        ("assertions.sva_status", {"run_id": fix.pass_run_id, "page": 1, "page_size": 50}),
+        ("assertions.vacuity", {"run_id": fix.pass_run_id, "page": 1, "page_size": 50}),
         ("coverage.list", {"run_id": fix.pass_run_id, "page": 1, "page_size": 50}),
         ("coverage.summary", {"run_id": fix.pass_run_id}),
+        ("coverage.gaps", {"suite": fix.regression_suite, "threshold_pct": 100.0}),
         ("failures.list", {"category": "scoreboard", "page": 1, "page_size": 50}),
         (
             "regressions.summary",
@@ -242,6 +248,7 @@ def tool_call_matrix(fix: ProjectFixtures) -> list[tuple[str, dict[str, Any]]]:
             },
         ),
         ("runs.diff", {"base_run_id": fix.fail_run_id, "compare_run_id": fix.pass_run_id}),
+        ("sim.status", {"suite": fix.regression_suite}),
         ("wave.signals", {"test_id": fix.wave_test_id}),
         (
             "wave.summary",
@@ -255,12 +262,16 @@ def invoke_core_tool(store: IndexStore, tool_name: str, args: dict[str, Any]) ->
     dispatch: dict[str, Callable[[], dict[str, Any]]] = {
         "runs.list": lambda: core.list_runs(store, **args),
         "runs.get": lambda: core.get_run_details(store, args["run_id"]),
+        "runs.submit": lambda: core.generate_submit_command(store, **args),
         "tests.list": lambda: core.list_tests(store, **args),
         "tests.get": lambda: core.get_test_details(store, args["test_id"]),
         "tests.topology": lambda: core.get_test_topology(store, args["test_id"]),
+        "tests.replay": lambda: core.generate_replay_command(store, **args),
         "assertions.list": lambda: core.list_assertions(store, **args),
         "assertions.get": lambda: core.get_assertion_details(store, args["assertion_id"]),
         "assertions.failures": lambda: core.list_assertion_failures(store, **args),
+        "assertions.sva_status": lambda: core.get_sva_status(store, **args),
+        "assertions.vacuity": lambda: core.get_vacuous_assertions(store, **args),
         "coverage.list": lambda: core.list_coverage(store, **args),
         "coverage.summary": lambda: core.get_coverage_summary(
             store,
@@ -268,13 +279,18 @@ def invoke_core_tool(store: IndexStore, tool_name: str, args: dict[str, Any]) ->
             kind=args.get("kind"),
             include_evidence=args.get("include_evidence", False),
         ),
+        "coverage.gaps": lambda: core.get_coverage_gaps(store, **args),
         "failures.list": lambda: core.list_failures(store, **args),
         "regressions.summary": lambda: core.get_regression_summary(store, **args),
         "runs.diff": lambda: core.compare_runs(store, args["base_run_id"], args["compare_run_id"]),
+        "sim.status": lambda: core.get_sim_status(store, **args),
         "wave.signals": lambda: core.wave_signals(store, **args),
         "wave.summary": lambda: core.wave_summary(store, **args),
     }
-    return dispatch[tool_name]()
+    try:
+        return dispatch[tool_name]()
+    except ToolError as exc:
+        return exc.to_dict()
 
 
 def mcp_payload(result: Any) -> dict[str, Any]:
@@ -289,8 +305,24 @@ def mcp_payload(result: Any) -> dict[str, Any]:
 
 
 def assert_tool_ok(payload: dict[str, Any], tool_name: str) -> None:
-    """Assert a tool payload succeeded and includes a schema version."""
+    """Assert a tool payload succeeded and includes a schema version.
+
+    Some v2.0.0 tools are feature-gated (require config flags). When they return
+    CONFIG_ERROR or NOT_FOUND that is expected and acceptable in tests that use the
+    demo fixtures (which don't have submit templates or live_status files).
+    """
+    _ALLOWED_DEMO_ERRORS = {"CONFIG_ERROR", "NOT_FOUND"}
+    _FEATURE_GATED_TOOLS = {
+        "runs.submit",
+        "tests.replay",
+        "sim.status",
+    }
+
     if payload.get("error"):
+        err = payload["error"]
+        error_code = err.get("code", "") if isinstance(err, dict) else str(err)
+        if tool_name in _FEATURE_GATED_TOOLS and error_code in _ALLOWED_DEMO_ERRORS:
+            return  # Expected — these tools need config flags not set in demo fixtures
         raise AssertionError(f"{tool_name} failed: {payload['error']}")
     assert payload.get("schema_version"), f"{tool_name} missing schema_version"
 
@@ -318,6 +350,12 @@ def verify_core_tools(store: IndexStore, fix: ProjectFixtures) -> None:
     for tool_name, args in tool_call_matrix(fix):
         result = invoke_core_tool(store, tool_name, args)
         if result.get("error"):
+            err = result["error"]
+            error_code = err.get("code", "") if isinstance(err, dict) else str(err)
+            _FEATURE_GATED = {"runs.submit", "tests.replay", "sim.status"}
+            _OK_CODES = {"CONFIG_ERROR", "NOT_FOUND"}
+            if tool_name in _FEATURE_GATED and error_code in _OK_CODES:
+                continue
             raise AssertionError(f"{tool_name} failed: {result['error']}")
 
     reg = core.get_regression_summary(

@@ -9,6 +9,9 @@ from sentinel_dv.schemas.common import EvidenceRef
 # Assertion languages
 AssertionLanguage = Literal["sva", "immediate", "psl", "unknown"]
 
+# SVA run status per assertion
+SVAStatus = Literal["passing", "failing", "vacuous", "disabled", "unknown"]
+
 
 class AssertionIntent(BaseModel):
     """Assertion intent/purpose metadata."""
@@ -95,3 +98,51 @@ class AssertionFailure(BaseModel):
                 ],
             }
         }
+
+
+class SVARunStatus(BaseModel):
+    """Per-assertion runtime status from a simulation run.
+
+    Produced by assertion_reports adapter parsing simulator VCS/Questa/Xcelium
+    assertion summary sections. Stored in the sva_run_status DuckDB table.
+    """
+
+    assertion_id: str = Field(..., description="Reference to AssertionInfo.id")
+    test_id: str = Field(..., description="Test run that produced this status")
+    status: SVAStatus = Field(..., description="Assertion status in this run")
+    pass_count: int = Field(default=0, ge=0, description="Number of times assertion passed")
+    fail_count: int = Field(default=0, ge=0, description="Number of times assertion failed")
+    vacuous_count: int = Field(
+        default=0, ge=0, description="Number of vacuous firings (antecedent never held)"
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "assertion_id": "A_axi_protocol_check_bresp_valid",
+                "test_id": "T20260125_142305_axi_burst_test",
+                "status": "passing",
+                "pass_count": 48,
+                "fail_count": 0,
+                "vacuous_count": 0,
+            }
+        }
+
+
+class VacuousAssertion(BaseModel):
+    """Summary of a vacuously-passing assertion.
+
+    An assertion is vacuous if its antecedent (the ``if`` or ``|->`` premise)
+    was never true during the run — so the implication passed trivially.
+    These need review to ensure the assertion is actually exercising anything.
+    """
+
+    assertion_id: str = Field(..., description="Reference to AssertionInfo.id")
+    assertion_name: str = Field(..., description="Human-readable assertion name")
+    scope: str = Field(..., description="Module scope of the assertion")
+    test_id: str = Field(..., description="Test run that produced this status")
+    vacuous_count: int = Field(..., ge=0, description="Total vacuous firings in the run")
+    recommendation: str = Field(
+        ..., description="Actionable recommendation to exercise the antecedent"
+    )
+

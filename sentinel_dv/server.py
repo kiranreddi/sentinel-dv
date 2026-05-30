@@ -327,6 +327,140 @@ def wave_summary(
     )
 
 
+# ============================================================================
+# v2.0.0: Regression submission tools
+# ============================================================================
+
+
+@_readonly_tool("runs.submit")
+def runs_submit(
+    suite: str = Field(..., description="Suite name to generate submission command for"),
+    simulator: str | None = Field(
+        None,
+        description="Simulator override (vcs|questa|xcelium|verilator). "
+        "Defaults to submit.default_simulator in config.",
+    ),
+    seed: int | None = Field(None, description="Optional integer seed to embed in the command"),
+    test_filter: str | None = Field(None, description="Optional test name glob/pattern"),
+    extra_args: str | None = Field(None, description="Extra simulator arguments (shell-quoted)"),
+) -> dict[str, Any]:
+    return core.generate_submit_command(
+        get_store(),
+        suite=suite,
+        simulator=simulator,
+        seed=seed,
+        test_filter=test_filter,
+        extra_args=extra_args,
+    )
+
+
+@_readonly_tool("tests.replay")
+def tests_replay(
+    test_id: str = Field(..., description="Test identifier to reproduce"),
+    simulator: str | None = Field(
+        None,
+        description="Simulator override. Defaults to sim_vendor from the test record.",
+    ),
+    extra_args: str | None = Field(None, description="Extra arguments appended to the command"),
+) -> dict[str, Any]:
+    return core.generate_replay_command(
+        get_store(),
+        test_id=test_id,
+        simulator=simulator,
+        extra_args=extra_args,
+    )
+
+
+# ============================================================================
+# v2.0.0: Live simulation status
+# ============================================================================
+
+
+@_readonly_tool("sim.status")
+def sim_status(
+    suite: str | None = Field(
+        None,
+        description="Suite name to locate the live_status.json under artifact roots.",
+    ),
+    status_path: str | None = Field(
+        None,
+        description="Explicit path to live_status.json. Overrides automatic search.",
+    ),
+) -> dict[str, Any]:
+    return core.get_sim_status(get_store(), suite=suite, status_path=status_path)
+
+
+# ============================================================================
+# v2.0.0: SVA / Formal property status
+# ============================================================================
+
+
+@_readonly_tool("assertions.sva_status")
+def assertions_sva_status(
+    run_id: str | None = Field(None, description="Filter by run ID"),
+    test_id: str | None = Field(None, description="Filter by test ID"),
+    status_filter: str | None = Field(
+        None,
+        description="Status filter: passing|failing|vacuous|disabled|unknown",
+    ),
+    page: int = Field(1, description="Page number (1-based)"),
+    page_size: int = Field(100, description="Items per page"),
+) -> dict[str, Any]:
+    return core.get_sva_status(
+        get_store(),
+        run_id=run_id,
+        test_id=test_id,
+        status_filter=status_filter,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@_readonly_tool("assertions.vacuity")
+def assertions_vacuity(
+    run_id: str | None = Field(None, description="Filter by run ID"),
+    test_id: str | None = Field(None, description="Filter by test ID"),
+    page: int = Field(1, description="Page number (1-based)"),
+    page_size: int = Field(100, description="Items per page"),
+) -> dict[str, Any]:
+    return core.get_vacuous_assertions(
+        get_store(),
+        run_id=run_id,
+        test_id=test_id,
+        page=page,
+        page_size=page_size,
+    )
+
+
+# ============================================================================
+# v2.0.0: Coverage closure guidance
+# ============================================================================
+
+
+@_readonly_tool("coverage.gaps")
+def coverage_gaps(
+    suite: str | None = Field(None, description="Filter to a specific suite"),
+    kind: str | None = Field(
+        None,
+        description="Coverage kind filter: functional|code|assertion|toggle|fsm|unknown",
+    ),
+    threshold_pct: float = Field(
+        100.0,
+        description="Report metrics with coverage below this percentage (default: 100.0 = all gaps)",
+    ),
+    page: int = Field(1, description="Page number (1-based)"),
+    page_size: int = Field(50, description="Items per page"),
+) -> dict[str, Any]:
+    return core.get_coverage_gaps(
+        get_store(),
+        suite=suite,
+        kind=kind,
+        threshold_pct=threshold_pct,
+        page=page,
+        page_size=page_size,
+    )
+
+
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for the MCP server."""
     parser = argparse.ArgumentParser(description="Sentinel DV MCP server")

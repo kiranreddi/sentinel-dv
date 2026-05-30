@@ -1,0 +1,13 @@
+{
+  "tool": "runs.submit",
+  "arguments": {
+    "suite": "verilator_counter"
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "error": {
+      "code": "CONFIG_ERROR",
+      "message": "Regression submission is not enabled. Set submit.enabled=true in config.yaml and configure at least one simulator template."
+    }
+  }
+}

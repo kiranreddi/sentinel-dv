@@ -26,6 +26,25 @@
         "note": "counter increment window"
       }
     ],
+    "highlight_groups": {
+      "reset_event": [
+        {
+          "time_ns": 1000,
+          "signal": "rst",
+          "value": "0",
+          "note": "reset released"
+        }
+      ],
+      "event": [
+        {
+          "time_ns": 2500,
+          "signal": "count",
+          "value": "0x3",
+          "note": "counter increment window"
+        }
+      ]
+    },
+    "signal_groups": null,
     "metadata": {
       "source": "checked-in demo fixture",
       "generator": "verilator-vcd-summary",

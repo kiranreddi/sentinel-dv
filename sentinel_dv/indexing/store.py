@@ -31,6 +31,7 @@ _ID_SEQUENCES: dict[str, str] = {
     "assertion_failures": "assertion_failures_id_seq",
     "evidence": "evidence_id_seq",
     "coverage_summaries": "coverage_summaries_id_seq",
+    "sva_run_status": "sva_run_status_id_seq",
 }
 
 
@@ -334,6 +335,35 @@ class IndexStore:
         self._conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_evidence_owner
             ON evidence(owner_kind, owner_id)
+        """)
+
+        # SVA run status table (per-assertion runtime status)
+        self._conn.execute("""
+            CREATE TABLE IF NOT EXISTS sva_run_status (
+                id INTEGER PRIMARY KEY,
+                assertion_id TEXT NOT NULL,
+                test_id TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                status TEXT NOT NULL,
+                pass_count INTEGER NOT NULL DEFAULT 0,
+                fail_count INTEGER NOT NULL DEFAULT 0,
+                vacuous_count INTEGER NOT NULL DEFAULT 0
+            )
+        """)
+
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_sva_run_status_assertion
+            ON sva_run_status(assertion_id)
+        """)
+
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_sva_run_status_run
+            ON sva_run_status(run_id)
+        """)
+
+        self._conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_sva_run_status_test
+            ON sva_run_status(test_id)
         """)
 
         self._migrate_schema()
@@ -1387,6 +1417,78 @@ class IndexStore:
             )
         return items, total
 
+    def query_coverage_metrics(
+        self,
+        suite: str | None = None,
+        kind: str | None = None,
+        limit: int = 2000,
+    ) -> list[dict[str, Any]]:
+        """Return flattened coverage metric rows for gap analysis.
+
+        Each element corresponds to a single metric entry within an indexed
+        coverage summary, enriched with run and suite metadata.
+
+        Args:
+            suite: Filter to a specific suite (via runs table join).
+            kind: Filter to a specific coverage kind.
+            limit: Maximum number of metrics to return.
+
+        Returns:
+            List of metric dicts with keys: name, scope, covered, hits, total,
+            bins_missed, kind, run_id, suite.
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        where_clauses: list[str] = []
+        params: list[Any] = []
+
+        if suite:
+            where_clauses.append("r.suite = ?")
+            params.append(suite)
+        if kind:
+            where_clauses.append("cs.kind = ?")
+            params.append(kind)
+
+        where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+        params.append(limit)
+
+        rows = self._conn.execute(
+            f"""
+            SELECT cs.metrics_json, cs.kind, cs.run_id,
+                   COALESCE(r.suite, 'unknown') AS suite
+            FROM coverage_summaries cs
+            LEFT JOIN runs r ON cs.run_id = r.run_id
+            {where_sql}
+            ORDER BY cs.run_id DESC, cs.id ASC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+
+        results: list[dict[str, Any]] = []
+        for row in rows:
+            metrics_raw, cov_kind, run_id, run_suite = row
+            try:
+                metrics_list: list[dict[str, Any]] = json.loads(metrics_raw) if metrics_raw else []
+            except (json.JSONDecodeError, TypeError):
+                continue
+            for metric in metrics_list:
+                results.append(
+                    {
+                        "name": metric.get("name", "unknown"),
+                        "scope": metric.get("scope", "unknown"),
+                        "covered": metric.get("covered", 100.0),
+                        "hits": metric.get("hits"),
+                        "total": metric.get("total"),
+                        "bins_missed": metric.get("bins_missed", []),
+                        "kind": cov_kind,
+                        "run_id": run_id,
+                        "suite": run_suite,
+                    }
+                )
+        return results
+
     def insert_coverage_summary(
         self,
         run_id: str,
@@ -1605,3 +1707,173 @@ class IndexStore:
             ],
             "top_signatures": top_signatures,
         }
+
+    # ========================================================================
+    # SVA run status operations
+    # ========================================================================
+
+    def insert_sva_run_status(
+        self,
+        assertion_id: str,
+        test_id: str,
+        run_id: str,
+        status: str,
+        pass_count: int = 0,
+        fail_count: int = 0,
+        vacuous_count: int = 0,
+    ) -> None:
+        """Insert or replace SVA run status for an assertion in a test."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        row_id = self._next_row_id("sva_run_status_id_seq")
+        self._conn.execute(
+            """
+            INSERT INTO sva_run_status
+                (id, assertion_id, test_id, run_id, status, pass_count, fail_count, vacuous_count)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                status=excluded.status,
+                pass_count=excluded.pass_count,
+                fail_count=excluded.fail_count,
+                vacuous_count=excluded.vacuous_count
+            """,
+            [row_id, assertion_id, test_id, run_id, status, pass_count, fail_count, vacuous_count],
+        )
+
+    def query_sva_run_status(
+        self,
+        run_id: str | None = None,
+        test_id: str | None = None,
+        status_filter: str | None = None,
+        limit: int = 200,
+    ) -> list[dict[str, Any]]:
+        """Query SVA run status records.
+
+        Args:
+            run_id: Filter to a specific run.
+            test_id: Filter to a specific test.
+            status_filter: Filter to a specific status (passing|failing|vacuous|disabled|unknown).
+            limit: Maximum rows to return.
+
+        Returns:
+            List of status dicts matching the filters.
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        clauses: list[str] = []
+        params: list[Any] = []
+
+        if run_id is not None:
+            clauses.append("s.run_id = ?")
+            params.append(run_id)
+        if test_id is not None:
+            clauses.append("s.test_id = ?")
+            params.append(test_id)
+        if status_filter is not None:
+            clauses.append("s.status = ?")
+            params.append(status_filter)
+
+        where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+        params.append(limit)
+
+        rows = self._conn.execute(
+            f"""
+            SELECT s.id, s.assertion_id, s.test_id, s.run_id,
+                   s.status, s.pass_count, s.fail_count, s.vacuous_count,
+                   a.name AS assertion_name, a.scope
+            FROM sva_run_status s
+            LEFT JOIN assertions a ON s.assertion_id = a.assertion_id
+            {where}
+            ORDER BY s.status ASC, s.assertion_id ASC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+
+        cols = [
+            "id", "assertion_id", "test_id", "run_id",
+            "status", "pass_count", "fail_count", "vacuous_count",
+            "assertion_name", "scope",
+        ]
+        return [dict(zip(cols, row, strict=False)) for row in rows]
+
+    def query_vacuous_assertions(
+        self,
+        run_id: str | None = None,
+        test_id: str | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        """Return assertions that fired vacuously in the specified run/test.
+
+        A vacuous assertion has ``status = 'vacuous'`` or ``vacuous_count > 0``.
+
+        Args:
+            run_id: Filter to a specific run.
+            test_id: Filter to a specific test.
+            limit: Maximum rows to return.
+
+        Returns:
+            List of dicts compatible with the VacuousAssertion schema.
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        clauses: list[str] = ["(s.status = 'vacuous' OR s.vacuous_count > 0)"]
+        params: list[Any] = []
+
+        if run_id is not None:
+            clauses.append("s.run_id = ?")
+            params.append(run_id)
+        if test_id is not None:
+            clauses.append("s.test_id = ?")
+            params.append(test_id)
+
+        where = "WHERE " + " AND ".join(clauses)
+        params.append(limit)
+
+        rows = self._conn.execute(
+            f"""
+            SELECT s.assertion_id, a.name AS assertion_name,
+                   COALESCE(a.scope, 'unknown') AS scope,
+                   s.test_id, s.vacuous_count
+            FROM sva_run_status s
+            LEFT JOIN assertions a ON s.assertion_id = a.assertion_id
+            {where}
+            ORDER BY s.vacuous_count DESC, s.assertion_id ASC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+
+        cols = ["assertion_id", "assertion_name", "scope", "test_id", "vacuous_count"]
+        return [dict(zip(cols, row, strict=False)) for row in rows]
+
+    def count_sva_status_by_category(
+        self,
+        run_id: str,
+    ) -> dict[str, int]:
+        """Return counts of assertions per status category for a run.
+
+        Args:
+            run_id: Run identifier.
+
+        Returns:
+            Dict mapping status -> count.
+        """
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        rows = self._conn.execute(
+            """
+            SELECT status, COUNT(*) AS cnt
+            FROM sva_run_status
+            WHERE run_id = ?
+            GROUP BY status
+            ORDER BY status
+            """,
+            [run_id],
+        ).fetchall()
+        return {row[0]: row[1] for row in rows}
+

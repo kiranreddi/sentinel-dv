@@ -1,6 +1,6 @@
 # Tool Overview
 
-Sentinel DV provides **15 MCP tools** organized into categories for verification intelligence.
+Sentinel DV provides **21 MCP tools** organized into categories for verification intelligence.
 
 ## Tool Categories
 
@@ -60,7 +60,7 @@ Full parameter reference: [MCP tools reference](mcp-tools-reference.md).
 
 Auto-generated **SVG cards** show real request/response JSON for every tool (from the multi-project `demo/` index):
 
-- **[Browse all 15 tools in the gallery](mcp-tool-gallery.md)** — embedded screenshots + full JSON
+- **[Browse all 21 tools in the gallery](mcp-tool-gallery.md)** — embedded screenshots + full JSON
 - [Interactive HTML preview](../assets/mcp-tools/gallery.html) — open in a new tab
 
 Regenerate after demo or API changes:
@@ -68,6 +68,19 @@ Regenerate after demo or API changes:
 ```bash
 python scripts/generate_mcp_tool_gallery.py
 ```
+
+### 🚀 v2.0.0 Tools
+
+New in v2.0.0: job submission, live simulation monitoring, SVA formal status, seed replay, and coverage closure.
+
+| Tool | Purpose | Requires config |
+|------|---------|-----------------|
+| [`runs.submit`](#runssubmit) | Generate simulator submit command | `submit.enabled: true` |
+| [`sim.status`](#simstatus) | Live simulation progress | `adapters.live_sim: true` |
+| [`assertions.sva_status`](#assertionssva_status) | SVA/formal property status | — |
+| [`assertions.vacuity`](#assertionsvacuity) | Vacuously-passing assertions | — |
+| [`tests.replay`](#testsreplay) | Seed-replay command for failing test | `submit.enabled: true` |
+| [`coverage.gaps`](#coveragegaps) | Prioritized coverage closure guidance | — |
 
 ---
 
@@ -183,6 +196,27 @@ All tools return structured errors:
 - `INTERNAL` - Server error
 - `INDEX_NOT_READY` - Index not built or stale
 - `LIMIT_EXCEEDED` - Response would exceed limits
+
+### "How do I close coverage?"
+
+```
+1. coverage.summary (identify low coverage runs)
+2. coverage.gaps    (get prioritized gap list with recommendations)
+3. runs.submit      (generate new run command to target gaps)
+```
+
+### "Is my simulation still running?"
+
+```
+1. sim.status (check phase, percent_done, staleness)
+```
+
+### "Replay a failing test with the same seed"
+
+```
+1. tests.list   (find the failing test ID)
+2. tests.replay (get ready-to-paste replay command)
+```
 
 ---
 

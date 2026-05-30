@@ -1,10 +1,10 @@
-# MCP tools reference (all 15)
+# MCP tools reference (all 21)
 
-Sentinel DV exposes **15 read-only MCP tools**. Every tool returns JSON with `schema_version` (currently `1.0.0`) or a structured `error` object.
+Sentinel DV exposes **21 read-only MCP tools**. Every tool returns JSON with `schema_version` (currently `1.0.0`) or a structured `error` object.
 
 **Prerequisites:** `sentinel-dv-index --config config.yaml --index-all` before querying.
 
-**End-to-end examples (all 15 tools):**
+**End-to-end examples (all 21 tools):**
 
 - **Multi-project:** index `demo/` (UVM, cocotb, Verilator, VCS, Questa, Cadence) — `python scripts/verify_all_mcp_tools.py` — see [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md)
 - **Simulator fixtures:** [VCS, Questa, and Cadence examples](../examples/commercial-simulators.md) — `python examples/simulator_matrix.py --sim all`
@@ -261,3 +261,134 @@ Metadata, **`highlight_groups`** (by category), and optional time window. Set **
 | `INVALID_ARGUMENT` | Bad IDs, pagination, or time window (`start` > `end`, only one of start/end set) |
 | `NOT_FOUND` | Unknown `test_id`, `run_id`, etc. |
 | `TOPOLOGY_NOT_INDEXED` | Test exists but no UVM/topology was indexed (re-index with `adapters.uvm: true`) |
+| `CONFIG_ERROR` | Feature not enabled in config (e.g. `submit.enabled: false`) |
+| `INVALID_INPUT` | Input fails validation (name pattern, enum value, etc.) |
+
+---
+
+## v2.0.0 Tools
+
+### runs.submit
+
+Generate a ready-to-run simulator submit command from config templates. Requires `submit.enabled: true` in config.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `suite` | string | Suite name (alphanumeric, `_`, `-`, `.` only) |
+| `simulator` | string | `vcs`, `questa`, `xcelium`, or `riviera` |
+| `extra_args` | string? | Additional simulator flags (shell-quoted automatically) |
+
+```json
+{ "suite": "nightly_axi4", "simulator": "vcs", "extra_args": "+seed=42" }
+```
+
+Config template (in `config.yaml`):
+
+```yaml
+submit:
+  enabled: true
+  simulators:
+    vcs:
+      compile: "vcs -sv -f {suite}.f -o simv"
+      simulate: "simv +plusarg={extra_args}"
+    questa:
+      compile: "vlog -sv -f {suite}.f"
+      simulate: "vsim -batch -do 'run -all' tb_top {extra_args}"
+```
+
+---
+
+### sim.status
+
+Read real-time simulation progress from `live_status.json` in an artifact root. Requires `adapters.live_sim: true`.
+
+```json
+{}
+```
+
+Response includes `phase` (`compiling` | `running` | `done` | `failed`), `percent_done`, `tests_done`, `tests_total`, `stale` (true if file not updated within `live_sim_max_age_seconds`).
+
+Write `live_status.json` from your simulator wrapper using `examples/live_sim_writer.py`:
+
+```bash
+python examples/live_sim_writer.py --artifact-root /path/to/run --total 500 -- vcs -R simv
+```
+
+---
+
+### assertions.sva_status
+
+Paginated list of SVA/formal property pass/fail status rows. Populated after indexing runs that include `sva_run_status` JSON evidence.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `run_id` | string? | Scope to a specific run |
+| `status_filter` | string? | `pass`, `fail`, `vacuous`, `disabled` |
+| `page`, `page_size` | int | Pagination |
+
+```json
+{ "run_id": "r_xyz", "status_filter": "fail", "page": 1, "page_size": 50 }
+```
+
+---
+
+### assertions.vacuity
+
+List assertions that passed vacuously (triggered zero times). Includes a `recommendation` string explaining why this is a concern and how to fix it.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `run_id` | string? | Scope to a run |
+| `page`, `page_size` | int | Pagination |
+
+```json
+{ "run_id": "r_xyz" }
+```
+
+---
+
+### tests.replay
+
+Generate a ready-to-paste seed-replay command for a failing test. The seed is looked up from the indexed test record. Requires `submit.enabled: true`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `test_id` | string | Test identifier (from `tests.list`) |
+| `simulator` | string? | Override simulator (default: inferred from run metadata) |
+
+```json
+{ "test_id": "t_abc" }
+```
+
+---
+
+### coverage.gaps
+
+Prioritized list of under-covered bins with actionable recommendations. The heuristic engine classifies gaps as `high`, `medium`, or `low` priority based on coverage percentage and bin name patterns.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `run_id` | string? | Scope to a specific run |
+| `kind` | string? | Coverage kind: `functional`, `line`, `toggle`, `branch` |
+| `priority` | string? | Filter: `high`, `medium`, `low` |
+| `page`, `page_size` | int | Pagination |
+
+```json
+{ "run_id": "r_xyz", "kind": "functional", "priority": "high" }
+```
+
+---
+
+## Suggested tool chains (v2.0.0)
+
+| Goal | Tools |
+|------|--------|
+| Why did a test fail? | `tests.list` → `tests.get` → `failures.list` → `tests.topology` |
+| Assertion debug | `assertions.list` → `assertions.failures` → `assertions.get` |
+| SVA formal coverage | `assertions.sva_status` → `assertions.vacuity` |
+| Nightly health | `regressions.summary` → `runs.list` → `failures.list` |
+| Run comparison | `runs.diff` → `coverage.summary` |
+| Coverage closure | `coverage.summary` → `coverage.gaps` → `runs.submit` |
+| Waveform slice | `tests.list` → `wave.summary` (optionally `include_signals: true`) |
+| Replay failing test | `tests.list` → `tests.replay` |
+| Monitor live sim | `sim.status` (requires `live_sim_writer.py` harness) |

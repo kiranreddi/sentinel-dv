@@ -59,15 +59,32 @@ def bound_response(payload: dict) -> dict:
     }
 
 
-def list_response(key: str, items: list, page: int, page_size: int, total: int) -> dict:
-    """Standard list tool response envelope."""
-    return bound_response(
-        {
-            "schema_version": CURRENT_SCHEMA_VERSION,
-            key: items,
-            "pagination": pagination_dict(page, page_size, total),
-        }
-    )
+def list_response(
+    key: str,
+    items: list,
+    page: int,
+    page_size: int,
+    total: int,
+    extra: dict | None = None,
+) -> dict:
+    """Standard list tool response envelope.
+
+    Args:
+        key: Primary result key name.
+        items: List of result items.
+        page: Current page number.
+        page_size: Items per page.
+        total: Total number of items across all pages.
+        extra: Optional extra fields merged into the top-level response dict.
+    """
+    payload: dict = {
+        "schema_version": CURRENT_SCHEMA_VERSION,
+        key: items,
+        "pagination": pagination_dict(page, page_size, total),
+    }
+    if extra:
+        payload.update(extra)
+    return bound_response(payload)
 
 
 def item_response(item: dict) -> dict:

@@ -1,0 +1,13 @@
+{
+  "tool": "sim.status",
+  "arguments": {
+    "suite": "verilator_counter"
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "error": {
+      "code": "CONFIG_ERROR",
+      "message": "Live simulation adapter is not enabled. Set adapters.live_sim=true in config.yaml."
+    }
+  }
+}

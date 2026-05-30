@@ -150,17 +150,22 @@ async def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
         calls: list[tuple[str, dict]] = [
             ("runs.list", {"suite": suite, "page": 1, "page_size": 50}),
             ("runs.get", {"run_id": pass_run["run_id"]}),
+            ("runs.submit", {"suite": suite}),
             ("tests.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
             ("tests.get", {"test_id": wave_test["test_id"]}),
             ("tests.topology", {"test_id": uvm_test["test_id"]}),
+            ("tests.replay", {"test_id": wave_test["test_id"]}),
             ("assertions.list", {"protocol": "axi4", "page": 1, "page_size": 50}),
             ("assertions.get", {"assertion_id": assertion_id}),
             (
                 "assertions.failures",
                 {"test_id": wave_test["test_id"], "include_evidence": True, "page": 1},
             ),
+            ("assertions.sva_status", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
+            ("assertions.vacuity", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
             ("coverage.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
             ("coverage.summary", {"run_id": pass_run["run_id"]}),
+            ("coverage.gaps", {"suite": suite, "threshold_pct": 100.0}),
             ("failures.list", {"category": "scoreboard", "include_evidence": True}),
             (
                 "regressions.summary",
@@ -170,6 +175,7 @@ async def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
                 "runs.diff",
                 {"base_run_id": fail_run["run_id"], "compare_run_id": pass_run["run_id"]},
             ),
+            ("sim.status", {"suite": suite}),
             ("wave.signals", {"test_id": wave_test["test_id"]}),
             (
                 "wave.summary",

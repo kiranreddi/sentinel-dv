@@ -8,26 +8,26 @@
   "response": {
     "suite": "verilator_counter",
     "window_days": 30,
-    "as_of": "2026-05-29T05:21:11.130064Z",
+    "as_of": "2026-05-30T03:25:16.491435Z",
     "pass_rate": 33.33,
     "runs": [
       {
         "run_id": "r_d39bb5009606",
         "suite": "verilator_counter",
         "status": "fail",
-        "created_at": "2026-05-29T05:21:10.984111Z"
+        "created_at": "2026-05-30T03:25:16.059604Z"
       },
       {
         "run_id": "r_85b1d3f70e48",
         "suite": "verilator_counter",
         "status": "pass",
-        "created_at": "2026-05-29T05:21:10.979751Z"
+        "created_at": "2026-05-30T03:25:16.041841Z"
       },
       {
         "run_id": "r_566fd6e9a21b",
         "suite": "verilator_counter",
         "status": "fail",
-        "created_at": "2026-05-29T05:21:10.968923Z"
+        "created_at": "2026-05-30T03:25:16.006324Z"
       }
     ],
     "top_signatures": [

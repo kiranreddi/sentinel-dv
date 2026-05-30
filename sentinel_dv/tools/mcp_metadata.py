@@ -84,14 +84,29 @@ OUTPUT_SCHEMAS: dict[str, dict[str, Any]] = {
     "assertions.list": _LIST_ENVELOPE,
     "assertions.get": _ITEM_ENVELOPE,
     "assertions.failures": _LIST_ENVELOPE,
+    "assertions.sva_status": {
+        **_LIST_ENVELOPE,
+        "description": "Per-assertion SVA runtime status with pass/fail/vacuous counts.",
+    },
+    "assertions.vacuity": {
+        **_LIST_ENVELOPE,
+        "description": "Assertions that fired vacuously (antecedent never held) with recommendations.",
+    },
     "coverage.list": _LIST_ENVELOPE,
     "coverage.summary": {
         **_DETAIL_ENVELOPE,
         "description": "Bounded coverage summaries for one run (not paginated list).",
     },
+    "coverage.gaps": {
+        **_LIST_ENVELOPE,
+        "description": "Prioritised coverage gaps with actionable recommendations.",
+    },
     "failures.list": _LIST_ENVELOPE,
     "regressions.summary": _DETAIL_ENVELOPE,
     "runs.diff": _DETAIL_ENVELOPE,
+    "runs.submit": _DETAIL_ENVELOPE,
+    "tests.replay": _DETAIL_ENVELOPE,
+    "sim.status": _DETAIL_ENVELOPE,
     "wave.signals": _DETAIL_ENVELOPE,
     "wave.summary": _DETAIL_ENVELOPE,
 }
@@ -175,5 +190,44 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
         "Returns `{highlight_groups, highlights, signal_groups, metadata, signal_count}` "
         "without per-signal lists unless `include_signals=true` (combines wave.signals). "
         "Prefer this for overview; use `wave.signals` or `include_signals` for every signal."
+    ),
+    "runs.submit": (
+        "Generate a regression job submission command (read-only dry-run). "
+        "Returns `{command, scheduler_command, dry_run: true, ...}`. "
+        "The server NEVER executes commands — all output is a shell command string for review. "
+        "Requires `submit.enabled=true` and templates in config.yaml. "
+        "Suite names are validated; extra_args are shell-quoted."
+    ),
+    "tests.replay": (
+        "Generate a single-test replay command to reproduce a specific failure (read-only dry-run). "
+        "Looks up the test seed and DUT topology, then generates a shell replay command. "
+        "Returns `{command, seed, warning (if no seed recorded), dry_run: true, ...}`. "
+        "The server NEVER executes commands."
+    ),
+    "sim.status": (
+        "Read live simulation progress from a live_status.json file (read-only). "
+        "Returns `{suite, phase, tests_total, tests_done, tests_passing, tests_failing, "
+        "current_test, elapsed_seconds, stale, percent_done}`. "
+        "The server reads a file written by the simulator harness — it never calls the simulator. "
+        "Requires `adapters.live_sim=true` in config.yaml."
+    ),
+    "assertions.sva_status": (
+        "Per-assertion SVA runtime status for a run or test (read-only). "
+        "Returns `{sva_status: [{assertion_id, status, pass_count, fail_count, vacuous_count}], "
+        "counts: {passing, failing, vacuous, ...}, pagination}`. "
+        "Filter by `run_id`, `test_id`, or `status_filter` (passing|failing|vacuous|disabled|unknown)."
+    ),
+    "assertions.vacuity": (
+        "List assertions that fired vacuously — antecedent never held (read-only). "
+        "Returns `{vacuous_assertions: [{assertion_id, assertion_name, scope, vacuous_count, "
+        "recommendation}], pagination}`. "
+        "Vacuous assertions need testbench stimulus to exercise the antecedent."
+    ),
+    "coverage.gaps": (
+        "Prioritised coverage gaps with actionable recommendations (read-only). "
+        "Returns `{gaps: [{metric_name, scope, kind, covered_pct, bins_missed, priority, "
+        "recommendation}], gaps_found, total_metrics, note}`. "
+        "Filter by `suite` or `kind`; adjust `threshold_pct` (default 100%). "
+        "Priorities: high (< 25% or error/boundary metrics), medium, low."
     ),
 }

@@ -1,0 +1,45 @@
+{
+  "tool": "coverage.gaps",
+  "arguments": {
+    "suite": "verilator_counter",
+    "threshold_pct": 100.0
+  },
+  "response": {
+    "schema_version": "1.0.0",
+    "gaps": [
+      {
+        "metric_name": "toggle",
+        "scope": "counter",
+        "kind": "functional",
+        "covered_pct": 75.0,
+        "bins_missed": [],
+        "priority": "low",
+        "recommendation": "Functional coverage gap in 'toggle' (scope: counter, 75.0% covered). Add constrained-random or directed tests targeting the uncovered bins. Consider increasing the test seed space or adding a dedicated directed test."
+      },
+      {
+        "metric_name": "line",
+        "scope": "counter",
+        "kind": "functional",
+        "covered_pct": 87.5,
+        "bins_missed": [
+          "line_12",
+          "line_15"
+        ],
+        "priority": "low",
+        "recommendation": "Functional coverage gap in 'line' (scope: counter, 87.5% covered). Add constrained-random or directed tests targeting the uncovered bins. Consider increasing the test seed space or adding a dedicated directed test. Specifically, target: 'line_12', 'line_15'."
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total_items": 2,
+      "total_pages": 1
+    },
+    "suite": "verilator_counter",
+    "kind": null,
+    "threshold_pct": 100.0,
+    "total_metrics": 2,
+    "gaps_found": 2,
+    "note": "Gaps are sorted by priority (high\u2192medium\u2192low) then by coverage percentage. Use tests.replay to reproduce specific failures. Showing page 1 of 1."
+  }
+}
