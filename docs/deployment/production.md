@@ -1,6 +1,8 @@
 # Production Deployment
 
-Sentinel DV is an MCP server that runs locally over stdio. For “always on” deployments, you can run it under `systemd`.
+Sentinel DV is an MCP server that runs locally over **stdio** (MCP clients such as Claude Desktop or Cursor). It is not a web HTTP service and is **not** deployed to Vercel or similar serverless hosts.
+
+For “always on” deployments, you can run it under `systemd`.
 
 ## Server unit (example)
 
