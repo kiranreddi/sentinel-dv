@@ -153,6 +153,22 @@ class UVMLogParser:
     # status is detected instead through the parsed messages list in
     # _determine_test_status().
 
+    # Simulation completion markers — at least one must appear for a clean exit.
+    # Absence means the simulation was aborted/killed before finishing.
+    #   VCS:      "V C S   S i m u l a t i o n   R e p o r t" + "CPU Time:"
+    #   Questa:   "$finish" or "# End of simulation"
+    #   Xcelium:  "Simulation complete" or "xcelium: *E," (abnormal) or "xmsim: *F,"
+    #   Generic:  "UVM TEST DONE"
+    SIM_COMPLETE_PATTERN = re.compile(
+        r"V\s+C\s+S\s+S\s+i\s+m\s+u\s+l\s+a\s+t\s+i\s+o\s+n\s+R\s+e\s+p\s+o\s+r\s+t"
+        r"|CPU\s+Time:\s+[\d.]+\s+seconds"  # VCS report footer
+        r"|#\s*End\s+of\s+simulation"  # Questa
+        r"|\$finish\s*(?:called\s+at\s+time)?"  # Questa / Xcelium
+        r"|Simulation\s+complete\."  # Xcelium
+        r"|UVM\s+TEST\s+DONE",  # standard UVM completion
+        re.IGNORECASE,
+    )
+
     # Topology extraction
     COMPONENT_PATTERN = re.compile(r"(?:uvm_test_top|uvm_top)\.(\S+)", re.IGNORECASE)
 
@@ -443,7 +459,13 @@ class UVMLogParser:
         if self.TEST_PASSED_PATTERN.search(content):
             return "pass"
 
-        # Default to pass if no errors detected
+        # No explicit result and no errors: check if simulation even completed.
+        # Logs that end with "Releasing License" but no simulation report are
+        # abnormal terminations (killed, OOM, license yanked) — not a clean pass.
+        if not self.SIM_COMPLETE_PATTERN.search(content):
+            return "aborted"
+
+        # Clean exit, no errors → pass
         return "pass"
 
     def _extract_seed(self, content: str, log_path: Path) -> str | None:

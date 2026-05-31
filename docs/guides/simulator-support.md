@@ -140,6 +140,20 @@ counters (`Number of caught UVM_FATAL reports   :    4`,
 `Number of demoted UVM_ERROR reports  :    0`) are also filtered — these
 are housekeeping statistics, not individual failure events.
 
+**Test status values** — the parser returns one of three statuses:
+
+| Status | Meaning |
+|--------|---------|
+| `pass` | No UVM_ERROR/FATAL, simulation completed normally (VCS report, `$finish`, or `UVM TEST DONE` present) |
+| `fail` | UVM_ERROR or UVM_FATAL messages found, or explicit FAILED marker present |
+| `aborted` | No UVM errors, but the simulation never reached a clean exit — typically a license pre-emption, OOM kill, or run-script timeout that terminated the process mid-simulation |
+
+The `aborted` status is important: a simulation that exits abnormally
+(ending with just `Releasing License for VCS-BASE-RUNTIME` but no VCS
+Simulation Report footer) was previously mis-classified as `pass`.  The
+parser now correctly distinguishes a clean zero-error exit from a
+mid-flight process kill.
+
 ## Security model
 
 Sentinel DV keeps simulator support artifact-based by design:

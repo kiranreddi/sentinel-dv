@@ -53,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   no longer parsed as real failure events (fixes false-positive `fail` status on passing tests).
 - UVM log parser: `UVM_COUNT_SUMMARY_PATTERN` extended to cover both simple count lines
   (`UVM_ERROR :    0`) and report demote/catch lines.
+- **UVM log parser: `aborted` status for incomplete simulations** — logs that end without a
+  simulator completion marker (`VCS Simulation Report`, `$finish`, `UVM TEST DONE`, etc.) are
+  now correctly reported as `status: "aborted"` rather than `"pass"`.  Catches OOM kills,
+  license pre-emption, and run-script timeouts that terminate the process mid-simulation.
 - MCP output schema validation for error responses (`item` optional in `_ITEM_ENVELOPE`).
 - `runs.submit` and `tests.replay` responses include `schema_version` via `detail_response()`.
 
