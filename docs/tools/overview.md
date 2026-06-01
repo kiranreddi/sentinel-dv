@@ -1,6 +1,6 @@
 # Tool Overview
 
-Sentinel DV provides **26 MCP tools** organized into categories for verification intelligence.
+Sentinel DV provides **28 MCP tools** organized into categories for verification intelligence.
 
 ## Tool Categories
 
@@ -22,8 +22,10 @@ Get comprehensive information about specific items.
 | Tool | Purpose | Returns |
 |------|---------|---------|
 | [`tests.get`](detail.md#testsget) | Get test details | Full TestCase with evidence |
+| [`tests.history`](mcp-tools-reference.md#testshistory) | Test outcomes over time | Status timeline + flaky hint |
 | [`tests.topology`](detail.md#teststopology) | Get test topology | UVM hierarchy + interface bindings |
 | `runs.get` | Get run details | Run identifier |
+| [`runs.summary`](mcp-tools-reference.md#runssummary) | Per-run rollup | Test counts, pass rate, slowest tests |
 | [`assertions.get`](detail.md#assertionsget) | Get assertion definition | AssertionInfo with intent |
 
 ### 🔬 Analysis Tools
@@ -60,7 +62,7 @@ Full parameter reference: [MCP tools reference](mcp-tools-reference.md).
 
 Auto-generated **SVG cards** show real request/response JSON for every tool (from the multi-project `demo/` index):
 
-- **[Browse all 26 tools in the gallery](mcp-tool-gallery.md)** — embedded screenshots + full JSON
+- **[Browse all 28 tools in the gallery](mcp-tool-gallery.md)** — embedded screenshots + full JSON
 - [Interactive HTML preview](../assets/mcp-tools/gallery.html) — open in a new tab
 
 Regenerate after demo or API changes:

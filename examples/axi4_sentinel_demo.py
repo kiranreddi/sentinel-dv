@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """AXI4 UVM four-simulator sentinel-dv demo.
 
-Demonstrates all 26 MCP tools against a realistic AXI4-Lite slave
+Demonstrates all 28 MCP tools against a realistic AXI4-Lite slave
 UVM testbench indexed from VCS, Questa, and Xcelium simulation results.
 
 Usage::
@@ -10,7 +10,7 @@ Usage::
     sentinel-dv-index --config config.yaml --index-all
     python ../../examples/axi4_sentinel_demo.py
 
-Expected output: a full verification report across all 26 tools.
+Expected output: a full verification report across all 28 tools.
 """
 
 from __future__ import annotations
@@ -36,7 +36,9 @@ from sentinel_dv.tools.core import (
     get_cross_sim_comparison,
     get_regression_health,
     get_run_details,
+    get_run_summary,
     get_regression_summary,
+    get_test_history,
     get_sim_status,
     get_sva_status,
     get_vacuous_assertions,
@@ -127,10 +129,12 @@ def main() -> int:  # noqa: PLR0915
 
         # Pick a test that has a waveform summary
         all_tests, _ = store.query_tests(page=1, page_size=100)
-        wave_test_id = next(
-            (t["test_id"] for t in all_tests if "bk2bk" in t.get("name", "").lower()),
-            test_id,
+        wave_test = next(
+            (t for t in all_tests if "bk2bk" in t.get("name", "").lower()),
+            tests_list[0] if tests_list else None,
         )
+        wave_test_id = (wave_test or {}).get("test_id") or test_id
+        history_name = (wave_test or {}).get("name") or (tests_list[0]["name"] if tests_list else "")
 
         # ── Section 1: Run-level tools ──────────────────────────────────────
         _header("1 · Run-level tools (runs.list / runs.summary / regression.summary)")
@@ -138,7 +142,17 @@ def main() -> int:  # noqa: PLR0915
         r_list = track("runs.list", lambda: list_runs(store), expect_nonempty="runs")
         print(f"      Simulators indexed: {sorted({r.get('suite','?') for r in r_list.get('runs', [])})}")
 
-        track("runs.summary", lambda: get_run_details(store, run_id))
+        track("runs.summary", lambda: get_run_summary(store, run_id))
+        if history_name:
+            track(
+                "tests.history",
+                lambda: get_test_history(
+                    store,
+                    test_name=history_name,
+                    suite=suite,
+                    window_days=30,
+                ),
+            )
 
         track("regression.summary",
               lambda: get_regression_summary(store, suite=suite),
@@ -271,7 +285,7 @@ def main() -> int:  # noqa: PLR0915
         if failed:
             print(f"{FAIL}  Some tools failed — see details above.")
             return 1
-        print(f"{PASS}  All 26 sentinel-dv tools verified against AXI4 UVM data.")
+        print(f"{PASS}  All 28 sentinel-dv tools verified against AXI4 UVM data.")
         return 0
 
 

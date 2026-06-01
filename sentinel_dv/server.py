@@ -111,6 +111,13 @@ def runs_get(
     return core.get_run_details(get_store(), run_id)
 
 
+@_readonly_tool("runs.summary")
+def runs_summary(
+    run_id: str = Field(..., description="Run identifier"),
+) -> dict[str, Any]:
+    return core.get_run_summary(get_store(), run_id)
+
+
 @_readonly_tool("tests.list")
 def tests_list(
     run_id: str | None = Field(None, description="Filter by run ID"),
@@ -171,6 +178,29 @@ def tests_get(
     test_id: str = Field(..., description="Test identifier"),
 ) -> dict[str, Any]:
     return core.get_test_details(get_store(), test_id)
+
+
+@_readonly_tool("tests.history")
+def tests_history(
+    test_name: str = Field(..., description="Logical test name (stable across runs)"),
+    suite: str | None = Field(None, description="Filter to runs in this suite"),
+    framework: str | None = Field(None, description="Filter by framework (uvm|cocotb)"),
+    window_days: int = Field(30, description="Lookback window in days"),
+    as_of: str | None = Field(
+        None,
+        description="RFC3339 end timestamp for reproducible window (default: now UTC)",
+    ),
+    limit: int = Field(50, description="Maximum history entries (1–500)"),
+) -> dict[str, Any]:
+    return core.get_test_history(
+        get_store(),
+        test_name=test_name,
+        suite=suite,
+        framework=framework,
+        window_days=window_days,
+        as_of=as_of,
+        limit=limit,
+    )
 
 
 @_readonly_tool("tests.topology")

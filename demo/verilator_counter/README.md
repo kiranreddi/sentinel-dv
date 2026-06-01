@@ -1,6 +1,6 @@
 # Verilator counter — full MCP walkthrough
 
-SystemVerilog counter + C++ testbench (**Verilator**) that emits a VCD trace. The directory also ships **cocotb JUnit**, a **UVM-style log**, **assertion JSON**, and **coverage JSON** so a single `sentinel-dv-index` run exercises **all 26 MCP tools** (enable `submit` / `live_sim` in config for command-generation and live-status tools).
+SystemVerilog counter + C++ testbench (**Verilator**) that emits a VCD trace. The directory also ships **cocotb JUnit**, a **UVM-style log**, **assertion JSON**, and **coverage JSON** so a single `sentinel-dv-index` run exercises **all 28 MCP tools** (enable `submit` / `live_sim` in config for command-generation and live-status tools).
 
 ## Quick start
 

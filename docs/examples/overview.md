@@ -1,13 +1,13 @@
 # Examples
 
-Runnable examples ship in the repository. Use **`sentinel-dv>=2.2.0`** and enable **`adapters.waveform_summary: true`** for waveform tools.
+Runnable examples ship in the repository. Use **`sentinel-dv>=2.3.0`** and enable **`adapters.waveform_summary: true`** for waveform tools.
 
 | Example | Location | Docs |
 |---------|----------|------|
 | **VCS, Questa, and Cadence artifacts** | `demo/{vcs,questa,cadence}_counter/` | [Simulator artifact examples](commercial-simulators.md) |
-| **AXI4 UVM (26 tools, 4 simulators)** | `demo/axi4_uvm/` | [AXI4 README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/axi4_uvm/README.md) · [axi4_sentinel_demo.py](https://github.com/kiranreddi/sentinel-dv/blob/main/examples/axi4_sentinel_demo.py) |
-| **Multi-project (all 26 tools)** | `demo/` (UVM + cocotb + Verilator + VCS + Questa + Cadence) | [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) |
-| **Verilator — all 26 MCP tools** | `demo/verilator_counter/` | [Full walkthrough](verilator-counter.md) |
+| **AXI4 UVM (28 tools, 4 simulators)** | `demo/axi4_uvm/` | [AXI4 README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/axi4_uvm/README.md) · [axi4_sentinel_demo.py](https://github.com/kiranreddi/sentinel-dv/blob/main/examples/axi4_sentinel_demo.py) |
+| **Multi-project (all 28 tools)** | `demo/` (UVM + cocotb + Verilator + VCS + Questa + Cadence) | [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) |
+| **Verilator — all 28 MCP tools** | `demo/verilator_counter/` | [Full walkthrough](verilator-counter.md) |
 | **cocotb + JSON waveforms** | `demo/cocotb_results/`, `demo/waveforms/` | [cocotb + waveforms](cocotb-waveforms.md) |
 
 ## Multi-project (rigorous)

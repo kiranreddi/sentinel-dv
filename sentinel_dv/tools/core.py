@@ -112,6 +112,46 @@ def get_run_details(store: IndexStore, run_id: str) -> dict[str, Any]:
     return detail_response({"run": run})
 
 
+def get_run_summary(store: IndexStore, run_id: str) -> dict[str, Any]:
+    """Per-run test status rollup and triage counts."""
+    validate_id(run_id, "run_id")
+    summary = store.run_summary(run_id)
+    if not summary:
+        raise ToolError("NOT_FOUND", f"Run not found: {run_id}")
+    return detail_response(summary)
+
+
+def get_test_history(
+    store: IndexStore,
+    test_name: str,
+    suite: str | None = None,
+    framework: str | None = None,
+    window_days: int = 30,
+    as_of: str | None = None,
+    limit: int = 50,
+) -> dict[str, Any]:
+    """Time-ordered outcomes for a logical test name across runs."""
+    name = (test_name or "").strip()
+    if not name:
+        raise ToolError("INVALID_ARGUMENT", "test_name is required")
+    if window_days < 1 or window_days > 365:
+        raise ToolError("INVALID_ARGUMENT", "window_days must be between 1 and 365")
+    if limit < 1 or limit > 500:
+        raise ToolError("INVALID_ARGUMENT", "limit must be between 1 and 500")
+    try:
+        history = store.test_history(
+            test_name=name,
+            suite=suite,
+            framework=framework,
+            window_days=window_days,
+            as_of=as_of,
+            limit=limit,
+        )
+    except ValueError as exc:
+        raise ToolError("INVALID_ARGUMENT", str(exc)) from exc
+    return detail_response(history)
+
+
 def list_tests(
     store: IndexStore,
     run_id: str | None = None,

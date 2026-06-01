@@ -517,6 +517,169 @@ class IndexStore:
         result = self._conn.execute("SELECT COUNT(*) FROM runs").fetchone()
         return result[0] if result else 0
 
+    def run_summary(self, run_id: str) -> dict[str, Any] | None:
+        """Aggregate per-run test status counts and triage rollups."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        run = self.get_run(run_id)
+        if not run:
+            return None
+
+        status_rows = self._conn.execute(
+            """
+            SELECT status, COUNT(*) AS cnt
+            FROM tests
+            WHERE run_id = ?
+            GROUP BY status
+            """,
+            [run_id],
+        ).fetchall()
+        test_counts: dict[str, int] = {row[0]: int(row[1]) for row in status_rows}
+        total_tests = sum(test_counts.values())
+        passed = test_counts.get("pass", 0)
+        pass_rate = round(100.0 * passed / total_tests, 2) if total_tests else 0.0
+
+        failure_events_row = self._conn.execute(
+            "SELECT COUNT(*) FROM failures WHERE run_id = ?",
+            [run_id],
+        ).fetchone()
+        assertion_failure_row = self._conn.execute(
+            "SELECT COUNT(*) FROM assertion_failures WHERE run_id = ?",
+            [run_id],
+        ).fetchone()
+        failure_events = int((failure_events_row[0] if failure_events_row else 0) or 0)
+        assertion_failures = int((assertion_failure_row[0] if assertion_failure_row else 0) or 0)
+
+        slowest_rows = self._conn.execute(
+            """
+            SELECT test_id, name, status, duration_ms, framework
+            FROM tests
+            WHERE run_id = ? AND duration_ms IS NOT NULL
+            ORDER BY duration_ms DESC, test_id ASC
+            LIMIT 5
+            """,
+            [run_id],
+        ).fetchall()
+        slowest_tests = [
+            {
+                "test_id": row[0],
+                "name": row[1],
+                "status": row[2],
+                "duration_ms": row[3],
+                "framework": row[4],
+            }
+            for row in slowest_rows
+        ]
+
+        return {
+            "run_id": run_id,
+            "suite": run.get("suite"),
+            "status": run.get("status"),
+            "created_at": run.get("created_at"),
+            "ci_system": run.get("ci_system"),
+            "ci_build_id": run.get("ci_build_id"),
+            "test_counts": test_counts,
+            "total_tests": total_tests,
+            "pass_rate": pass_rate,
+            "failure_events": failure_events,
+            "assertion_failures": assertion_failures,
+            "slowest_tests": slowest_tests,
+        }
+
+    def test_history(
+        self,
+        test_name: str,
+        suite: str | None = None,
+        framework: str | None = None,
+        window_days: int = 30,
+        as_of: str | None = None,
+        limit: int = 50,
+    ) -> dict[str, Any]:
+        """Return recent run outcomes for a logical test name (stable across runs)."""
+        if not self._conn:
+            raise RuntimeError("Not connected to database")
+
+        from datetime import datetime, timedelta, timezone
+
+        if limit < 1 or limit > 500:
+            raise ValueError("limit must be between 1 and 500")
+        if window_days < 1 or window_days > 365:
+            raise ValueError("window_days must be between 1 and 365")
+
+        if as_of:
+            end_dt = datetime.fromisoformat(as_of.replace("Z", "+00:00"))
+        else:
+            end_dt = datetime.now(timezone.utc)
+        cutoff_dt = end_dt - timedelta(days=window_days)
+        as_of_iso = end_dt.isoformat().replace("+00:00", "Z")
+        cutoff_ms = int(cutoff_dt.timestamp() * 1000)
+        as_of_ms = int(end_dt.timestamp() * 1000)
+
+        where = [
+            "t.name = ?",
+            "COALESCE(t.created_at_ms, r.created_at_ms) >= ?",
+            "COALESCE(t.created_at_ms, r.created_at_ms) <= ?",
+        ]
+        params: list[Any] = [test_name, cutoff_ms, as_of_ms]
+        if suite:
+            where.append("r.suite = ?")
+            params.append(suite)
+        if framework:
+            where.append("t.framework = ?")
+            params.append(framework)
+        params.append(limit)
+
+        where_sql = " AND ".join(where)
+        rows = self._conn.execute(
+            f"""
+            SELECT
+                t.test_id,
+                t.run_id,
+                t.status,
+                t.seed,
+                t.duration_ms,
+                t.framework,
+                t.sim_vendor,
+                r.suite,
+                r.created_at,
+                t.created_at_ms
+            FROM tests t
+            INNER JOIN runs r ON t.run_id = r.run_id
+            WHERE {where_sql}
+            ORDER BY COALESCE(t.created_at_ms, r.created_at_ms) DESC, t.test_id DESC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+
+        entries = [
+            {
+                "test_id": row[0],
+                "run_id": row[1],
+                "status": row[2],
+                "seed": row[3],
+                "duration_ms": row[4],
+                "framework": row[5],
+                "sim_vendor": row[6],
+                "suite": row[7],
+                "run_created_at": row[8],
+            }
+            for row in rows
+        ]
+        distinct_statuses = sorted({entry["status"] for entry in entries})
+        return {
+            "test_name": test_name,
+            "suite": suite,
+            "framework": framework,
+            "window_days": window_days,
+            "as_of": as_of_iso,
+            "entries": entries,
+            "entries_returned": len(entries),
+            "distinct_statuses": distinct_statuses,
+            "is_flaky": len(distinct_statuses) > 1,
+        }
+
     # ========================================================================
     # Test operations
     # ========================================================================

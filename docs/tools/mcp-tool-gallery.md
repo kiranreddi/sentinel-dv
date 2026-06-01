@@ -36,7 +36,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T15:47:44.579321Z",
+          "created_at": "2026-06-01T18:33:22.781554Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -47,7 +47,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-30T15:47:44.562808Z",
+          "created_at": "2026-06-01T18:33:22.774708Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -58,7 +58,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T15:47:44.532363Z",
+          "created_at": "2026-06-01T18:33:22.764279Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -93,15 +93,55 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "run_id": "r_85b1d3f70e48",
         "run_id_full": "85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33",
         "suite": "verilator_counter",
-        "created_at": "2026-05-30T15:47:44.562808Z",
+        "created_at": "2026-06-01T18:33:22.774708Z",
         "status": "pass",
         "ci_system": null,
         "ci_build_id": null,
         "ci_job_url": null,
         "artifact_manifest_hash": null,
-        "index_built_at": "2026-05-30T15:47:44.563579Z",
-        "created_at_ms": 1780156064562
+        "index_built_at": "2026-06-01T18:33:22.775153Z",
+        "created_at_ms": 1780338802774
       },
+      "schema_version": "1.0.0"
+    }
+    ```
+
+## `runs.summary`
+
+![MCP tool runs.summary](../assets/mcp-tools/runs-summary.svg)
+
+??? example "Request"
+    ```json
+    {
+      "run_id": "r_85b1d3f70e48"
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "run_id": "r_85b1d3f70e48",
+      "suite": "verilator_counter",
+      "status": "pass",
+      "created_at": "2026-06-01T18:33:22.774708Z",
+      "ci_system": null,
+      "ci_build_id": null,
+      "test_counts": {
+        "pass": 1
+      },
+      "total_tests": 1,
+      "pass_rate": 100.0,
+      "failure_events": 0,
+      "assertion_failures": 1,
+      "slowest_tests": [
+        {
+          "test_id": "t_3bb6bfc925aa",
+          "name": "counter_tb.test_counter_sim",
+          "status": "pass",
+          "duration_ms": 10,
+          "framework": "cocotb"
+        }
+      ],
       "schema_version": "1.0.0"
     }
     ```
@@ -158,8 +198,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "sim_vendor": null,
           "sim_version": null,
           "dut_top": null,
-          "created_at": "2026-05-30T15:47:44.562808Z",
-          "created_at_ms": 1780156064562
+          "created_at": "2026-06-01T18:33:22.774708Z",
+          "created_at_ms": 1780338802774
         }
       ],
       "pagination": {
@@ -198,9 +238,53 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "sim_vendor": null,
         "sim_version": null,
         "dut_top": null,
-        "created_at": "2026-05-30T15:47:44.562808Z",
-        "created_at_ms": 1780156064562
+        "created_at": "2026-06-01T18:33:22.774708Z",
+        "created_at_ms": 1780338802774
       }
+    }
+    ```
+
+## `tests.history`
+
+![MCP tool tests.history](../assets/mcp-tools/tests-history.svg)
+
+??? example "Request"
+    ```json
+    {
+      "test_name": "counter_tb.test_counter_sim",
+      "suite": "verilator_counter",
+      "window_days": 30,
+      "as_of": null
+    }
+    ```
+
+??? success "Response"
+    ```json
+    {
+      "test_name": "counter_tb.test_counter_sim",
+      "suite": "verilator_counter",
+      "framework": null,
+      "window_days": 30,
+      "as_of": "2026-06-01T18:33:23.029752Z",
+      "entries": [
+        {
+          "test_id": "t_3bb6bfc925aa",
+          "run_id": "r_85b1d3f70e48",
+          "status": "pass",
+          "seed": null,
+          "duration_ms": 10,
+          "framework": "cocotb",
+          "sim_vendor": null,
+          "suite": "verilator_counter",
+          "run_created_at": "2026-06-01T18:33:22.774708Z"
+        }
+      ],
+      "entries_returned": 1,
+      "distinct_statuses": [
+        "pass"
+      ],
+      "is_flaky": false,
+      "schema_version": "1.0.0"
     }
     ```
 
@@ -699,7 +783,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "schema_version": "1.0.0",
       "coverage": [
         {
-          "id": 7,
+          "id": 8,
           "run_id": "r_85b1d3f70e48",
           "test_id": "t_3bb6bfc925aa",
           "kind": "functional",
@@ -760,7 +844,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "run_id": "r_85b1d3f70e48",
       "summaries": [
         {
-          "id": 7,
+          "id": 8,
           "run_id": "r_85b1d3f70e48",
           "test_id": "t_3bb6bfc925aa",
           "kind": "functional",
@@ -865,6 +949,38 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "schema_version": "1.0.0",
       "failures": [
         {
+          "failure_id": "f_5e57ae5d5833",
+          "failure_id_full": "5e57ae5d58333fd71d13fb6f10a728889b1746c310d1abde1707c1596e994da4",
+          "test_id": "t_81f11ef7e513",
+          "run_id": "r_3bd942f45ef3",
+          "severity": "error",
+          "category": "scoreboard",
+          "summary": "DATA MISMATCH: expected count=3 got 5",
+          "message": "DATA MISMATCH: expected count=3 got 5",
+          "time_ns": 1250,
+          "phase": null,
+          "component": "uvm_test_top.env.scoreboard",
+          "tags_json": "[\"scoreboard\", \"uvm\"]",
+          "tags_flat": "scoreboard uvm",
+          "signature_id": "s_89d86964979b"
+        },
+        {
+          "failure_id": "f_86ecaa8d2065",
+          "failure_id_full": "86ecaa8d20652e70937cbc32c2fc68b89853084a84fe69193ed97033369fa7ce",
+          "test_id": "t_7a0a37762958",
+          "run_id": "r_566fd6e9a21b",
+          "severity": "error",
+          "category": "scoreboard",
+          "summary": "[SCB] DATA MISMATCH: expected count=3 got 5",
+          "message": "[SCB] DATA MISMATCH: expected count=3 got 5",
+          "time_ns": 0,
+          "phase": null,
+          "component": "uvm_test_top.env.scoreboard",
+          "tags_json": "[\"scoreboard\", \"uvm\"]",
+          "tags_flat": "scoreboard uvm",
+          "signature_id": "s_31f7c4e8d3fa"
+        },
+        {
           "failure_id": "f_9225893b0dd9",
           "failure_id_full": "9225893b0dd9c7a90564117f97246cb99b62a292dab2e53af327e498d90cac2f",
           "test_id": "t_bdf825c67e63",
@@ -873,12 +989,28 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "category": "scoreboard",
           "summary": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5",
           "message": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5",
-          "time_ns": 1250,
+          "time_ns": 0,
           "phase": null,
-          "component": "unknown",
+          "component": "ns",
           "tags_json": "[\"scoreboard\", \"uvm\"]",
           "tags_flat": "scoreboard uvm",
           "signature_id": "s_167aa5eb920e"
+        },
+        {
+          "failure_id": "f_db45c690a5dd",
+          "failure_id_full": "db45c690a5dd03c360769251f7f206484bd8c396a881984bc940052704286671",
+          "test_id": "t_7dd03c3d152f",
+          "run_id": "r_2968fa34e74e",
+          "severity": "error",
+          "category": "scoreboard",
+          "summary": "[SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
+          "message": "[SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
+          "time_ns": 0,
+          "phase": null,
+          "component": "uvm_test_top.axi_env.scoreboard",
+          "tags_json": "[\"scoreboard\", \"uvm\", \"axi4\"]",
+          "tags_flat": "scoreboard uvm axi4",
+          "signature_id": "s_36ba5cf5dcf0"
         },
         {
           "failure_id": "f_e28595124a71",
@@ -889,60 +1021,12 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "category": "scoreboard",
           "summary": "[SCB] DATA MISMATCH: expected count=3 got 5",
           "message": "[SCB] DATA MISMATCH: expected count=3 got 5",
-          "time_ns": 1250,
+          "time_ns": 0,
           "phase": null,
-          "component": "uvm_test_top.env.scoreboard",
+          "component": "(uvm_test_top.env.scoreboard)",
           "tags_json": "[\"scoreboard\", \"uvm\"]",
           "tags_flat": "scoreboard uvm",
           "signature_id": "s_31f7c4e8d3fa"
-        },
-        {
-          "failure_id": "f_f5047a164e15",
-          "failure_id_full": "f5047a164e15479a42931a6ffc6ccb5af290afa266c5536b1ec5c7c4081d8f8a",
-          "test_id": "t_7a0a37762958",
-          "run_id": "r_566fd6e9a21b",
-          "severity": "error",
-          "category": "scoreboard",
-          "summary": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5",
-          "message": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5",
-          "time_ns": 1250,
-          "phase": null,
-          "component": "unknown",
-          "tags_json": "[\"scoreboard\", \"uvm\"]",
-          "tags_flat": "scoreboard uvm",
-          "signature_id": "s_71de94577c0f"
-        },
-        {
-          "failure_id": "f_fbcd0a68cb83",
-          "failure_id_full": "fbcd0a68cb83115822432efd0db24e0de2d90ff6014cf029eb962638390e5235",
-          "test_id": "t_81f11ef7e513",
-          "run_id": "r_3bd942f45ef3",
-          "severity": "error",
-          "category": "scoreboard",
-          "summary": "[SCB] (uvm_test_top.env.scoreboard): DATA MISMATCH: expected count=3 got 5",
-          "message": "[SCB] (uvm_test_top.env.scoreboard): DATA MISMATCH: expected count=3 got 5",
-          "time_ns": 1250,
-          "phase": null,
-          "component": "unknown",
-          "tags_json": "[\"scoreboard\", \"uvm\"]",
-          "tags_flat": "scoreboard uvm",
-          "signature_id": "s_2940b1f3a20a"
-        },
-        {
-          "failure_id": "f_b1128d5281f7",
-          "failure_id_full": "b1128d5281f7d07f2b569f4a431978bb8d993e7a20be422068d4926fc46826cb",
-          "test_id": "t_7dd03c3d152f",
-          "run_id": "r_2968fa34e74e",
-          "severity": "error",
-          "category": "scoreboard",
-          "summary": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
-          "message": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
-          "time_ns": 850,
-          "phase": null,
-          "component": "unknown",
-          "tags_json": "[\"scoreboard\", \"uvm\", \"axi4\"]",
-          "tags_flat": "scoreboard uvm axi4",
-          "signature_id": "s_accaf1efb76e"
         },
         {
           "failure_id": "f_52ca140d72a4",
@@ -956,8 +1040,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "time_ns": null,
           "phase": null,
           "component": null,
-          "tags_json": "[\"scoreboard\", \"cocotb\"]",
-          "tags_flat": "scoreboard cocotb",
+          "tags_json": "[\"scoreboard\", \"uvm\"]",
+          "tags_flat": "scoreboard uvm",
           "signature_id": "s_171ee2cbf014"
         },
         {
@@ -972,8 +1056,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "time_ns": null,
           "phase": null,
           "component": null,
-          "tags_json": "[\"scoreboard\", \"cocotb\"]",
-          "tags_flat": "scoreboard cocotb",
+          "tags_json": "[\"scoreboard\", \"uvm\"]",
+          "tags_flat": "scoreboard uvm",
           "signature_id": "s_11ffe14f53ed"
         },
         {
@@ -988,8 +1072,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "time_ns": null,
           "phase": null,
           "component": null,
-          "tags_json": "[\"scoreboard\", \"cocotb\"]",
-          "tags_flat": "scoreboard cocotb",
+          "tags_json": "[\"scoreboard\", \"uvm\"]",
+          "tags_flat": "scoreboard uvm",
           "signature_id": "s_171ee2cbf014"
         },
         {
@@ -1004,8 +1088,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "time_ns": null,
           "phase": null,
           "component": null,
-          "tags_json": "[\"scoreboard\", \"cocotb\"]",
-          "tags_flat": "scoreboard cocotb",
+          "tags_json": "[\"scoreboard\", \"uvm\"]",
+          "tags_flat": "scoreboard uvm",
           "signature_id": "s_171ee2cbf014"
         }
       ],
@@ -1036,33 +1120,33 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "suite": "verilator_counter",
       "window_days": 30,
-      "as_of": "2026-05-30T15:47:45.405708Z",
+      "as_of": "2026-06-01T18:33:23.041655Z",
       "pass_rate": 33.33,
       "runs": [
         {
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T15:47:44.579321Z"
+          "created_at": "2026-06-01T18:33:22.781554Z"
         },
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-05-30T15:47:44.562808Z"
+          "created_at": "2026-06-01T18:33:22.774708Z"
         },
         {
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-05-30T15:47:44.532363Z"
+          "created_at": "2026-06-01T18:33:22.764279Z"
         }
       ],
       "top_signatures": [
         {
-          "signature_id": "s_71de94577c0f",
+          "signature_id": "s_31f7c4e8d3fa",
           "category": "scoreboard",
-          "summary": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5",
+          "summary": "[SCB] DATA MISMATCH: expected count=3 got 5",
           "count": 1
         },
         {
@@ -1280,7 +1364,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
-          "created_at": "2026-05-30T15:47:44.562808Z",
+          "created_at": "2026-06-01T18:33:22.774708Z",
           "kind": "functional",
           "covered_pct": 81.25,
           "metric_count": 2,
@@ -1347,24 +1431,14 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "representative_message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      "
         },
         {
-          "signature": ": n",
+          "signature": "[scb] data mismatch: expected count=n got n",
           "count": 2,
           "test_ids": [
-            "t_d5c9e066a33f",
-            "t_d5c9e066a33f"
+            "t_7a0a37762958",
+            "t_3fb5c5afeb62"
           ],
-          "representative_test_id": "t_d5c9e066a33f",
-          "representative_message": ":   0"
-        },
-        {
-          "signature": "n uvm_fatal: n",
-          "count": 2,
-          "test_ids": [
-            "t_c63ff9530760",
-            "t_9f4d54c8e3af"
-          ],
-          "representative_test_id": "t_c63ff9530760",
-          "representative_message": "0  UVM_FATAL: 0"
+          "representative_test_id": "t_7a0a37762958",
+          "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5"
         },
         {
           "signature": "pop while empty: empty flag was n",
@@ -1383,6 +1457,24 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           ],
           "representative_test_id": "t_3fb5c5afeb62",
           "representative_message": "[TEST] TEST FAILED"
+        },
+        {
+          "signature": "[mon] assertion failed: pready_timeout after psel",
+          "count": 1,
+          "test_ids": [
+            "t_e79a0d869304"
+          ],
+          "representative_test_id": "t_e79a0d869304",
+          "representative_message": "[MON] ASSERTION FAILED: pready_timeout after psel"
+        },
+        {
+          "signature": "data mismatch: expected count=n got n",
+          "count": 1,
+          "test_ids": [
+            "t_81f11ef7e513"
+          ],
+          "representative_test_id": "t_81f11ef7e513",
+          "representative_message": "DATA MISMATCH: expected count=3 got 5"
         },
         {
           "signature": "uvm_error @ hex: uvm_test_top.env.scbd [scbd] fail: addr=addr exp=addr got=addr",
@@ -1412,13 +1504,13 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "representative_message": "\nTraceback (most recent call last):\n  File \"test_counter.py\", line 45, in test_overflow\n    assert dut.count.value == 0, \"Counter should wrap to 0\"\nAssertionError: Counter overflow not handled correct"
         },
         {
-          "signature": "uvm_test_top.axi_env.scoreboard [scb] axi data mismatch: aw beat n expected addr",
+          "signature": "test failed",
           "count": 1,
           "test_ids": [
-            "t_7dd03c3d152f"
+            "t_81f11ef7e513"
           ],
-          "representative_test_id": "t_7dd03c3d152f",
-          "representative_message": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF"
+          "representative_test_id": "t_81f11ef7e513",
+          "representative_message": "TEST FAILED"
         },
         {
           "signature": "[test] counter_tb.sv:(n) @ n test failed",
@@ -1439,45 +1531,18 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "representative_message": "\nExpected 16-bit result; got value out of range.\n      "
         },
         {
-          "signature": "[scb] data mismatch: expected count=n got n",
+          "signature": "[scb] axi data mismatch: aw beat n expected addr got addr",
           "count": 1,
           "test_ids": [
-            "t_3fb5c5afeb62"
+            "t_7dd03c3d152f"
           ],
-          "representative_test_id": "t_3fb5c5afeb62",
-          "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5"
-        },
-        {
-          "signature": "[test] (uvm_test_top): test failed",
-          "count": 1,
-          "test_ids": [
-            "t_81f11ef7e513"
-          ],
-          "representative_test_id": "t_81f11ef7e513",
-          "representative_message": "[TEST] (uvm_test_top): TEST FAILED"
-        },
-        {
-          "signature": "uvm_test_top.env.scoreboard [scb] data mismatch: expected count=n got n",
-          "count": 1,
-          "test_ids": [
-            "t_7a0a37762958"
-          ],
-          "representative_test_id": "t_7a0a37762958",
-          "representative_message": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5"
-        },
-        {
-          "signature": "uvm_test_top.apb_env.monitor [mon] assertion failed: pready_timeout after psel",
-          "count": 1,
-          "test_ids": [
-            "t_e79a0d869304"
-          ],
-          "representative_test_id": "t_e79a0d869304",
-          "representative_message": "uvm_test_top.apb_env.monitor [MON] ASSERTION FAILED: pready_timeout after psel"
+          "representative_test_id": "t_7dd03c3d152f",
+          "representative_message": "[SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF"
         }
       ],
-      "total_failures_analysed": 20,
-      "unique_clusters": 15,
-      "note": "15 root-cause cluster(s) explain 20 failure(s). Top cluster accounts for 20.0% of failures. Fix the representative failure in each cluster first.",
+      "total_failures_analysed": 17,
+      "unique_clusters": 13,
+      "note": "13 root-cause cluster(s) explain 17 failure(s). Top cluster accounts for 23.5% of failures. Fix the representative failure in each cluster first.",
       "schema_version": "1.0.0"
     }
     ```

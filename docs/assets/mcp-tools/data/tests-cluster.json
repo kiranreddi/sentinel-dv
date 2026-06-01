@@ -17,24 +17,14 @@
         "representative_message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      "
       },
       {
-        "signature": ": n",
+        "signature": "[scb] data mismatch: expected count=n got n",
         "count": 2,
         "test_ids": [
-          "t_d5c9e066a33f",
-          "t_d5c9e066a33f"
+          "t_7a0a37762958",
+          "t_3fb5c5afeb62"
         ],
-        "representative_test_id": "t_d5c9e066a33f",
-        "representative_message": ":   0"
-      },
-      {
-        "signature": "n uvm_fatal: n",
-        "count": 2,
-        "test_ids": [
-          "t_c63ff9530760",
-          "t_9f4d54c8e3af"
-        ],
-        "representative_test_id": "t_c63ff9530760",
-        "representative_message": "0  UVM_FATAL: 0"
+        "representative_test_id": "t_7a0a37762958",
+        "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5"
       },
       {
         "signature": "pop while empty: empty flag was n",
@@ -53,6 +43,24 @@
         ],
         "representative_test_id": "t_3fb5c5afeb62",
         "representative_message": "[TEST] TEST FAILED"
+      },
+      {
+        "signature": "[mon] assertion failed: pready_timeout after psel",
+        "count": 1,
+        "test_ids": [
+          "t_e79a0d869304"
+        ],
+        "representative_test_id": "t_e79a0d869304",
+        "representative_message": "[MON] ASSERTION FAILED: pready_timeout after psel"
+      },
+      {
+        "signature": "data mismatch: expected count=n got n",
+        "count": 1,
+        "test_ids": [
+          "t_81f11ef7e513"
+        ],
+        "representative_test_id": "t_81f11ef7e513",
+        "representative_message": "DATA MISMATCH: expected count=3 got 5"
       },
       {
         "signature": "uvm_error @ hex: uvm_test_top.env.scbd [scbd] fail: addr=addr exp=addr got=addr",
@@ -82,13 +90,13 @@
         "representative_message": "\nTraceback (most recent call last):\n  File \"test_counter.py\", line 45, in test_overflow\n    assert dut.count.value == 0, \"Counter should wrap to 0\"\nAssertionError: Counter overflow not handled correct"
       },
       {
-        "signature": "uvm_test_top.axi_env.scoreboard [scb] axi data mismatch: aw beat n expected addr",
+        "signature": "test failed",
         "count": 1,
         "test_ids": [
-          "t_7dd03c3d152f"
+          "t_81f11ef7e513"
         ],
-        "representative_test_id": "t_7dd03c3d152f",
-        "representative_message": "uvm_test_top.axi_env.scoreboard [SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF"
+        "representative_test_id": "t_81f11ef7e513",
+        "representative_message": "TEST FAILED"
       },
       {
         "signature": "[test] counter_tb.sv:(n) @ n test failed",
@@ -109,45 +117,18 @@
         "representative_message": "\nExpected 16-bit result; got value out of range.\n      "
       },
       {
-        "signature": "[scb] data mismatch: expected count=n got n",
+        "signature": "[scb] axi data mismatch: aw beat n expected addr got addr",
         "count": 1,
         "test_ids": [
-          "t_3fb5c5afeb62"
+          "t_7dd03c3d152f"
         ],
-        "representative_test_id": "t_3fb5c5afeb62",
-        "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5"
-      },
-      {
-        "signature": "[test] (uvm_test_top): test failed",
-        "count": 1,
-        "test_ids": [
-          "t_81f11ef7e513"
-        ],
-        "representative_test_id": "t_81f11ef7e513",
-        "representative_message": "[TEST] (uvm_test_top): TEST FAILED"
-      },
-      {
-        "signature": "uvm_test_top.env.scoreboard [scb] data mismatch: expected count=n got n",
-        "count": 1,
-        "test_ids": [
-          "t_7a0a37762958"
-        ],
-        "representative_test_id": "t_7a0a37762958",
-        "representative_message": "uvm_test_top.env.scoreboard [SCB] DATA MISMATCH: expected count=3 got 5"
-      },
-      {
-        "signature": "uvm_test_top.apb_env.monitor [mon] assertion failed: pready_timeout after psel",
-        "count": 1,
-        "test_ids": [
-          "t_e79a0d869304"
-        ],
-        "representative_test_id": "t_e79a0d869304",
-        "representative_message": "uvm_test_top.apb_env.monitor [MON] ASSERTION FAILED: pready_timeout after psel"
+        "representative_test_id": "t_7dd03c3d152f",
+        "representative_message": "[SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF"
       }
     ],
-    "total_failures_analysed": 20,
-    "unique_clusters": 15,
-    "note": "15 root-cause cluster(s) explain 20 failure(s). Top cluster accounts for 20.0% of failures. Fix the representative failure in each cluster first.",
+    "total_failures_analysed": 17,
+    "unique_clusters": 13,
+    "note": "13 root-cause cluster(s) explain 17 failure(s). Top cluster accounts for 23.5% of failures. Fix the representative failure in each cluster first.",
     "schema_version": "1.0.0"
   }
 }

@@ -11,7 +11,7 @@ hide:
 <div class="sdv-hero__inner" markdown>
 
 <span class="sdv-hero__badge">:material-shield-check: MCP · Security-first</span>
-<span class="sdv-hero__badge">v2.2.0</span>
+<span class="sdv-hero__badge">v2.3.0</span>
 
 # Sentinel DV
 
@@ -81,7 +81,7 @@ Read-only Model Context Protocol access to SystemVerilog, UVM, and cocotb artifa
 
     ---
 
-    Tests, failures, UVM topology, assertions, coverage, and regression analytics—across **26 MCP tools**.
+    Tests, failures, UVM topology, assertions, coverage, and regression analytics—across **28 MCP tools**.
 
     [:octicons-arrow-right-24: Tool reference](tools/overview.md)
 
@@ -197,7 +197,7 @@ Read-only Model Context Protocol access to SystemVerilog, UVM, and cocotb artifa
 ### Waveforms
 
 - Precomputed `*.wave.json` or Verilator **`*.vcd`** via built-in `VcdSummaryParser`
-- MCP tools `wave.signals` and `wave.summary` ([all 26 tools](tools/mcp-tools-reference.md))
+- MCP tools `wave.signals` and `wave.summary` ([all 28 tools](tools/mcp-tools-reference.md))
 - [Guide](guides/waveforms.md) · [Verilator example](examples/verilator-counter.md) · [Tool gallery (screenshots)](tools/mcp-tool-gallery.md)
 
 </div>

@@ -1,12 +1,12 @@
-# MCP tools reference (all 26)
+# MCP tools reference (all 28)
 
-Sentinel DV exposes **26 read-only MCP tools** (v1.x discovery/analysis/regression/waveform, v2.0 submission/live-sim/SVA/replay/gaps, v2.1 DV intelligence). Every tool returns JSON with `schema_version` (currently `1.0.0`) or a structured `error` object.
+Sentinel DV exposes **28 read-only MCP tools** (v1.x discovery/analysis/regression/waveform, v2.0 submission/live-sim/SVA/replay/gaps, v2.1 DV intelligence). Every tool returns JSON with `schema_version` (currently `1.0.0`) or a structured `error` object.
 
 See [Tool overview](overview.md) for categories and [MCP tool gallery](mcp-tool-gallery.md) for visual examples.
 
 **Prerequisites:** `sentinel-dv-index --config config.yaml --index-all` before querying.
 
-**End-to-end examples (all 26 tools):**
+**End-to-end examples (all 28 tools):**
 
 - **Multi-project:** index `demo/` (UVM, cocotb, Verilator, VCS, Questa, Cadence) — `python scripts/verify_all_mcp_tools.py` — see [demo/README](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md)
 - **Simulator fixtures:** [VCS, Questa, and Cadence examples](../examples/commercial-simulators.md) — `python examples/simulator_matrix.py --sim all`
@@ -93,12 +93,33 @@ Get one run by ID.
 { "run_id": "r_xyz" }
 ```
 
+### runs.summary
+
+Per-run rollup: test status counts, pass rate, failure/assertion event totals, and slowest tests (no full `tests.list` pagination).
+
+```json
+{ "run_id": "r_xyz" }
+```
+
 ### tests.get
 
 Full test record (status, duration, evidence refs).
 
 ```json
 { "test_id": "t_abc" }
+```
+
+### tests.history
+
+Time-ordered outcomes for a logical `test_name` across runs (flaky detection via `is_flaky` / `distinct_statuses`).
+
+```json
+{
+  "test_name": "counter_tb.test_counter_sim",
+  "suite": "verilator_counter",
+  "window_days": 30,
+  "limit": 50
+}
 ```
 
 ### tests.topology
@@ -385,7 +406,8 @@ Prioritized list of under-covered bins with actionable recommendations. The heur
 
 | Goal | Tools |
 |------|--------|
-| Why did a test fail? | `tests.list` → `tests.get` → `failures.list` → `tests.topology` |
+| Why did a test fail? | `runs.summary` → `tests.get` → `failures.list` → `tests.topology` |
+| Flaky / regressing test? | `tests.history` → `tests.cluster` |
 | Assertion debug | `assertions.list` → `assertions.failures` → `assertions.get` |
 | SVA formal coverage | `assertions.sva_status` → `assertions.vacuity` |
 | Nightly health | `regressions.summary` → `runs.list` → `failures.list` |

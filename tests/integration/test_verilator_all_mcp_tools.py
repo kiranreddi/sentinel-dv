@@ -1,4 +1,4 @@
-"""Exercise all 26 MCP tools against the Verilator counter walkthrough index."""
+"""Exercise all 28 MCP tools against the Verilator counter walkthrough index."""
 
 from __future__ import annotations
 
@@ -57,6 +57,10 @@ class TestVerilatorAllMcpToolsCore:
             run_detail = core.get_run_details(store, pass_run["run_id"])
             assert run_detail["run"]["suite"] == suite
 
+            run_sum = core.get_run_summary(store, pass_run["run_id"])
+            assert run_sum["total_tests"] >= 1
+            assert "test_counts" in run_sum
+
             tests = core.list_tests(store, run_id=pass_run["run_id"])
             wave_test = next(
                 t for t in tests["tests"] if t["name"] == "counter_tb.test_counter_sim"
@@ -69,6 +73,16 @@ class TestVerilatorAllMcpToolsCore:
 
             test_detail = core.get_test_details(store, wave_test["test_id"])
             assert test_detail["item"]["framework"] == "cocotb"
+
+            history = core.get_test_history(
+                store,
+                test_name=wave_test["name"],
+                suite=suite,
+                window_days=30,
+                as_of=DEMO_AS_OF,
+            )
+            assert history["test_name"] == wave_test["name"]
+            assert history["entries_returned"] >= 1
 
             axi = core.list_assertions(store, protocol="axi4")
             assert axi["pagination"]["total_items"] >= 1
@@ -152,9 +166,19 @@ def test_all_mcp_tools_via_fastmcp(indexed_demo, tmp_path):
             calls: list[tuple[str, dict]] = [
                 ("runs.list", {"suite": suite, "page": 1, "page_size": 50}),
                 ("runs.get", {"run_id": pass_run["run_id"]}),
+                ("runs.summary", {"run_id": pass_run["run_id"]}),
                 ("runs.submit", {"suite": suite}),
                 ("tests.list", {"run_id": pass_run["run_id"], "page": 1, "page_size": 50}),
                 ("tests.get", {"test_id": wave_test["test_id"]}),
+                (
+                    "tests.history",
+                    {
+                        "test_name": wave_test["name"],
+                        "suite": suite,
+                        "window_days": 30,
+                        "as_of": DEMO_AS_OF,
+                    },
+                ),
                 ("tests.topology", {"test_id": uvm_test["test_id"]}),
                 ("tests.replay", {"test_id": wave_test["test_id"]}),
                 ("assertions.list", {"protocol": "axi4", "page": 1, "page_size": 50}),

@@ -11,6 +11,18 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.3.0] - 2026-05-29
+
+### Added
+
+- **`runs.summary`** — per-run test status rollup (counts, pass rate, slowest tests, failure totals).
+- **`tests.history`** — cross-run timeline for a logical test name with flaky detection.
+
+### Changed
+
+- Tool count **26 → 28**; gallery and verify script aligned.
+- Install **`sentinel-dv>=2.3.0`** for the new tools.
+
 ## [2.2.0] - 2026-05-29
 
 Minor release: reliability and coverage-ingestion improvements since v2.1.0, plus deployment and demo documentation.
@@ -152,6 +164,7 @@ Minor release: reliability and coverage-ingestion improvements since v2.1.0, plu
 
 See the repository [CHANGELOG.md](https://github.com/kiranreddi/sentinel-dv/blob/main/CHANGELOG.md) for the full 1.0.0 entry.
 
+[2.3.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.3.0
 [2.2.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.2.0
 [2.1.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.1.0
 [2.0.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.0.0

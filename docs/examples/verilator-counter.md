@@ -7,7 +7,7 @@ Source: [`demo/verilator_counter/`](https://github.com/kiranreddi/sentinel-dv/tr
 ## Requirements
 
 - [Verilator](https://verilator.org) on `PATH`
-- `sentinel-dv>=2.2.0` (`pip install "sentinel-dv>=2.2.0"`)
+- `sentinel-dv>=2.3.0` (`pip install "sentinel-dv>=2.3.0"`)
 
 ## 1. Build and simulate (VCD)
 
@@ -47,7 +47,7 @@ From the repository root:
 python scripts/verify_all_mcp_tools.py --in-place
 ```
 
-Runs FastMCP in-process against `sentinel-dv-server` handlers and prints `OK` for each of the 26 tools (`runs.submit`, `tests.replay`, and `sim.status` report `CONFIG_ERROR` unless enabled in `config.yaml`).
+Runs FastMCP in-process against `sentinel-dv-server` handlers and prints `OK` for each of the 28 tools (`runs.submit`, `tests.replay`, and `sim.status` report `CONFIG_ERROR` unless enabled in `config.yaml`).
 
 ## 4. Start the MCP server
 

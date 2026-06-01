@@ -4,7 +4,7 @@ This package provides a Model Context Protocol (MCP) server for safe,
 read-only access to verification artifacts from SystemVerilog/UVM/cocotb ecosystems.
 """
 
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 __author__ = "Sentinel DV Team"
 __license__ = "Apache-2.0"
 

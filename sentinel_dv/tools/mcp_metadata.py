@@ -82,8 +82,10 @@ OUTPUT_SCHEMAS: dict[str, dict[str, Any]] = {
             "run": {"type": "object", "additionalProperties": True},
         },
     },
+    "runs.summary": _DETAIL_ENVELOPE,
     "tests.list": _LIST_ENVELOPE,
     "tests.get": _ITEM_ENVELOPE,
+    "tests.history": _DETAIL_ENVELOPE,
     "tests.topology": _ITEM_ENVELOPE,
     "assertions.list": _LIST_ENVELOPE,
     "assertions.get": _ITEM_ENVELOPE,
@@ -133,6 +135,12 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
         "Returns `{run: {run_id, suite, status, ci_*, ...}}`. "
         "Use after `runs.list` when you need CI metadata for a specific run."
     ),
+    "runs.summary": (
+        "Per-run rollup of indexed tests (read-only). "
+        "Returns `{run_id, suite, status, test_counts, total_tests, pass_rate, "
+        "failure_events, assertion_failures, slowest_tests}`. "
+        "Use when you have a `run_id` and need pass/fail/aborted counts without paging `tests.list`."
+    ),
     "tests.list": (
         "Paginated test cases with filters (read-only). "
         "Returns `{tests: [...], pagination}`. "
@@ -142,6 +150,12 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
     "tests.get": (
         "Full record for one test (read-only). "
         "Returns `{item: {test_id, run_id, framework, name, status, seed, ...}}`."
+    ),
+    "tests.history": (
+        "Time-ordered outcomes for a logical `test_name` across runs (read-only). "
+        "Returns `{test_name, suite, entries: [{run_id, status, seed, duration_ms, ...}], "
+        "distinct_statuses, is_flaky}`. "
+        "Filter by `suite` and/or `framework`; bound with `window_days` and `limit`."
     ),
     "tests.topology": (
         "UVM / testbench topology for a test (read-only). "

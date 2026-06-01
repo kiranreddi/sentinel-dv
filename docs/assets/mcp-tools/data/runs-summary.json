@@ -1,0 +1,31 @@
+{
+  "tool": "runs.summary",
+  "arguments": {
+    "run_id": "r_85b1d3f70e48"
+  },
+  "response": {
+    "run_id": "r_85b1d3f70e48",
+    "suite": "verilator_counter",
+    "status": "pass",
+    "created_at": "2026-06-01T18:33:22.774708Z",
+    "ci_system": null,
+    "ci_build_id": null,
+    "test_counts": {
+      "pass": 1
+    },
+    "total_tests": 1,
+    "pass_rate": 100.0,
+    "failure_events": 0,
+    "assertion_failures": 1,
+    "slowest_tests": [
+      {
+        "test_id": "t_3bb6bfc925aa",
+        "name": "counter_tb.test_counter_sim",
+        "status": "pass",
+        "duration_ms": 10,
+        "framework": "cocotb"
+      }
+    ],
+    "schema_version": "1.0.0"
+  }
+}

@@ -41,6 +41,7 @@ class ProjectFixtures:
     uvm_topology_test_id: str
     assertion_id: str
     regression_suite: str
+    history_test_name: str
 
     @property
     def cocotb_wave_test_id(self) -> str:
@@ -217,6 +218,7 @@ def discover_fixtures(store: IndexStore, suite: str | None = None) -> ProjectFix
         uvm_topology_test_id=topology_test["test_id"],
         assertion_id=assertions[0]["assertion_id"],
         regression_suite=pass_run["suite"],
+        history_test_name=wave_test["name"],
     )
 
 
@@ -225,9 +227,19 @@ def tool_call_matrix(fix: ProjectFixtures) -> list[tuple[str, dict[str, Any]]]:
     return [
         ("runs.list", {"suite": fix.regression_suite, "page": 1, "page_size": 200}),
         ("runs.get", {"run_id": fix.pass_run_id}),
+        ("runs.summary", {"run_id": fix.pass_run_id}),
         ("runs.submit", {"suite": fix.regression_suite}),
         ("tests.list", {"run_id": fix.pass_run_id, "page": 1, "page_size": 100}),
         ("tests.get", {"test_id": fix.wave_test_id}),
+        (
+            "tests.history",
+            {
+                "test_name": fix.history_test_name,
+                "suite": fix.regression_suite,
+                "window_days": 30,
+                "as_of": DEMO_AS_OF,
+            },
+        ),
         ("tests.topology", {"test_id": fix.uvm_topology_test_id}),
         ("tests.replay", {"test_id": fix.wave_test_id}),
         ("assertions.list", {"protocol": "axi4", "page": 1, "page_size": 50}),
@@ -268,9 +280,11 @@ def invoke_core_tool(store: IndexStore, tool_name: str, args: dict[str, Any]) ->
     dispatch: dict[str, Callable[[], dict[str, Any]]] = {
         "runs.list": lambda: core.list_runs(store, **args),
         "runs.get": lambda: core.get_run_details(store, args["run_id"]),
+        "runs.summary": lambda: core.get_run_summary(store, args["run_id"]),
         "runs.submit": lambda: core.generate_submit_command(store, **args),
         "tests.list": lambda: core.list_tests(store, **args),
         "tests.get": lambda: core.get_test_details(store, args["test_id"]),
+        "tests.history": lambda: core.get_test_history(store, **args),
         "tests.topology": lambda: core.get_test_topology(store, args["test_id"]),
         "tests.replay": lambda: core.generate_replay_command(store, **args),
         "assertions.list": lambda: core.list_assertions(store, **args),

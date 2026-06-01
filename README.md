@@ -1,4 +1,4 @@
-# 🛡️ Sentinel DV v2.2.0 - Verification Intelligence for AI Agents
+# 🛡️ Sentinel DV v2.3.0 - Verification Intelligence for AI Agents
 
 <!-- mcp-name: io.github.kiranreddi/sentinel-dv -->
 
@@ -131,7 +131,7 @@ sentinel_dv/
 
 ## 🚀 Quick Start
 
-> **PyPI:** Use **`sentinel-dv>=2.2.0`** for commercial simulator fixtures (VCS, Questa, Cadence), multi-project demos, **26 MCP tools** (v2.0 submission/SVA/replay + v2.1 DV intelligence), assertion/coverage intelligence, and waveform indexing.
+> **PyPI:** Use **`sentinel-dv>=2.3.0`** for commercial simulator fixtures (VCS, Questa, Cadence), multi-project demos, **28 MCP tools** (v2.0 submission/SVA/replay + v2.1 DV intelligence), assertion/coverage intelligence, and waveform indexing.
 
 ### Install from MCP Registry
 
@@ -146,7 +146,7 @@ Install via [uv](https://docs.astral.sh/uv/) (`uvx`) or your MCP client’s regi
       "command": "uvx",
       "args": [
         "--from",
-        "sentinel-dv@2.2.0",
+        "sentinel-dv@2.3.0",
         "sentinel-dv-server",
         "--config",
         "/absolute/path/to/config.yaml"
@@ -161,7 +161,7 @@ Alternatively set `SENTINEL_DV_CONFIG` to your config path and omit `--config`.
 **Before querying:** build the artifact index (required once per config):
 
 ```bash
-uvx --from sentinel-dv@2.2.0 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
+uvx --from sentinel-dv@2.3.0 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
 ```
 
 ### Installation
@@ -174,8 +174,8 @@ cd sentinel-dv
 # Install with development dependencies
 pip install -e ".[dev]"
 
-# Or production install (requires >=2.2.0 for all 26 MCP tools)
-pip install "sentinel-dv>=2.2.0"
+# Or production install (requires >=2.3.0 for all 28 MCP tools)
+pip install "sentinel-dv>=2.3.0"
 ```
 
 ### Configuration
@@ -272,7 +272,7 @@ With Claude or any MCP client:
 
 ### Examples
 - [Examples overview](docs/examples/overview.md) — VCS, Questa, Cadence, Verilator, cocotb, and UVM artifact fixtures
-- [MCP tool gallery](https://kiranreddi.github.io/sentinel-dv/tools/mcp-tool-gallery/) — SVG “screenshots” for all 26 tools
+- [MCP tool gallery](https://kiranreddi.github.io/sentinel-dv/tools/mcp-tool-gallery/) — SVG “screenshots” for all 28 tools
 - [Verilator + VCD](docs/examples/verilator-counter.md) — Build, index, query `wave.*` with time windows
 - [VCS, Questa, and Cadence](docs/examples/commercial-simulators.md) — Exported artifact fixtures and all-tool verification
 - [cocotb + waveforms](docs/examples/cocotb-waveforms.md) — Index `demo/` tree

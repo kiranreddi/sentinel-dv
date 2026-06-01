@@ -5,9 +5,11 @@ from __future__ import annotations
 TOOL_NAMES: tuple[str, ...] = (
     "runs.list",
     "runs.get",
+    "runs.summary",
     "runs.submit",
     "tests.list",
     "tests.get",
+    "tests.history",
     "tests.topology",
     "tests.replay",
     "assertions.list",
