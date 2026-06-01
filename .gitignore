@@ -70,6 +70,8 @@ sentinel_dv.db
 *.sqlite
 config.yaml
 config.local.yaml
+# Local live-sim harness (demo/axi4_uvm/vcs/live_status.json is a checked-in fixture)
+demo/verilator_counter/live_status.json
 *.log
 # Demo fixture logs (checked in for indexing examples)
 !demo/uvm_logs/
