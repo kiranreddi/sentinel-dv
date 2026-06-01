@@ -1,0 +1,35 @@
+{
+  "tool": "tests.history",
+  "arguments": {
+    "test_name": "counter_tb.test_counter_sim",
+    "suite": "verilator_counter",
+    "window_days": 30,
+    "as_of": null
+  },
+  "response": {
+    "test_name": "counter_tb.test_counter_sim",
+    "suite": "verilator_counter",
+    "framework": null,
+    "window_days": 30,
+    "as_of": "2026-06-01T18:33:23.029752Z",
+    "entries": [
+      {
+        "test_id": "t_3bb6bfc925aa",
+        "run_id": "r_85b1d3f70e48",
+        "status": "pass",
+        "seed": null,
+        "duration_ms": 10,
+        "framework": "cocotb",
+        "sim_vendor": null,
+        "suite": "verilator_counter",
+        "run_created_at": "2026-06-01T18:33:22.774708Z"
+      }
+    ],
+    "entries_returned": 1,
+    "distinct_statuses": [
+      "pass"
+    ],
+    "is_flaky": false,
+    "schema_version": "1.0.0"
+  }
+}

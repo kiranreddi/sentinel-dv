@@ -10,7 +10,7 @@
       {
         "run_id": "r_85b1d3f70e48",
         "suite": "verilator_counter",
-        "created_at": "2026-05-30T15:47:44.562808Z",
+        "created_at": "2026-06-01T18:33:22.774708Z",
         "kind": "functional",
         "covered_pct": 81.25,
         "metric_count": 2,
