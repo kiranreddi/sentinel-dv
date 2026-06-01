@@ -1,6 +1,6 @@
 # Examples
 
-Runnable examples ship in the repository. Use **`sentinel-dv>=2.1.0`** and enable **`adapters.waveform_summary: true`** for waveform tools.
+Runnable examples ship in the repository. Use **`sentinel-dv>=2.2.0`** and enable **`adapters.waveform_summary: true`** for waveform tools.
 
 | Example | Location | Docs |
 |---------|----------|------|

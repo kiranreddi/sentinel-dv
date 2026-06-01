@@ -82,3 +82,7 @@ demo/verilator_counter/live_status.json
 # Temporary files
 *.tmp
 .temp/
+dist-wheel/
+
+# Local conference drafts (checked-in tree under conference/ is unchanged)
+conference/paper/sentinel_dv_tight.md

@@ -7,7 +7,7 @@ Source: [`demo/verilator_counter/`](https://github.com/kiranreddi/sentinel-dv/tr
 ## Requirements
 
 - [Verilator](https://verilator.org) on `PATH`
-- `sentinel-dv>=2.1.0` (`pip install "sentinel-dv>=2.1.0"`)
+- `sentinel-dv>=2.2.0` (`pip install "sentinel-dv>=2.2.0"`)
 
 ## 1. Build and simulate (VCD)
 

@@ -1,6 +1,6 @@
 # Installation
 
-**Current release: v2.1.0** ([changelog](../about/changelog.md))
+**Current release: v2.2.0** ([changelog](../about/changelog.md))
 
 This guide shows how to configure and run Sentinel DV locally, then connect it to an MCP client (e.g. Claude Desktop).
 
@@ -17,10 +17,10 @@ uvx --from sentinel-dv sentinel-dv-server --config /absolute/path/to/config.yaml
 ### From PyPI
 
 ```bash
-pip install "sentinel-dv>=2.1.0"
+pip install "sentinel-dv>=2.2.0"
 ```
 
-> **Note:** Do not install PyPI **1.0.0** (broken wheel). Use **`sentinel-dv>=2.1.0`** for VCS/Questa/Cadence fixtures, assertion/coverage intelligence, VCD/JSON waveforms, and all **26 MCP tools**. Verified flow: install → `sentinel-dv-index --index-all` → `sentinel-dv-server` → MCP tools.
+> **Note:** Do not install PyPI **1.0.0** (broken wheel). Use **`sentinel-dv>=2.2.0`** for VCS/Questa/Cadence fixtures, assertion/coverage intelligence, VCD/JSON waveforms, and all **26 MCP tools**. Verified flow: install → `sentinel-dv-index --index-all` → `sentinel-dv-server` → MCP tools.
 
 For development:
 

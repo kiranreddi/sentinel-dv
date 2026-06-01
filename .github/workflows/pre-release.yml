@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Proposed tag (e.g. v1.3.2)"
+        description: "Proposed tag (e.g. v2.2.0)"
         required: true
         type: string
 

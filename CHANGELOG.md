@@ -5,30 +5,31 @@ All notable changes to Sentinel DV will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-06-01
-
-### Added
-
-- **F1 — Regression job submission** (`runs.submit`): generate simulator-specific submit commands (VCS, Questa, Xcelium, Riviera) from config templates. Input is shell-quoted; suite names validated with strict allowlist regex.
-- **F2 — Live simulator hook** (`sim.status`): read real-time `live_status.json` from artifact roots via `LiveSimAdapter`. Detects staleness, computes `percent_done`. Reference harness: `examples/live_sim_writer.py`.
-- **F3 — SVA/Formal property status** (`assertions.sva_status`, `assertions.vacuity`): paginated query of the new `sva_run_status` DuckDB table; `vacuity` tool flags vacuously-passing assertions with remediation recommendations.
-- **F4 — Seed replay** (`tests.replay`): look up failing test seed from the index and emit a ready-to-paste replay command.
-- **F5 — Coverage closure guidance** (`coverage.gaps`): heuristic engine classifies under-covered bins as high/medium/low priority and emits actionable recommendations.
-- **Bug Fix 1** — DuckDB ID sequences now seeded from existing max IDs; no duplicate-key errors on re-open.
-- **Bug Fix 2** — `resolve_config_with_demo_fallback()` emits `UserWarning` before using demo data (silent fallback removed from `resolve_config`).
-- Config additions: `SecurityLimits.max_command_length`, `SecurityLimits.max_coverage_gaps`, `AdaptersConfig.live_sim`, `AdaptersConfig.live_sim_max_age_seconds`, `SimulatorTemplate`, `SubmitConfig`.
-- Example: `examples/live_sim_writer.py` — reference harness to write `live_status.json` alongside a running simulator.
-
-### Changed
-
-- Tool count: **15 → 21** (6 new tools).
-- Install **`sentinel-dv>=2.0.0`** for all v2 features.
-
 ## [Unreleased]
 
+## [2.2.0] - 2026-05-29
+
 ### Added
 
-- (Nothing yet.)
+- **Coverage HTML parsing** — VCS URG (`dashboard.html`), Questa vcover (`overalldu.js`), and Cadence Xcelium IMC HTML (`cov_report.html`, `imc_summary.html`, `xcoverage_report.html`); content-sniffing avoids false matches on unrelated files.
+- **Production deployment guide** — `docs/deployment/production.md` documents stdio MCP + systemd; clarifies Sentinel DV is not an HTTP/Vercel service.
+- **Verilator demo config** — `demo/verilator_counter/config.example.yaml` includes `live_sim` and `submit` blocks for full 26-tool verification.
+### Changed
+
+- Install **`sentinel-dv>=2.2.0`** for post-2.1.0 parser fixes, coverage HTML ingestion, and deployment documentation.
+- `.gitignore` — ignore `demo/verilator_counter/live_status.json` (local live-sim harness output).
+- `scripts/verify_all_mcp_tools.py` — expects 26 tools; treats feature-gated `CONFIG_ERROR` / `NOT_FOUND` as OK when optional config is disabled.
+
+### Fixed
+
+- **UVM log parser** — skip `UVM_ERROR`/`UVM_FATAL` count-summary and demoted/caught report lines; detect `aborted` when no simulator completion marker; remove `\bUVM_FATAL\b` from `TEST_FAILED_PATTERN` false positives.
+- **Coverage text parser** — `_LINE_PATTERN` scope/kind delimiter fix for VCS-style reports.
+- **MCP output schema** — `_ITEM_ENVELOPE` makes `item` optional so error responses validate under FastMCP.
+- **`runs.submit` / `tests.replay`** — responses include `schema_version` via `detail_response()`.
+
+### Removed
+
+- Vercel serverless entrypoint (`api/index.py`); MCP server remains **stdio-only**.
 
 ## [2.1.0] - 2026-06-02
 
@@ -58,7 +59,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   now correctly reported as `status: "aborted"` rather than `"pass"`.  Catches OOM kills,
   license pre-emption, and run-script timeouts that terminate the process mid-simulation.
 - MCP output schema validation for error responses (`item` optional in `_ITEM_ENVELOPE`).
-- `runs.submit` and `tests.replay` responses include `schema_version` via `detail_response()`.
+- `runs.submit` and `tests.replay` responses include `schema_version` via `detail_response()` (see also **2.2.0** for follow-up envelope fixes).
+
+## [2.0.0] - 2026-06-01
+
+### Added
+
+- **F1 — Regression job submission** (`runs.submit`): generate simulator-specific submit commands (VCS, Questa, Xcelium, Riviera) from config templates. Input is shell-quoted; suite names validated with strict allowlist regex.
+- **F2 — Live simulator hook** (`sim.status`): read real-time `live_status.json` from artifact roots via `LiveSimAdapter`. Detects staleness, computes `percent_done`. Reference harness: `examples/live_sim_writer.py`.
+- **F3 — SVA/Formal property status** (`assertions.sva_status`, `assertions.vacuity`): paginated query of the new `sva_run_status` DuckDB table; `vacuity` tool flags vacuously-passing assertions with remediation recommendations.
+- **F4 — Seed replay** (`tests.replay`): look up failing test seed from the index and emit a ready-to-paste replay command.
+- **F5 — Coverage closure guidance** (`coverage.gaps`): heuristic engine classifies under-covered bins as high/medium/low priority and emits actionable recommendations.
+- **Bug Fix 1** — DuckDB ID sequences now seeded from existing max IDs; no duplicate-key errors on re-open.
+- **Bug Fix 2** — `resolve_config_with_demo_fallback()` emits `UserWarning` before using demo data (silent fallback removed from `resolve_config`).
+- Config additions: `SecurityLimits.max_command_length`, `SecurityLimits.max_coverage_gaps`, `AdaptersConfig.live_sim`, `AdaptersConfig.live_sim_max_age_seconds`, `SimulatorTemplate`, `SubmitConfig`.
+- Example: `examples/live_sim_writer.py` — reference harness to write `live_status.json` alongside a running simulator.
+
+### Changed
+
+- Tool count: **15 → 21** (6 new tools).
+- Install **`sentinel-dv>=2.0.0`** for all v2 features.
 
 ## [1.3.2] - 2026-05-29
 

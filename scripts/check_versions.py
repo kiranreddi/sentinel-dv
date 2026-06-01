@@ -21,6 +21,14 @@ PINNED_FILES: tuple[tuple[Path, str], ...] = (
     (ROOT / "mkdocs.yml", r"Sentinel DV v{version}"),
 )
 
+# PyPI install pins must match the package version being released.
+INSTALL_PIN_FILES: tuple[Path, ...] = (
+    ROOT / "README.md",
+    ROOT / "docs" / "getting-started" / "installation.md",
+    ROOT / "docs" / "getting-started" / "quick-start.md",
+    ROOT / "examples" / "README.md",
+)
+
 
 def read_package_version() -> str:
     text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
@@ -50,6 +58,16 @@ def check_pinned_files(version: str) -> list[str]:
     server = (ROOT / "server.json").read_text(encoding="utf-8")
     if f'"version": "{version}"' not in server:
         errors.append("server.json: packages[].version does not match")
+
+    install_pin = f"sentinel-dv>={version}"
+    for path in INSTALL_PIN_FILES:
+        if not path.is_file():
+            errors.append(f"Missing expected file: {path}")
+            continue
+        content = path.read_text(encoding="utf-8")
+        if install_pin not in content:
+            errors.append(f"{path.relative_to(ROOT)}: expected {install_pin!r}")
+
     return errors
 
 

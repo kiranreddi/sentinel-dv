@@ -9,7 +9,7 @@ Sentinel DV is **simulator-agnostic**. It indexes exported verification artifact
 | UVM logs | `*.log` | Parses common UVM report lines from VCS, Questa, Xcelium, Verilator, and generic logs. |
 | cocotb/JUnit | `results.xml`, `results_*.xml`, `junit.xml`, `*junit*.xml` | Produces tests and failure events. |
 | Assertions | `*.assert.json`, `*.assertions.txt`, `assertions*.rpt`, `vcs_assert*.log`, `vsim_assertions*.log`, `questa_assertions*.txt` | Produces assertion definitions and runtime failures. |
-| Coverage summaries | `coverage.json`, `coverage_summary.json`, `coverage.xml`, `*.cov.json`, `*.cov.txt`, `coverage.dat.summary`, `dashboard.html` (VCS URG), `overalldu.js` (Questa vcover) | Exported summaries or HTML/JS reports from URG/vcover are all supported. Raw proprietary databases (UCDB, VDB) are not parsed directly. |
+| Coverage summaries | `coverage.json`, `coverage_summary.json`, `coverage.xml`, `*.cov.json`, `*.cov.txt`, `coverage.dat.summary`, `dashboard.html` (VCS URG), `overalldu.js` (Questa vcover), `cov_report.html` / `imc_summary.html` / `xcoverage_report.html` (Xcelium IMC HTML) | Exported summaries or HTML/JS reports from URG, vcover, and IMC HTML are supported. Raw proprietary databases (UCDB, VDB) are not parsed directly. |
 | Waveform summaries | `*.wave.json`, `*_waveform.json`, `waveform_summary.json`, `*.vcd` | VCD can be parsed directly; FSDB/WLF/SHM/VPD should be converted to bounded JSON summaries first. |
 
 ## Checked-in simulator examples

@@ -1,6 +1,6 @@
 [project]
 name = "sentinel-dv"
-version = "2.1.0"
+version = "2.2.0"
 description = "Security-first MCP server for verification intelligence (SystemVerilog/UVM/cocotb)"
 authors = [{name = "Sentinel DV Team"}]
 license = {text = "Apache-2.0"}

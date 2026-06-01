@@ -13,7 +13,7 @@ Get up and running with Sentinel DV in minutes.
 === "PyPI (Recommended)"
 
     ```bash
-    pip install "sentinel-dv>=2.1.0"
+    pip install "sentinel-dv>=2.2.0"
     ```
 
 === "From Source"
@@ -99,7 +99,7 @@ python -m sentinel_dv.server --config config.yaml
 **Server will start on stdio (MCP protocol):**
 
 ```
-Sentinel DV v2.1.0 started
+Sentinel DV v2.2.0 started
 Schema version: 1.0.0
 Tools registered: 15
 Index ready: 150 tests indexed
