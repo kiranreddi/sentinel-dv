@@ -40,9 +40,15 @@ def indexed_store(tmp_path):
         status="fail",
     )
 
-    t1, t1_full = generate_test_id(run_id_full=run_a_full, framework="cocotb", test_name="tb.test_one")
-    t2, t2_full = generate_test_id(run_id_full=run_a_full, framework="cocotb", test_name="tb.test_two")
-    t3, t3_full = generate_test_id(run_id_full=run_b_full, framework="cocotb", test_name="tb.test_one")
+    t1, t1_full = generate_test_id(
+        run_id_full=run_a_full, framework="cocotb", test_name="tb.test_one"
+    )
+    t2, t2_full = generate_test_id(
+        run_id_full=run_a_full, framework="cocotb", test_name="tb.test_two"
+    )
+    t3, t3_full = generate_test_id(
+        run_id_full=run_b_full, framework="cocotb", test_name="tb.test_one"
+    )
 
     store.insert_test(
         test_id=t1,
