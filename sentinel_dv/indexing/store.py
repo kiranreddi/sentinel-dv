@@ -139,7 +139,7 @@ class IndexStore:
                 run_id TEXT NOT NULL,
                 framework TEXT NOT NULL,
                 name TEXT NOT NULL,
-                seed INTEGER,
+                seed BIGINT,
                 status TEXT NOT NULL,
                 duration_ms INTEGER,
                 sim_vendor TEXT,
@@ -389,6 +389,9 @@ class IndexStore:
                         f"UPDATE {table} SET created_at_ms = ? WHERE rowid = ?",
                         [epoch_ms, rowid],
                     )
+
+        with contextlib.suppress(duckdb.Error):
+            self._conn.execute("ALTER TABLE tests ALTER seed TYPE BIGINT")
 
         self._conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_runs_suite_created_at_ms

@@ -38,7 +38,7 @@ What actually happened.
 **Environment:**
 - OS: [e.g., Linux, macOS, Windows]
 - Python version: [e.g., 3.10.5]
-- Sentinel DV version: [e.g., 2.2.0]
+- Sentinel DV version: [e.g., 2.3.0]
 - Simulator: [e.g., VCS, Xcelium, Questa]
 
 **Configuration:**

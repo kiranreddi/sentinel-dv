@@ -65,6 +65,33 @@ def _strip_seed_from_name(test_name: str) -> str:
     return re.sub(r"[_.](\d{5,})$", "", test_name)
 
 
+def _testcase_properties(testcase: ET.Element) -> dict[str, list[str]]:
+    """Return JUnit testcase properties as name -> values."""
+    props: dict[str, list[str]] = {}
+    for prop in testcase.findall("./properties/property"):
+        name = (prop.get("name") or "").strip()
+        if not name:
+            continue
+        value = prop.get("value")
+        if value is None:
+            value = prop.text
+        if value is None:
+            continue
+        props.setdefault(name, []).append(value.strip())
+    return props
+
+
+def _split_artifact_property(values: list[str]) -> list[str]:
+    """Split common pytest/JUnit artifact properties into individual paths."""
+    paths: list[str] = []
+    for value in values:
+        for item in re.split(r"[\n;,]+", value):
+            item = item.strip()
+            if item:
+                paths.append(item)
+    return paths
+
+
 class CocotbParser:
     """
     Parser for JUnit XML test results (cocotb, UVM regression, Verilator).
@@ -107,6 +134,7 @@ class CocotbParser:
             name = testcase.get("name", "unknown")
             classname = testcase.get("classname", "")
             time_sec = float(testcase.get("time", "0"))
+            properties = _testcase_properties(testcase)
             seed_str = testcase.get("seed")
             seed_val = int(seed_str) if seed_str and seed_str.isdigit() else None
             # Inherit simulator from parent testsuite if not on testcase
@@ -128,6 +156,30 @@ class CocotbParser:
 
             # Use base test name (without seed suffix) for cleaner naming
             base_name = _strip_seed_from_name(f"{classname}.{name}" if classname else name)
+            test_artifacts = _split_artifact_property(
+                properties.get("test_artifacts", [])
+                + properties.get("artifacts", [])
+                + properties.get("artifact", [])
+            )
+            evidence = [
+                {
+                    "kind": "artifact",
+                    "path": xml_path.name,
+                    "span": None,
+                    "extract": None,
+                    "hash": None,
+                }
+            ]
+            evidence.extend(
+                {
+                    "kind": "log" if artifact.lower().endswith(".log") else "artifact",
+                    "path": artifact,
+                    "span": None,
+                    "extract": None,
+                    "hash": None,
+                }
+                for artifact in test_artifacts
+            )
 
             # Check for failure/error elements
             failure_elem = testcase.find("failure")
@@ -159,12 +211,14 @@ class CocotbParser:
                     "tags": taxonomy.tags,
                     "evidence": [
                         {
-                            "kind": "artifact",
-                            "path": xml_path.name,  # Use relative path (just filename)
-                            "span": None,
-                            "extract": self.redactor.redact(truncate_text(details, 1000)),
-                            "hash": None,
+                            **item,
+                            "extract": (
+                                self.redactor.redact(truncate_text(details, 1000))
+                                if item["path"] == xml_path.name
+                                else item.get("extract")
+                            ),
                         }
+                        for item in evidence
                     ],
                 }
                 failures.append(failure)
@@ -180,15 +234,7 @@ class CocotbParser:
                 "seed": seed_val,
                 "simulator": sim_attr,
                 "dut": None,
-                "evidence": [
-                    {
-                        "kind": "artifact",
-                        "path": xml_path.name,
-                        "span": None,
-                        "extract": None,
-                        "hash": None,
-                    }
-                ],
+                "evidence": evidence,
             }
             tests.append(test)
 

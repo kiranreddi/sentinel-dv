@@ -62,7 +62,7 @@
 }
 \subtitle{DVCon USA / DAC 2026}
 \author{Open-Source Contribution}
-\institute{\textbf{[GitHub]}\ \texttt{github.com/kiranreddi/sentinel-dv} \quad MIT License}
+\institute{\textbf{[GitHub]}\ \texttt{github.com/kiranreddi/sentinel-dv} \quad Apache 2.0 License}
 \date{2026}
 
 % =============================================================================
@@ -80,10 +80,10 @@
   \vspace{-1em}
   \begin{center}
     \small\color{sdvlight}
-    \textbf{26 MCP Tools} \quad|\quad
-    \textbf{3 Simulator Vendors} \quad|\quad
-    \textbf{1,477 CI Runs Validated} \quad|\quad
-    \textbf{Open Source (MIT)}
+    \textbf{28 MCP Tools} \quad|\quad
+    \textbf{4 Simulator Vendors} \quad|\quad
+    \textbf{50 Jenkins Roots Stress-Tested} \quad|\quad
+    \textbf{Open Source (Apache 2.0)}
   \end{center}
 \end{frame}
 \setbeamercolor{background canvas}{bg=white}
@@ -102,7 +102,7 @@
         \begin{itemize}
           \item \textbf{10,000s} of simulation logs — no unified query
           \item Coverage databases locked in proprietary formats
-          \item Failures scattered across VCS, Questa, Xcelium
+          \item Failures scattered across VCS, Questa, Xcelium, Verilator
           \item Manual log triage takes \textbf{hours per regression}
           \item AI assistants have \textbf{no interface} to sim artifacts
         \end{itemize}
@@ -197,23 +197,23 @@
 \end{frame}
 
 % =============================================================================
-\section{26 MCP Tools}
-\begin{frame}{26 MCP Tools — Six Categories}
+\section{28 MCP Tools}
+\begin{frame}{28 MCP Tools — Six Categories}
   \small
   \begin{columns}[T]
     \column{0.32\textwidth}
-      \begin{block}{Run Tracking (5)}
+      \begin{block}{Run Tracking (6)}
         \footnotesize
-        \texttt{runs.list} · \texttt{runs.get}\\
-        \texttt{runs.diff} · \texttt{runs.submit}\\
-        \texttt{runs.cross\_sim}
+        \texttt{runs.list} · \texttt{runs.get} · \texttt{runs.summary}\\
+        \texttt{runs.diff} · \texttt{runs.cross\_sim}\\
+        \texttt{runs.submit}$^\dagger$ (dry-run cmd)
       \end{block}
       \vspace{0.2em}
-      \begin{block}{Test Analysis (5)}
+      \begin{block}{Test Analysis (6)}
         \footnotesize
-        \texttt{tests.list} · \texttt{tests.get}\\
-        \texttt{tests.topology}\\
-        \texttt{tests.replay} · \texttt{tests.cluster}
+        \texttt{tests.list} · \texttt{tests.get} · \texttt{tests.history}\\
+        \texttt{tests.topology} · \texttt{tests.cluster}\\
+        \texttt{tests.replay}$^\dagger$ (dry-run cmd)
       \end{block}
       \vspace{0.2em}
       \begin{block}{Assertion Engine (5)}
@@ -231,18 +231,18 @@
         \texttt{.advisor}
       \end{block}
       \vspace{0.2em}
-      \begin{block}{Failure Triage (4)}
+      \begin{block}{Failure Triage (3)}
         \footnotesize
         \texttt{failures.list}\\
         \texttt{regressions.summary}\\
         \texttt{regression.health}
       \end{block}
       \vspace{0.2em}
-      \begin{block}{Waveform / Sim (2+)}
+      \begin{block}{Live Run \& Waveforms (3)}
         \footnotesize
+        \texttt{sim.status} (live\_status.json)\\
         \texttt{wave.signals}\\
-        \texttt{wave.summary}\\
-        \texttt{sim.status}
+        \texttt{wave.summary}
       \end{block}
 
     \column{0.32\textwidth}
@@ -290,9 +290,9 @@
       \begin{alertblock}{Critical Fix: Count-Summary Lines}
         \small
         VCS logs end with \texttt{UVM\_ERROR :\ \ \ 0}\\
-        Naive regex creates \textbf{16,240} false failures!\\[4pt]
+        Naive regex treats report counts as failures\\[4pt]
         \textbf{UVM\_COUNT\_SUMMARY\_PATTERN} skips these:\\
-        Result: \textbf{4,380 real failures} (73\% reduction)
+        Result: only message-bearing UVM errors are indexed
       \end{alertblock}
 
     \column{0.48\textwidth}
@@ -379,9 +379,10 @@ failures.list -> {
         \begin{itemize}
           \item $P$ = pass rate (30\% weight)
           \item $C$ = coverage score (35\% weight)
-          \item $A$ = assertion health (15\% weight)
+          \item $A$ = assertion health (if indexed)
           \item $F$ = flakiness inverse (10\% weight)
           \item $X$ = cross-sim consistency (10\% weight)
+          \item Missing components are flagged and weights renormalize
         \end{itemize}
       \end{block}
       \vspace{0.3em}
@@ -478,7 +479,7 @@ regression.health -> {
           \item Pre-generated artifacts for \textbf{all 4 simulators}:
                 VCS, Questa, Xcelium, Verilator
           \item Results, assertions, coverage, waveforms per sim
-          \item \textbf{5 seconds} to index + run all 26 tools
+          \item \textbf{5 seconds} to index + run all 28 tools
         \end{itemize}
       \end{block}
       \vspace{0.3em}
@@ -530,7 +531,7 @@ tests.cluster -> {
 
 % =============================================================================
 \section{Evaluation Results}
-\begin{frame}{Validation Results — 1,477 Real CI Runs}
+\begin{frame}{Validation Results — 50 Jenkins Roots}
   \begin{columns}[T]
     \column{0.50\textwidth}
       \begin{center}
@@ -543,27 +544,27 @@ tests.cluster -> {
           \toprule
           \textbf{Metric} & \textbf{Value} \\
           \midrule
-          Total CI runs indexed   & 1,477 \\
-          Total tests             & 2,611 \\
-          Total failures          & 4,814 \\
-          Coverage reports        & 6 \\
-          Projects                & 6 \\
-          Simulator vendors       & 3 \\
-          Unit tests              & 187 \\
+          Jenkins roots           & 50 \\
+          Artifacts scanned       & 5,074 \\
+          Index runtime           & 56.17s \\
+          Runs indexed            & 629 \\
+          Tests indexed           & 628 \\
+          Unique failures         & 154 \\
+          Coverage reports        & 1 \\
           \bottomrule
         \end{tabular}
       \end{block}
       \vspace{0.3em}
-      \begin{exampleblock}{Tool Validation}
+      \begin{exampleblock}{Stress Results}
         \begin{tabular}{lr}
-          \textbf{PASS} (live data)  & \textbf{20/26} \\
-          \textbf{SKIP} (needs sim)  & 5/26 \\
-          \textbf{SKIP} (no dataset) & 1/26 \\
-          \textbf{FAIL}              & \textbf{0/26} \\
+          Jenkins metadata & \textbf{629/629} \\
+          Questa-tagged tests & 340 \\
+          VCS-tagged tests & 52 \\
+          Health score & 85.5 \\
         \end{tabular}
       \end{exampleblock}
       \vspace{0.2em}
-      \small\textcolor{sdvgreen}{\textbf{Zero tool failures on real production data.}}
+      \small\textcolor{sdvgreen}{\textbf{Jenkins metadata inferred for all indexed runs.}}
   \end{columns}
 \end{frame}
 
@@ -642,7 +643,7 @@ advisories:
           \item VCS, Questa, Xcelium, Verilator — \textbf{same API}
           \item Jenkins, GitHub Actions, GitLab CI — point at artifacts
           \item No EDA license required to run the MCP server
-          \item Pure-Python, MIT licensed, PyPI installable
+          \item Pure-Python, Apache 2.0 licensed, PyPI installable
         \end{itemize}
       \end{block}
       \vspace{0.4em}
@@ -849,13 +850,13 @@ sentinel-dv index \
     \column{0.50\textwidth}
       \begin{block}{What We Built}
         \begin{itemize}
-          \item \textbf{26 MCP tools} — full DV workflow coverage
+          \item \textbf{28 MCP tools} — full DV workflow coverage
           \item \textbf{4-simulator} UVM log parsing (zero false positives)
           \item \textbf{HTML coverage parsers} — VCS URG + Questa + Xcelium
           \item \textbf{5 DV intelligence tools} — trend, clustering,
                 health score, advisor
-          \item Validated on \textbf{1,477 real CI runs}, 6 projects
-          \item \textbf{187 unit tests}, all green
+          \item Stress-tested on \textbf{50 Jenkins job/build roots}
+          \item \textbf{49-test} parser/MCP regression slice passing locally
           \item \textbf{CI green} on GitHub Actions (Python 3.10/3.11/3.12)
         \end{itemize}
       \end{block}
@@ -874,7 +875,7 @@ sentinel-dv index \
       \vspace{0.5em}
       \begin{center}
         \Large\textbf{[GitHub]}\ \texttt{kiranreddi/sentinel-dv}\\[4pt]
-        \normalsize MIT License · PyPI: \texttt{pip install sentinel-dv}\\[4pt]
+        \normalsize Apache 2.0 · PyPI: \texttt{pip install sentinel-dv}\\[4pt]
         \textcolor{sdvgreen}{\textbf{Stars *\ Welcome!}}
       \end{center}
   \end{columns}
@@ -892,12 +893,12 @@ sentinel-dv index \
       \texttt{pip install sentinel-dv}
     }\\[2em]
     \begin{tabular}{ccc}
-      \textcolor{white}{\textbf{26 MCP Tools}} &
-      \textcolor{white}{\textbf{3 Simulators}} &
-      \textcolor{white}{\textbf{1,477 CI Runs}} \\
+      \textcolor{white}{\textbf{28 MCP Tools}} &
+      \textcolor{white}{\textbf{4 Simulators}} &
+      \textcolor{white}{\textbf{50 Jenkins Roots}} \\
       \textcolor{sdvteal}{Full DV Workflow} &
-      \textcolor{sdvteal}{VCS·Questa·Xcelium} &
-      \textcolor{sdvteal}{Production Validated} \\
+      \textcolor{sdvteal}{VCS·Questa·Xcelium·Verilator} &
+      \textcolor{sdvteal}{Stress-Tested} \\
     \end{tabular}
   \end{center}
 \end{frame}

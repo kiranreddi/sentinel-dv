@@ -62,7 +62,7 @@
 \author{%
   \normalsize Open-Source Contribution \quad
   \href{https://github.com/kiranreddi/sentinel-dv}{\texttt{github.com/kiranreddi/sentinel-dv}}\\
-  \small MIT License \quad \texttt{pip install sentinel-dv}
+  \small Apache 2.0 License \quad \texttt{pip install sentinel-dv}
 }
 \date{DVCon USA / DAC 2026}
 
@@ -78,14 +78,15 @@ Modern design verification (DV) workflows generate enormous volumes of simulatio
 artifacts---UVM logs, coverage databases, assertion reports, regression
 summaries---that are stored in fragmented, proprietary formats inaccessible to AI
 reasoning systems. We present \textbf{Sentinel DV}, an open-source
-\emph{Model Context Protocol} (MCP) server that exposes \textbf{26 structured tool
+\emph{Model Context Protocol} (MCP) server that exposes \textbf{28 structured tool
 endpoints} enabling large language models (LLMs) to query, analyze, and reason
 over real simulation artifacts. Sentinel DV parses UVM logs from four simulators (VCS, Questa, Xcelium, Verilator), extracts coverage metrics from vendor HTML
 reports without database access, and provides five DV intelligence tools including
-a composite regression health score and an AI-powered coverage advisor. Validated
-on \textbf{1,477 real CI runs} across six verification projects, Sentinel DV
-eliminates 73\% of false-positive failure reports and achieves zero tool failures
-on production data.
+a composite regression health score and an AI-powered coverage advisor. In a
+50-project Jenkins stress test spanning real VCS and Questa artifacts, Sentinel
+DV indexed \textbf{5,074 artifacts} in \textbf{56.17 seconds}, producing 629
+normalized runs, 628 tests, 154 unique failure events, and Jenkins build
+metadata for every indexed run.
 \end{abstract}
 
 % ---- I. Introduction --------------------------------------------------------
@@ -109,11 +110,11 @@ by Claude, GPT-4o, VS~Code Copilot, and Cursor.
 We present \textbf{Sentinel DV}, an open-source MCP server that bridges the gap
 between DV artifact silos and AI reasoning systems. Our contributions are:
 \begin{enumerate}
-  \item A 26-tool MCP API covering the full DV workflow (Section~\ref{sec:tools})
+  \item A 28-tool MCP API covering the full DV workflow (Section~\ref{sec:tools})
   \item Multi-simulator UVM log parsers with false-positive elimination (Section~\ref{sec:adapters})
   \item HTML coverage parsers for VCS URG and Questa vcover without DB access (Section~\ref{sec:coverage})
   \item Five DV intelligence tools including health scoring and constraint generation (Section~\ref{sec:intelligence})
-  \item Validation on 1,477 real CI runs (Section~\ref{sec:evaluation})
+  \item Validation on 50 real Jenkins job/build roots (Section~\ref{sec:evaluation})
 \end{enumerate}
 
 % ---- II. Background ---------------------------------------------------------
@@ -141,15 +142,15 @@ AI integration impractical without a translation layer.
 \centering
 \includegraphics[width=0.95\columnwidth]{../figures/architecture.png}
 \caption{Sentinel DV system architecture. AI clients connect via MCP protocol to
-26 tool endpoints, which delegate to a SQLite store, five adapters, and three
-simulator log parsers.}
+28 tool endpoints, which delegate to a SQLite store, five adapters, and a
+multi-simulator log parser (VCS, Questa, Xcelium, Verilator).}
 \label{fig:arch}
 \end{figure}
 
 Sentinel DV comprises four layers (Figure~\ref{fig:arch}):
 
 \noindent\textbf{MCP Server Layer.}
-Built on \texttt{fastmcp}~\cite{fastmcp}, the server exposes 26 tools grouped into
+Built on \texttt{fastmcp}~\cite{fastmcp}, the server exposes 28 tools grouped into
 six categories and handles JSON-RPC dispatch with full Pydantic output validation.
 A path-redaction module strips internal hostnames and project paths from all
 responses.
@@ -167,34 +168,39 @@ JUnit XML / VCS results, assertion JSON, coverage HTML, and waveform summary.
 A single YAML file (\texttt{sentinel\_dv.yaml}) specifies artifact roots, DB path,
 and feature flags. No environment variables or vendor licenses are required.
 
-% ---- IV. 26 MCP Tools -------------------------------------------------------
+% ---- IV. 28 MCP Tools -------------------------------------------------------
 \section{MCP Tool Catalog}
 \label{sec:tools}
 
-Table~\ref{tab:tools} lists all 26 MCP tools. Five \emph{intelligence} tools
+Table~\ref{tab:tools} lists all 28 MCP tools. Five \emph{intelligence} tools
 (marked $\star$) go beyond data retrieval to provide AI-generated analysis.
+The two tools marked $\dagger$ (\texttt{runs.submit}, \texttt{tests.replay})
+are the only non-retrieval tools: they assemble a shell command string from the
+index and return it for a human or CI to run. The server never executes it.
 
 \begin{table}[h]
 \centering
-\caption{Sentinel DV MCP Tool Catalog (26 tools)}
+\caption{Sentinel DV MCP Tool Catalog (28 tools)}
 \label{tab:tools}
 \small
 \begin{tabular}{p{2.6cm}p{4.8cm}}
 \toprule
 \textbf{Category / Tool} & \textbf{Description} \\
 \midrule
-\multicolumn{2}{l}{\textit{Run Tracking (5)}} \\
+\multicolumn{2}{l}{\textit{Run Tracking (6)}} \\
 \texttt{runs.list}     & Paginated regression run listing \\
 \texttt{runs.get}      & Full detail for a single run \\
+\texttt{runs.summary} & Per-run status rollup + triage counts \\
 \texttt{runs.diff}     & Delta between two runs \\
-\texttt{runs.submit}   & Kick off a new simulation run \\
+\texttt{runs.submit}$^\dagger$ & Dry-run submit command (no execution) \\
 \texttt{runs.cross\_sim}$\star$ & Cross-vendor divergence analysis \\
 \midrule
-\multicolumn{2}{l}{\textit{Test Analysis (5)}} \\
+\multicolumn{2}{l}{\textit{Test Analysis (6)}} \\
 \texttt{tests.list}    & List tests with filter/sort \\
 \texttt{tests.get}     & Test detail with log excerpt \\
+\texttt{tests.history} & Outcomes for one test across runs \\
 \texttt{tests.topology}& Test dependency graph \\
-\texttt{tests.replay}  & Re-run a specific test \\
+\texttt{tests.replay}$^\dagger$  & Dry-run replay command (no execution) \\
 \texttt{tests.cluster}$\star$ & Root-cause failure grouping \\
 \midrule
 \multicolumn{2}{l}{\textit{Assertion Engine (5)}} \\
@@ -216,10 +222,10 @@ Table~\ref{tab:tools} lists all 26 MCP tools. Five \emph{intelligence} tools
 \texttt{regressions.summary}   & Pass/fail counts \\
 \texttt{regression.health}$\star$& Composite 0--100 score \\
 \midrule
-\multicolumn{2}{l}{\textit{Live Simulation (3)}} \\
-\texttt{wave.signals}  & Signal list from waveforms \\
+\multicolumn{2}{l}{\textit{Live Run \& Waveforms (3)}} \\
+\texttt{sim.status}    & Live run progress (\texttt{live\_status.json}) \\
+\texttt{wave.signals}  & Signal list from waveform summary \\
 \texttt{wave.summary}  & Transition + time summary \\
-\texttt{sim.status}    & Live simulator job status \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -246,9 +252,9 @@ xcelium: UVM_ERROR @ 500ns: comp [CAT] msg
 
 A critical correctness issue in naive parsers is the \emph{UVM count summary
 line}: VCS appends \texttt{UVM\_ERROR :\ \ 0} at the end of every log, which
-would generate 16,240 false failures across our validation dataset if parsed
-naively. A dedicated \texttt{UVM\_COUNT\_SUMMARY\_PATTERN} detects and skips
-these lines, reducing failures from 16,240 to \textbf{4,380}---a 73\% reduction.
+can generate false failures if parsed naively. A dedicated
+\texttt{UVM\_COUNT\_SUMMARY\_PATTERN} detects and skips count-only report
+summary lines so only message-bearing UVM errors and fatals are classified.
 
 \subsection{Coverage HTML Parser}
 \label{sec:coverage}
@@ -280,7 +286,9 @@ H = 0.30 P + 0.35 C + 0.15 A + 0.10 F + 0.10 X
 \]
 where $P$ = pass rate, $C$ = coverage score, $A$ = assertion health,
 $F$ = flakiness inverse (1 minus flaky-test fraction), and $X$ =
-cross-simulator consistency. Bands are: \texttt{sign-off-ready} ($H\geq90$),
+cross-simulator consistency. If assertion evidence is absent, $A$ is marked
+unavailable and the remaining component weights are renormalized rather than
+scoring assertions as perfect. Bands are: \texttt{sign-off-ready} ($H\geq90$),
 \texttt{minor-issues} ($H\geq75$), \texttt{coverage-gaps} ($H\geq55$),
 \texttt{not-ready} ($H<55$). A letter grade and ranked recommendations are
 included in the response.
@@ -313,23 +321,25 @@ records carry priority labels (high/medium/low).
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.95\columnwidth]{../figures/validation_results.png}
-\caption{Validation dataset: runs and failure counts across six verification
-projects spanning four simulator vendors.}
+\caption{Validation dataset: real Jenkins artifact stress test across 50
+job/build roots, including VCS and Questa simulator logs.}
 \label{fig:val}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.95\columnwidth]{../figures/tools_coverage.png}
-\caption{Left: 26 MCP tools by category. Right: coverage trend over a
+\caption{Left: 28 MCP tools by category. Right: coverage trend over a
 representative multi-run campaign.}
 \label{fig:tools}
 \end{figure}
 
 \subsection{Validation Dataset}
-Table~\ref{tab:dataset} summarizes our validation corpus. All data was produced
-by commercial EDA simulators running real RTL designs in CI pipelines.
-No synthetic or fabricated logs were used.
+Table~\ref{tab:dataset} summarizes the current validation corpus. All data was
+produced by commercial EDA simulators running RTL designs in Jenkins pipelines.
+No synthetic or fabricated logs were used. The stress set intentionally includes
+mixed-quality production artifacts: simulator logs, build logs, and exported
+coverage summaries.
 
 \begin{table}[h]
 \centering
@@ -340,55 +350,60 @@ No synthetic or fabricated logs were used.
 \toprule
 \textbf{Metric} & \textbf{Value} \\
 \midrule
-Total CI runs indexed   & 1,477 \\
-Total tests analyzed    & 2,611 \\
-Total failures classified & 4,814 \\
-Coverage reports parsed & 6 \\
-Verification projects   & 6 \\
-Simulator vendors       & 3 (VCS, Questa, Xcelium) \\
-Unit tests              & 187 \\
+Jenkins job/build roots & 50 \\
+Artifacts scanned       & 5,074 \\
+Index runtime           & 56.17 s \\
+Normalized runs indexed & 629 \\
+Tests analyzed          & 628 \\
+Unique failures indexed & 154 \\
+Coverage reports parsed & 1 \\
+Distinct suites         & 44 \\
+Simulator mix           & VCS + Questa + untagged logs \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Tool Validation Results}
-We exercised all 26 MCP tools against the validation corpus. Results:
-\textbf{20/26 tools} produced correct output on live data; 5 tools were
-skipped because they require live simulator process access
-(\texttt{runs.submit}, \texttt{tests.replay}, \texttt{sim.status},
-\texttt{wave.signals}, \texttt{wave.summary}); 1 tool
-(\texttt{assertions.vacuity}) was skipped due to absence of vacuity data
-in the dataset. \textbf{Zero tools produced incorrect or errored output.}
+\subsection{Stress-Test Results}
+The hardened indexer inferred Jenkins metadata for all 629 persisted runs
+(\texttt{ci\_system=jenkins}, \texttt{ci\_build\_id} populated) and grouped noisy
+artifact paths by job/build rather than immediate directories such as
+\texttt{sim}, \texttt{git}, or \texttt{python}. Simulator detection identified
+340 Questa tests and 52 VCS tests; 236 tests remained untagged because the logs
+did not expose a recognizable simulator banner. The aggregate health score was
+85.5/100, but the result is annotated with a data-quality warning because no
+assertion definition or SVA status artifacts were present in this corpus.
 
 \subsection{False-Positive Elimination}
-Without the count-summary filter, 16,240 UVM ERROR entries are
-detected across the VCS log corpus. With the \texttt{UVM\_COUNT\_SUMMARY\_PATTERN}
-filter enabled, 4,380 genuine failures are identified---a reduction of
-\textbf{73\%}---matching manual ground-truth classification.
+The stress corpus reinforces a practical parser requirement: UVM report-count
+summaries must not be treated as failure messages. Sentinel DV skips count-only
+lines such as \texttt{UVM\_ERROR : 0} and indexes only message-bearing
+\texttt{UVM\_ERROR}/\texttt{UVM\_FATAL} records as failures.
 
 \subsection{CI Pipeline}
-All 187 unit tests (Python 3.10/3.11/3.12) pass on GitHub Actions.
-Linting (ruff) and formatting (Black) checks are enforced per commit.
-The AXI4 UVM demo with pre-generated VCS, Questa, and Xcelium artifacts
-is included in the repository and tested in CI.
+A focused regression slice covering JUnit indexing, failure signatures, MCP
+queries, simulator examples, and regression health passes locally on Python
+3.13 (49 tests). The AXI4 UVM demo with pre-generated VCS, Questa, and Xcelium
+artifacts is included in the repository and tested in CI.
 
 % ---- VIII. Conclusion -------------------------------------------------------
 \section{Conclusion}
 
 We have presented Sentinel DV, an open-source MCP server that makes commercial EDA
-simulation artifacts queryable by AI assistants through 26 structured tool
+simulation artifacts queryable by AI assistants through 28 structured tool
 endpoints. Key innovations include multi-simulator UVM log parsing with
 false-positive elimination, HTML coverage extraction without database access, a
 composite regression health score, and an AI-powered coverage constraint advisor.
-Validated on 1,477 real CI runs across six projects and four simulator vendors (VCS, Questa, Xcelium, Verilator),
-Sentinel DV achieves zero tool failures and 73\% reduction in false positives.
+Validated on 50 real Jenkins job/build roots with VCS and Questa logs, Sentinel
+DV now demonstrates robust indexing of noisy CI artifact trees, Jenkins metadata
+normalization, and explicit data-quality warnings when assertion evidence is
+missing.
 
 Future work includes direct binary database parsing (UCDB/VDB), formal property
 synthesis from coverage gap analysis, cloud MCP endpoints for CI/CD integration,
 and test generation from failure clusters.
 
 Sentinel DV is available at \url{https://github.com/kiranreddi/sentinel-dv}
-under the MIT License.
+under the Apache 2.0 License.
 
 % ---- References -------------------------------------------------------------
 \small

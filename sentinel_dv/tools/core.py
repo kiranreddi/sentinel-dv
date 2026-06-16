@@ -1341,11 +1341,12 @@ def get_regression_health(
     total_ass = data["total_assertions"]
     vacuous = data["vacuous_assertions"]
     failing_ass = data["failing_assertions"]
+    assertion_health_available = total_ass > 0
     if total_ass:
         ass_penalty = min(100.0, (vacuous * 5 + failing_ass * 20))
-        assertion_score = max(0.0, round(100.0 - ass_penalty, 1))
+        assertion_score: float | None = max(0.0, round(100.0 - ass_penalty, 1))
     else:
-        assertion_score = 100.0  # no assertions → neutral
+        assertion_score = None
 
     flaky = data["flaky_tests"]
     flakiness_score = max(0.0, round(100.0 - (flaky / max(total, 1)) * 200, 1))
@@ -1368,7 +1369,17 @@ def get_regression_health(
         "flakiness": flakiness_score,
         "cross_sim_consistency": cross_sim_score,
     }
-    health_score = round(sum(scores[k] * weights[k] for k in weights), 1)
+    available_weights = {
+        key: weight for key, weight in weights.items() if scores.get(key) is not None
+    }
+    weight_total = sum(available_weights.values()) or 1.0
+    effective_weights = {
+        key: round(weight / weight_total, 4) for key, weight in available_weights.items()
+    }
+    health_score = round(
+        sum(float(scores[k]) * weights[k] for k in available_weights) / weight_total,
+        1,
+    )
 
     if health_score >= 90:
         band = "sign-off-ready"
@@ -1399,6 +1410,14 @@ def get_regression_health(
             f"{vacuous} assertion(s) fire vacuously — "
             "the antecedent is never triggered. Add targeted stimulus."
         )
+    data_quality_warnings: list[str] = []
+    if not assertion_health_available:
+        data_quality_warnings.append(
+            "No assertion definitions or SVA status were indexed; assertion health is unavailable."
+        )
+        recommendations.append(
+            "Index assertion definition/status artifacts before using health score for sign-off."
+        )
     if divergent > 0:
         recommendations.append(
             f"{divergent} test(s) diverge across simulators. "
@@ -1406,6 +1425,7 @@ def get_regression_health(
         )
     if not recommendations:
         recommendations.append("No critical issues detected. Ready for sign-off review.")
+    assertion_text = f"{assertion_score:.0f}%" if assertion_score is not None else "unavailable"
 
     return detail_response(
         {
@@ -1414,13 +1434,18 @@ def get_regression_health(
             "band_symbol": band_symbol,
             "component_scores": scores,
             "weights": weights,
+            "effective_weights": effective_weights,
+            "data_quality": {
+                "assertion_health_available": assertion_health_available,
+                "warnings": data_quality_warnings,
+            },
             "raw_data": data,
             "recommendations": recommendations,
             "note": (
                 f"{band_symbol} Health score: {health_score}/100 ({band}). "
                 f"Breakdown — pass_rate: {pass_rate_score:.0f}%, "
                 f"coverage: {coverage_score:.0f}%, "
-                f"assertions: {assertion_score:.0f}%, "
+                f"assertions: {assertion_text}, "
                 f"flakiness: {flakiness_score:.0f}%, "
                 f"cross-sim: {cross_sim_score:.0f}%."
             ),

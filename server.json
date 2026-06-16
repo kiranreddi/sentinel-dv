@@ -2,14 +2,21 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.kiranreddi/sentinel-dv",
   "title": "Sentinel DV",
-  "description": "Security-first MCP server for verification intelligence (SystemVerilog/UVM/cocotb)",
+  "description": "MCP tools for UVM/cocotb logs, coverage, regressions, and waveform triage.",
   "version": "2.3.0",
-  "websiteUrl": "https://github.com/kiranreddi/sentinel-dv",
+  "websiteUrl": "https://kiranreddi.github.io/sentinel-dv/",
   "repository": {
     "url": "https://github.com/kiranreddi/sentinel-dv",
     "source": "github",
     "id": "1141861890"
   },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/kiranreddi/sentinel-dv/main/docs/assets/logo.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"]
+    }
+  ],
   "packages": [
     {
       "registryType": "pypi",
@@ -49,5 +56,19 @@
         }
       ]
     }
-  ]
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "tags": [
+        "verification",
+        "uvm",
+        "systemverilog",
+        "cocotb",
+        "eda",
+        "regression",
+        "coverage",
+        "jenkins"
+      ]
+    }
+  }
 }

@@ -11,17 +11,19 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [2.3.0] - 2026-05-29
+## [2.3.0] - 2026-06-05
 
 ### Added
 
 - **`runs.summary`** — per-run test status rollup (counts, pass rate, slowest tests, failure totals).
 - **`tests.history`** — cross-run timeline for a logical test name with flaky detection.
+- **Jenkins artifact indexing** — suite and CI metadata from common Jenkins paths; canonical JUnit XML per directory.
+- **Cocotb JUnit evidence** — `test_artifacts` properties linked as per-test evidence.
 
 ### Changed
 
-- Tool count **26 → 28**; gallery and verify script aligned.
-- Install **`sentinel-dv>=2.3.0`** for the new tools.
+- Tool count **26 → 28**; gallery, MCP registry manifest (logo/tags), and verify script aligned.
+- Install **`sentinel-dv>=2.3.0`** for the new tools and Jenkins-aware indexing.
 
 ## [2.2.0] - 2026-05-29
 

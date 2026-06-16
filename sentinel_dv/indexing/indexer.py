@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path, PurePosixPath
-from typing import Any, TypedDict
+from typing import Any, NamedTuple, TypedDict
 
 from sentinel_dv.adapters.assertion_reports import ASSERTION_GLOBS, AssertionReportParser
 from sentinel_dv.adapters.cocotb import CocotbParser
@@ -42,6 +43,15 @@ class IndexStats(TypedDict):
     warnings: list[str]
 
 
+class ArtifactContext(NamedTuple):
+    """Artifact metadata inferred from a CI filesystem path."""
+
+    suite: str
+    ci_system: str | None
+    ci_build_id: str | None
+    ci_job_url: str | None
+
+
 class ArtifactIndexer:
     """Scan artifact roots and populate the DuckDB index."""
 
@@ -75,6 +85,7 @@ class ArtifactIndexer:
             max_metrics=self.security.max_coverage_metrics,
             max_bins_missed=self.security.max_bins_missed,
         )
+        self._basename_index: dict[str, list[Path]] | None = None
 
     @staticmethod
     def _is_cocotb_junit_xml(path: Path) -> bool:
@@ -88,17 +99,40 @@ class ArtifactIndexer:
 
     def scan_artifacts(self) -> list[Path]:
         """Collect indexable artifact paths under configured roots."""
-        found: list[Path] = []
+        logs: list[Path] = []
+        xmls: list[Path] = []
         for root in self.artifact_roots:
             if not root.exists():
                 continue
-            found.extend(p for p in root.rglob("*.log") if not p.is_symlink())
-            found.extend(
+            logs.extend(p for p in root.rglob("*.log") if not p.is_symlink())
+            xmls.extend(
                 p
                 for p in root.rglob("*.xml")
                 if not p.is_symlink() and self._is_cocotb_junit_xml(p)
             )
-        return sorted(set(found))
+        return sorted(set(logs) | set(self._dedupe_junit_xml_artifacts(xmls)))
+
+    @staticmethod
+    def _dedupe_junit_xml_artifacts(paths: list[Path]) -> list[Path]:
+        """Prefer one canonical JUnit result per directory for common CI variants."""
+        preference = {
+            "filtered_results.xml": 0,
+            "combined_results.xml": 1,
+            "results.xml": 2,
+        }
+        grouped: dict[Path, list[Path]] = {}
+        passthrough: list[Path] = []
+        for path in paths:
+            name = path.name.lower()
+            if name in preference:
+                grouped.setdefault(path.parent, []).append(path)
+            else:
+                passthrough.append(path)
+        selected = [
+            sorted(items, key=lambda item: (preference[item.name.lower()], item.name))[0]
+            for items in grouped.values()
+        ]
+        return passthrough + selected
 
     def scan_waveform_artifacts(self) -> list[Path]:
         """Collect waveform summary JSON and VCD trace files."""
@@ -171,6 +205,8 @@ class ArtifactIndexer:
             for path in sva_status_artifacts:
                 self._index_sva_status_artifact(store, path, stats)
 
+            self._refresh_stats_from_store(store, stats)
+
         return stats
 
     def scan_assertion_artifacts(self) -> list[Path]:
@@ -214,20 +250,34 @@ class ArtifactIndexer:
             return
 
         rel = self._relative_path(log_path)
+        ctx = self._artifact_context(log_path)
         run_id, run_id_full = generate_run_id(
-            suite=log_path.parent.name or "uvm",
+            suite=ctx.suite,
             artifact_manifest=[(rel, self._file_hash(log_path))],
         )
         status = "fail" if result.get("failures") else "pass"
         created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
-        if not store.get_run(run_id):
+        if self._upsert_run(
+            store,
+            run_id=run_id,
+            run_id_full=run_id_full,
+            suite=ctx.suite,
+            created_at=created_at,
+            status=status,
+            ci_system=ctx.ci_system,
+            ci_build_id=ctx.ci_build_id,
+            ci_job_url=ctx.ci_job_url,
+        ):
             store.insert_run(
                 run_id=run_id,
                 run_id_full=run_id_full,
-                suite=log_path.parent.name or "uvm",
+                suite=ctx.suite,
                 created_at=created_at,
                 status=status,
+                ci_system=ctx.ci_system,
+                ci_build_id=ctx.ci_build_id,
+                ci_job_url=ctx.ci_job_url,
             )
             stats["runs"] += 1
 
@@ -245,6 +295,9 @@ class ArtifactIndexer:
             name=test_name,
             status=status,
             created_at=created_at,
+            seed=result["test"].get("seed"),
+            duration_ms=result["test"].get("duration_ms"),
+            sim_vendor=result["test"].get("simulator"),
         )
         stats["tests"] += 1
 
@@ -262,26 +315,49 @@ class ArtifactIndexer:
             return
 
         rel = self._relative_path(xml_path)
+        ctx = self._artifact_context(xml_path)
         run_id, run_id_full = generate_run_id(
-            suite=xml_path.parent.name or "cocotb",
-            artifact_manifest=[(rel, self._file_hash(xml_path))],
+            suite=ctx.suite,
+            ci_system=ctx.ci_system,
+            ci_build_id=ctx.ci_build_id,
+            ci_job_url=ctx.ci_job_url,
+            artifact_manifest=(
+                None if ctx.ci_system and ctx.ci_build_id else [(rel, self._file_hash(xml_path))]
+            ),
         )
         any_fail = any(t["status"] == "fail" for t in result["tests"])
         status = "fail" if any_fail else "pass"
         created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
-        if not store.get_run(run_id):
+        if self._upsert_run(
+            store,
+            run_id=run_id,
+            run_id_full=run_id_full,
+            suite=ctx.suite,
+            created_at=created_at,
+            status=status,
+            ci_system=ctx.ci_system,
+            ci_build_id=ctx.ci_build_id,
+            ci_job_url=ctx.ci_job_url,
+        ):
             store.insert_run(
                 run_id=run_id,
                 run_id_full=run_id_full,
-                suite=xml_path.parent.name or "cocotb",
+                suite=ctx.suite,
                 created_at=created_at,
                 status=status,
+                ci_system=ctx.ci_system,
+                ci_build_id=ctx.ci_build_id,
+                ci_job_url=ctx.ci_job_url,
             )
             stats["runs"] += 1
 
         failures_by_test: dict[str | None, list[dict[str, Any]]] = {}
         for failure in result.get("failures", []):
+            failure["evidence"] = self._resolve_evidence_paths(
+                failure.get("evidence", []),
+                source_path=xml_path,
+            )
             failures_by_test.setdefault(failure.get("test_name"), []).append(failure)
 
         for test in result["tests"]:
@@ -299,6 +375,8 @@ class ArtifactIndexer:
                 status=test["status"],
                 created_at=created_at,
                 duration_ms=test.get("duration_ms"),
+                seed=test.get("seed"),
+                sim_vendor=test.get("simulator"),
             )
             stats["tests"] += 1
 
@@ -538,18 +616,37 @@ class ArtifactIndexer:
                 test_id, run_id, _ = ctx
         if not run_id:
             rel = self._relative_path(path)
+            ctx = self._artifact_context(path)
             run_id, run_id_full = generate_run_id(
-                suite=path.parent.name or "coverage",
-                artifact_manifest=[(rel, self._file_hash(path))],
+                suite=ctx.suite,
+                ci_system=ctx.ci_system,
+                ci_build_id=ctx.ci_build_id,
+                ci_job_url=ctx.ci_job_url,
+                artifact_manifest=(
+                    None if ctx.ci_system and ctx.ci_build_id else [(rel, self._file_hash(path))]
+                ),
             )
             created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-            if not store.get_run(run_id):
+            if self._upsert_run(
+                store,
+                run_id=run_id,
+                run_id_full=run_id_full,
+                suite=ctx.suite,
+                created_at=created_at,
+                status="pass",
+                ci_system=ctx.ci_system,
+                ci_build_id=ctx.ci_build_id,
+                ci_job_url=ctx.ci_job_url,
+            ):
                 store.insert_run(
                     run_id=run_id,
                     run_id_full=run_id_full,
-                    suite=path.parent.name or "coverage",
+                    suite=ctx.suite,
                     created_at=created_at,
                     status="pass",
+                    ci_system=ctx.ci_system,
+                    ci_build_id=ctx.ci_build_id,
+                    ci_job_url=ctx.ci_job_url,
                 )
                 stats["runs"] += 1
 
@@ -683,6 +780,141 @@ class ArtifactIndexer:
             }
             normalized.append(item)
         return normalized
+
+    def _resolve_evidence_paths(
+        self,
+        refs: list[dict[str, Any]],
+        *,
+        source_path: Path,
+    ) -> list[dict[str, Any]]:
+        """Map JUnit artifact pointers to bounded local evidence paths when possible."""
+        source_rel = self._relative_path(source_path)
+        resolved: list[dict[str, Any]] = []
+        for ref in refs:
+            item = dict(ref)
+            path_value = str(item.get("path", "")).strip()
+            if not path_value or path_value == source_path.name:
+                item["path"] = source_rel
+                resolved.append(item)
+                continue
+
+            candidate = Path(path_value)
+            if candidate.is_absolute():
+                matched = self._find_artifact_by_basename(candidate.name, near=source_path)
+                item["path"] = (
+                    self._relative_path(matched)
+                    if matched is not None
+                    else f"external_artifacts/{candidate.name}"
+                )
+                resolved.append(item)
+                continue
+
+            sibling = (source_path.parent / candidate).resolve()
+            if sibling.exists() and sibling.is_file() and not sibling.is_symlink():
+                item["path"] = self._relative_path(sibling)
+            resolved.append(item)
+        return resolved
+
+    def _find_artifact_by_basename(self, basename: str, *, near: Path) -> Path | None:
+        """Find a copied artifact with the same basename, preferring paths near source."""
+        if not basename:
+            return None
+        if self._basename_index is None:
+            index: dict[str, list[Path]] = {}
+            for root in self.artifact_roots:
+                if not root.exists():
+                    continue
+                for path in root.rglob(basename):
+                    if path.is_file() and not path.is_symlink():
+                        index.setdefault(path.name, []).append(path)
+            self._basename_index = index
+        matches = self._basename_index.get(basename, [])
+        if not matches:
+            return None
+        near_parts = set(self._relative_path(near).split("/"))
+        return max(
+            matches,
+            key=lambda path: len(near_parts & set(self._relative_path(path).split("/"))),
+        )
+
+    def _upsert_run(
+        self,
+        store: IndexStore,
+        *,
+        run_id: str,
+        run_id_full: str,
+        suite: str,
+        created_at: str,
+        status: str,
+        ci_system: str | None,
+        ci_build_id: str | None,
+        ci_job_url: str | None,
+    ) -> bool:
+        """Return True for a new run; preserve fail status for existing runs."""
+        existing = store.get_run(run_id)
+        if not existing:
+            return True
+        merged_status = "fail" if status == "fail" or existing.get("status") == "fail" else status
+        store.insert_run(
+            run_id=run_id,
+            run_id_full=run_id_full,
+            suite=suite,
+            created_at=str(existing.get("created_at") or created_at),
+            status=merged_status,
+            ci_system=ci_system or existing.get("ci_system"),
+            ci_build_id=ci_build_id or existing.get("ci_build_id"),
+            ci_job_url=ci_job_url or existing.get("ci_job_url"),
+        )
+        return False
+
+    def _artifact_context(self, path: Path) -> ArtifactContext:
+        """Infer stable suite and CI metadata from common Jenkins artifact paths."""
+        rel = self._relative_path(path)
+        parts = list(PurePosixPath(rel).parts)
+        abs_parts = list(path.resolve().parts)
+        marker_idx: int | None = None
+        for marker in ("artifacts_jks02", "artifacts"):
+            if marker in parts:
+                marker_idx = parts.index(marker)
+                break
+            if marker in abs_parts:
+                marker_idx = abs_parts.index(marker)
+                parts = abs_parts
+                break
+
+        if marker_idx is not None and len(parts) > marker_idx + 2:
+            job = parts[marker_idx + 1]
+            build = parts[marker_idx + 2]
+            if re.fullmatch(r"\d+", build):
+                return ArtifactContext(
+                    suite=job,
+                    ci_system="jenkins",
+                    ci_build_id=build,
+                    ci_job_url=f"jenkins://{job}/{build}",
+                )
+
+        return ArtifactContext(
+            suite=path.parent.name or "artifact",
+            ci_system=None,
+            ci_build_id=None,
+            ci_job_url=None,
+        )
+
+    @staticmethod
+    def _refresh_stats_from_store(store: IndexStore, stats: IndexStats) -> None:
+        """Replace insert-attempt counters with persisted row counts."""
+        stats["runs"] = store.count_runs()
+        stats["tests"] = store.count_tests()
+        stats["failures"] = store.count_failures()
+        if store._conn:
+            for key, table in (
+                ("coverage", "coverage_summaries"),
+                ("assertions", "assertions"),
+                ("assertion_failures", "assertion_failures"),
+                ("waveforms", "waveform_summaries"),
+            ):
+                row = store._conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
+                stats[key] = int(row[0]) if row else 0
 
     def _relative_path(self, path: Path) -> str:
         for root in self.artifact_roots:

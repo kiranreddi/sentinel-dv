@@ -7,18 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.3.0] - 2026-05-29
+## [2.3.0] - 2026-06-05
 
 ### Added
 
 - **`runs.summary`** — per-run rollup of test status counts, pass rate, failure/assertion event totals, and slowest tests (without paging `tests.list`).
 - **`tests.history`** — time-ordered outcomes for a logical `test_name` across runs, with `is_flaky` and `distinct_statuses` for triage.
+- **Jenkins artifact indexing** — infer `suite`, `ci_system`, `ci_build_id`, and `ci_job_url` from common Jenkins workspace paths; dedupe `filtered_results.xml` / `combined_results.xml` / `results.xml` per directory.
+- **Cocotb JUnit evidence** — ingest `test_artifacts` / `artifacts` properties as per-test evidence paths.
 
 ### Changed
 
 - Tool count: **26 → 28** (`runs.summary`, `tests.history`).
-- Install **`sentinel-dv>=2.3.0`** for the new run/test aggregation tools.
-- Documentation, MCP gallery, and `scripts/verify_all_mcp_tools.py` updated for 28 tools.
+- Install **`sentinel-dv>=2.3.0`** for the new run/test aggregation tools and Jenkins-aware indexing.
+- Documentation, MCP gallery, `server.json` (logo, tags, docs URL), and `scripts/verify_all_mcp_tools.py` updated for 28 tools.
 
 ## [2.2.0] - 2026-05-29
 

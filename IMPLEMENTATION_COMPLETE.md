@@ -9,7 +9,7 @@
 - Rule-based taxonomy and redaction for parsed failure content.
 - DuckDB index store with runs, tests, failures, assertions, assertion failures, coverage summaries, topologies, waveform summaries, evidence, and metadata.
 - Artifact indexer for UVM logs, cocotb/JUnit XML, assertion reports, coverage summaries, precomputed waveform JSON, and VCD summaries.
-- FastMCP server exposing all 26 registered tools.
+- FastMCP server exposing all 28 registered tools.
 - Security hardening for artifact roots, path traversal rejection, bounded evidence, bounded responses, and configurable redaction.
 - Checked-in demo corpus covering UVM, cocotb, Verilator, VCS, Questa, and Cadence Xcelium exported artifacts.
 - SVG MCP tool gallery generated from real demo-indexed request/response payloads.

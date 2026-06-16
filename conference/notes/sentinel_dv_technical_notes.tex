@@ -292,7 +292,7 @@ The parser uses five regex patterns, tried in priority order per log line:
 
 \textbf{False-positive elimination}: Pattern 5 matches the summary lines that VCS
 appends to every log (e.g., \texttt{UVM\_ERROR :\ \ \ 0}). Without this skip rule,
-73\% of reported failures are false positives.
+count-only report summaries are easily misclassified as real failures.
 
 \subsection{VCS URG HTML Coverage Parser}
 
@@ -346,7 +346,9 @@ configurable via \texttt{sentinel\_dv.yaml}. Components:
 \begin{itemize}
   \item $P$: pass rate = passing tests / total tests (0--100)
   \item $C$: coverage score from \texttt{coverage.summary} total metric (0--100)
-  \item $A$: assertion health = 100 if no assertion failures, else scaled (0--100)
+  \item $A$: assertion health from indexed assertion definitions/status. If no
+        assertion evidence is indexed, this component is marked unavailable and
+        the remaining weights are renormalized.
   \item $F$: flakiness fraction = tests that diverge across simulator runs (0--1)
   \item $X$: cross-simulator consistency from \texttt{runs.cross\_sim} (0--100)
 \end{itemize}

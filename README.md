@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI](https://img.shields.io/pypi/v/sentinel-dv.svg)](https://pypi.org/project/sentinel-dv/)
-[![MCP](https://img.shields.io/badge/MCP-registry-purple.svg)](https://registry.modelcontextprotocol.io)
+[![MCP Registry](https://img.shields.io/badge/MCP-io.github.kiranreddi%2Fsentinel--dv-purple)](https://registry.modelcontextprotocol.io/?search=io.github.kiranreddi/sentinel-dv)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![CI](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml)
 [![Documentation](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml)
@@ -323,7 +323,7 @@ mypy sentinel_dv/
 ## 📊 Project Status
 
 - ✅ **Core schemas** - Stable v1.0
-- ✅ **MCP tools** - 26 read-only tools (discovery, analysis, regression, waveforms, v2.0 workflow, v2.1 DV intelligence)
+- ✅ **MCP tools** - 28 tools (discovery, analysis, regression, waveforms, v2.0 workflow, v2.1 DV intelligence, v2.3 run/test aggregation)
 - ✅ **Adapters** - UVM, cocotb, assertions, coverage
 - ✅ **Indexing** - DuckDB with efficient querying
 - ✅ **Security** - Redaction, sandboxing, bounding

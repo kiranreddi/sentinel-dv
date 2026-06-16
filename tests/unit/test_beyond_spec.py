@@ -283,7 +283,8 @@ class TestRegressionHealth:
                 "cross_sim_consistency",
             ):
                 assert key in comps
-                assert 0 <= comps[key] <= 100
+                if comps[key] is not None:
+                    assert 0 <= comps[key] <= 100
 
     def test_recommendations_non_empty(self, tmp_path):
         with _make_store(tmp_path) as store:
