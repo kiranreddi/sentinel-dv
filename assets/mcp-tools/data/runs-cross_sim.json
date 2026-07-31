@@ -4,6 +4,7 @@
   "response": {
     "suite_prefix": null,
     "divergent_tests": [],
+    "unique_divergent_tests": 0,
     "unique_divergent_names": 0,
     "simulator_pairs_analysed": [],
     "note": "No cross-simulator divergence detected. All shared test names produce consistent results.",

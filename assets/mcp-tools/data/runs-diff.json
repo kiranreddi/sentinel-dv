@@ -26,6 +26,25 @@
         "count": 1
       }
     ],
+    "persistent_failures": [],
+    "coverage_deltas": [
+      {
+        "kind": "functional",
+        "metric_name": "line",
+        "scope": "counter",
+        "base_covered_pct": null,
+        "compare_covered_pct": 87.5,
+        "delta_pct": null
+      },
+      {
+        "kind": "functional",
+        "metric_name": "toggle",
+        "scope": "counter",
+        "base_covered_pct": null,
+        "compare_covered_pct": 75.0,
+        "delta_pct": null
+      }
+    ],
     "schema_version": "1.0.0"
   }
 }

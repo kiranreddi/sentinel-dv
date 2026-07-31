@@ -8,6 +8,8 @@
     "schema_version": "1.0.0",
     "gaps": [
       {
+        "run_id": "r_85b1d3f70e48",
+        "suite": "verilator_counter",
         "metric_name": "toggle",
         "scope": "counter",
         "kind": "functional",
@@ -17,6 +19,8 @@
         "recommendation": "Functional coverage gap in 'toggle' (scope: counter, 75.0% covered). Add constrained-random or directed tests targeting the uncovered bins. Consider increasing the test seed space or adding a dedicated directed test."
       },
       {
+        "run_id": "r_85b1d3f70e48",
+        "suite": "verilator_counter",
         "metric_name": "line",
         "scope": "counter",
         "kind": "functional",
@@ -35,11 +39,13 @@
       "total_items": 2,
       "total_pages": 1
     },
+    "run_id": null,
     "suite": "verilator_counter",
     "kind": null,
+    "priority": null,
     "threshold_pct": 100.0,
     "total_metrics": 2,
     "gaps_found": 2,
-    "note": "Gaps are sorted by priority (high\u2192medium\u2192low) then by coverage percentage. Use tests.replay to reproduce specific failures. Showing page 1 of 1."
+    "note": "Gaps are sorted by priority (high\u2192medium\u2192low) then by coverage percentage. Use coverage.advisor with an exact run_id and metric_name for a reviewable stimulus candidate. Showing page 1 of 1."
   }
 }

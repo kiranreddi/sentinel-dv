@@ -4,15 +4,15 @@
     "suite": "verilator_counter"
   },
   "response": {
-    "health_score": 71.2,
+    "health_score": 59.1,
     "band": "coverage-gaps",
     "band_symbol": "\ud83d\udfe0",
     "component_scores": {
       "pass_rate": 33.3,
       "coverage": 81.2,
-      "assertion_health": 85.0,
-      "flakiness": 100.0,
-      "cross_sim_consistency": 100.0
+      "assertion_health": null,
+      "flakiness": null,
+      "cross_sim_consistency": null
     },
     "weights": {
       "pass_rate": 0.3,
@@ -20,6 +20,21 @@
       "assertion_health": 0.15,
       "flakiness": 0.1,
       "cross_sim_consistency": 0.1
+    },
+    "effective_weights": {
+      "pass_rate": 0.4615,
+      "coverage": 0.5385
+    },
+    "data_quality": {
+      "coverage_available": true,
+      "assertion_health_available": false,
+      "flakiness_available": false,
+      "cross_sim_consistency_available": false,
+      "warnings": [
+        "No assertion definitions or SVA status were indexed; assertion health is unavailable.",
+        "No repeated test cohorts were indexed; flakiness is unavailable.",
+        "No comparable multi-simulator cohorts were indexed; cross-simulator consistency is unavailable."
+      ]
     },
     "raw_data": {
       "total_tests": 3,
@@ -29,17 +44,29 @@
       "coverage_by_kind": {
         "functional": 81.25
       },
-      "total_assertions": 10,
-      "vacuous_assertions": 3,
+      "total_assertions": 0,
+      "vacuous_assertions": 0,
       "failing_assertions": 0,
       "flaky_tests": 0,
-      "divergent_tests": 0
+      "history_cohorts": 0,
+      "divergent_tests": 0,
+      "cross_sim_cohorts": 0,
+      "scope": {
+        "run_id": null,
+        "suite": "verilator_counter"
+      },
+      "heuristics": {
+        "flaky_tests": "A test cohort is flagged when both pass and fail outcomes exist in indexed history for the scoped suite.",
+        "divergent_tests": "Latest pass/fail outcomes differ across simulators within the same suite, framework, DUT top, and test name."
+      }
     },
     "recommendations": [
-      "Pass rate is 33% (2 failures). Use tests.cluster to find root causes.",
-      "3 assertion(s) fire vacuously \u2014 the antecedent is never triggered. Add targeted stimulus."
+      "Pass rate is 33% (2 failures). Use tests.cluster to group recurring failure signatures.",
+      "Index assertion definition/status artifacts before using health score for sign-off.",
+      "Index repeated runs for the same test cohorts before evaluating flakiness.",
+      "Index matching test cohorts from at least two simulators before evaluating cross-simulator consistency."
     ],
-    "note": "\ud83d\udfe0 Health score: 71.2/100 (coverage-gaps). Breakdown \u2014 pass_rate: 33%, coverage: 81%, assertions: 85%, flakiness: 100%, cross-sim: 100%.",
+    "note": "\ud83d\udfe0 Health score: 59.1/100 (coverage-gaps). Breakdown \u2014 pass_rate: 33%, coverage: 81%, assertions: unavailable, flakiness: unavailable, cross-sim: unavailable.",
     "schema_version": "1.0.0"
   }
 }
