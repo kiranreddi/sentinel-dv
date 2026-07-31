@@ -76,7 +76,7 @@ def _readonly_tool(name: str) -> Callable[[F], F]:
     """Register a read-only MCP tool with description, outputSchema, and annotations."""
 
     def decorator(fn: F) -> F:
-        return mcp.tool(  # type: ignore[return-value]
+        return mcp.tool(
             name=name,
             description=TOOL_DESCRIPTIONS[name],
             output_schema=OUTPUT_SCHEMAS[name],
@@ -469,6 +469,7 @@ def assertions_vacuity(
 
 @_readonly_tool("coverage.gaps")
 def coverage_gaps(
+    run_id: str | None = Field(None, description="Filter to a specific run"),
     suite: str | None = Field(None, description="Filter to a specific suite"),
     kind: str | None = Field(
         None,
@@ -478,13 +479,19 @@ def coverage_gaps(
         100.0,
         description="Report metrics with coverage below this percentage (default: 100.0 = all gaps)",
     ),
+    priority: str | None = Field(
+        None,
+        description="Gap priority filter: high|medium|low",
+    ),
     page: int = Field(1, description="Page number (1-based)"),
     page_size: int = Field(50, description="Items per page"),
 ) -> dict[str, Any]:
     return core.get_coverage_gaps(
         get_store(),
+        run_id=run_id,
         suite=suite,
         kind=kind,
+        priority=priority,
         threshold_pct=threshold_pct,
         page=page,
         page_size=page_size,
@@ -522,7 +529,7 @@ def tests_cluster(
     run_id: str | None = Field(default=None, description="Limit to one run; None = all runs."),
     max_clusters: int = Field(default=15, description="Maximum clusters to return (1–50)."),
 ) -> dict[str, Any]:
-    """Group failing tests by root-cause signature — turns 500 failures into 5 root causes."""
+    """Group failing tests by normalized signature for bounded triage."""
     return core.cluster_test_failures(get_store(), run_id=run_id, max_clusters=max_clusters)
 
 
@@ -537,13 +544,28 @@ def regression_health(
 
 @_readonly_tool("coverage.advisor")
 def coverage_advisor(
+    run_id: str | None = Field(default=None, description="Filter by run ID."),
     suite: str | None = Field(default=None, description="Filter by suite name."),
     kind: str | None = Field(default=None, description="Coverage kind filter."),
+    metric_name: str | None = Field(
+        default=None,
+        description="Exact coverage metric name to target.",
+    ),
+    protocol: str | None = Field(
+        default=None,
+        description="Protocol context: axi4|ahb|apb|chi|generic.",
+    ),
     max_recommendations: int = Field(default=10, description="Max advisories to return (1–25)."),
 ) -> dict[str, Any]:
     """Generate SystemVerilog constraint + UVM sequence snippets to hit uncovered bins."""
     return core.get_coverage_advisor(
-        get_store(), suite=suite, kind=kind, max_recommendations=max_recommendations
+        get_store(),
+        run_id=run_id,
+        suite=suite,
+        kind=kind,
+        metric_name=metric_name,
+        protocol=protocol,
+        max_recommendations=max_recommendations,
     )
 
 

@@ -24,8 +24,8 @@ Wait for CI to succeed before releasing.
 This runs the same checks as CI plus version alignment. Example:
 
 ```bash
-# After bumping pyproject.toml to 2.3.0 and updating docs pins:
-./scripts/pre_release.sh v2.3.0
+# After bumping pyproject.toml to 2.3.1 and updating docs pins:
+./scripts/pre_release.sh v2.3.1
 ```
 
 Without a tag (version bump only):

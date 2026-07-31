@@ -372,7 +372,9 @@ List assertions that passed vacuously (triggered zero times). Includes a `recomm
 
 ### tests.replay
 
-Generate a ready-to-paste seed-replay command for a failing test. The seed is looked up from the indexed test record. Requires `submit.enabled: true`.
+Generate a dry-run seed-replay command for a failing test. The seed is looked up
+from the indexed test record. Review the command before execution outside Sentinel
+DV. Requires `submit.enabled: true`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -392,8 +394,10 @@ Prioritized list of under-covered bins with actionable recommendations. The heur
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `run_id` | string? | Scope to a specific run |
-| `kind` | string? | Coverage kind: `functional`, `line`, `toggle`, `branch` |
+| `suite` | string? | Scope to a specific suite |
+| `kind` | string? | `functional`, `code`, `assertion`, `toggle`, `fsm`, or `unknown` |
 | `priority` | string? | Filter: `high`, `medium`, `low` |
+| `threshold_pct` | float | Return metrics below this percentage |
 | `page`, `page_size` | int | Pagination |
 
 ```json
@@ -421,7 +425,7 @@ Prioritized list of under-covered bins with actionable recommendations. The heur
 
 | Goal | Tools |
 |------|--------|
-| Sign-off readiness check | `regression.health` → `coverage.trend` → `runs.cross_sim` |
+| Sign-off evidence review | `regression.health` → `coverage.trend` → `runs.cross_sim` |
 | Coverage acceleration | `coverage.gaps` → `coverage.advisor` → `runs.submit` |
 | Failure triage at scale | `tests.cluster` → `failures.list` (per cluster) |
 | Cross-simulator confidence | `runs.cross_sim` → `assertions.failures` (for divergent tests) |
@@ -433,85 +437,106 @@ Prioritized list of under-covered bins with actionable recommendations. The heur
 
 ### coverage.trend
 
-Computes coverage percentage over time for a suite, grouped by coverage kind (functional, line, toggle, branch).
+Computes average coverage over sequential indexed runs, grouped by coverage kind.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `suite` | string? | Suite name (defaults to all) |
 | `kind` | string? | Coverage kind filter |
-| `window_days` | int | Look-back window (default 30) |
+| `limit` | int | Maximum runs to include (1-100, default 20) |
 
 ```json
-{ "suite": "axi_burst", "kind": "functional", "window_days": 14 }
+{ "suite": "axi_burst", "kind": "functional", "limit": 14 }
 ```
 
-Response includes `trend` list (one point per run, with `run_id`, `created_at`, `coverage_pct`, `delta_pct`) and `summary` with `direction` (`improving` | `stalling` | `declining` | `insufficient_data`).
+Response includes `trend` rows with `run_id`, `created_at`, `covered_pct`, and
+`delta_pct`, plus a summary direction. It does not accept an arbitrary date window.
 
 ---
 
 ### runs.cross_sim
 
-Detects tests that diverge across simulators — pass on one vendor but fail on another.
+Detects latest pass/fail results that diverge across simulators. Comparisons stay
+within the same suite, framework, DUT top, and test name.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `suite` | string? | Scope to a suite |
-| `name_pattern` | string? | Filter test names |
+| `suite_prefix` | string? | Filter by suite-name prefix |
+| `limit` | int | Maximum divergent rows |
 
 ```json
-{ "suite": "axi_burst" }
+{ "suite_prefix": "axi_burst", "limit": 100 }
 ```
 
-Response includes `divergent_tests` list with `test_name`, `sim_a`, `result_a`, `sim_b`, `result_b`, and `severity` (`critical` | `warning`).
+Response includes suite and cohort identity, simulator versions, statuses, run IDs,
+and run timestamps. It does not assign a severity or establish a cause.
 
 ---
 
 ### tests.cluster
 
-Groups failures by root-cause signature using message and category similarity, reducing hundreds of failures to a handful of actionable clusters.
+Heuristically groups failures by indexed signature or normalized message.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `suite` | string? | Scope to a suite |
-| `min_cluster_size` | int | Minimum failures per cluster (default 1) |
+| `run_id` | string? | Scope to one run |
+| `max_clusters` | int | Maximum clusters returned (1-50) |
 
 ```json
-{ "suite": "axi_burst", "min_cluster_size": 2 }
+{ "run_id": "r_axi_burst", "max_clusters": 20 }
 ```
 
-Response includes `clusters` list. Each cluster has `signature`, `category`, `count`, `representative_message`, and `test_ids`.
+Each cluster includes failure and distinct-test counts, severity and category counts,
+representative evidence, bounded IDs, and truncation flags. A cluster is a triage
+candidate, not a proven root cause.
 
 ---
 
 ### regression.health
 
-Returns a composite 0–100 DV readiness score broken down into weighted sub-scores for pass rate, coverage, assertion health, flakiness, and cross-simulator consistency.
+Returns a scoped composite 0-100 health indicator broken down into pass rate,
+coverage, assertion health, historical status variation, and cross-simulator consistency.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `suite` | string? | Scope to a suite |
-| `window_days` | int | Look-back window (default 30) |
+| `run_id` | string? | Scope test, coverage, and assertion data to one run |
 
 ```json
-{ "suite": "axi_burst", "window_days": 7 }
+{ "run_id": "r_axi_burst" }
 ```
 
-Response includes `score` (0–100), `band` (`sign-off-ready` | `minor-issues` | `coverage-gaps` | `not-ready`), and `components` dict with individual sub-scores.
+Response includes `health_score`, `band`, `component_scores`, effective weights,
+heuristic definitions, and `data_quality`. Coverage, assertion, flakiness, and
+cross-simulator components without sufficient indexed evidence are `null`, excluded
+from the weighted score, and disclosed. The score is not independent sign-off proof.
 
 ---
 
 ### coverage.advisor
 
-Generates ready-to-paste SystemVerilog constraint and UVM sequence snippets for uncovered bins. Protocol-aware: recognises AXI4, AHB, APB, CHI, PCIe naming patterns.
+Generates reviewable SystemVerilog constraint and UVM sequence candidates for
+uncovered bins. Protocol-aware rules cover AXI4, AHB, APB, and CHI patterns.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
+| `run_id` | string? | Scope to one run |
 | `suite` | string? | Scope to a suite |
 | `kind` | string? | Coverage kind filter |
+| `metric_name` | string? | Exact metric to target |
+| `protocol` | string? | `axi4`, `ahb`, `apb`, `chi`, or `generic` |
 | `max_recommendations` | int | Max snippets (1–25, default 10) |
 
 ```json
-{ "suite": "axi_burst", "kind": "functional", "max_recommendations": 5 }
+{
+  "run_id": "r_axi_burst",
+  "kind": "functional",
+  "metric_name": "cp_awburst.wrap",
+  "protocol": "axi4",
+  "max_recommendations": 5
+}
 ```
 
-Response includes `advisories` list. Each entry has `bin_name`, `coverpoint`, `protocol`, `sv_constraint`, `uvm_hint`, and `priority`.
+Each advisory includes `run_id`, `suite`, `bin_name`, `scope`, `covered_pct`,
+`priority`, `protocol_hint`, `constraint_sv`, and `sequence_hint`. Generated code
+requires source and testbench review.

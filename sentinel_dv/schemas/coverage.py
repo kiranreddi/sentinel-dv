@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from sentinel_dv.schemas.common import EvidenceRef
 
@@ -37,8 +37,8 @@ class CoverageMetric(BaseModel):
             raise ValueError("total must be >= hits")
         return v
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "name": "axi.awlen_bins",
                 "scope": "tb.env.axi_master_agent",
@@ -48,6 +48,7 @@ class CoverageMetric(BaseModel):
                 "bins_missed": ["awlen_15"],
             }
         }
+    )
 
 
 class CoverageSummary(BaseModel):
@@ -66,8 +67,8 @@ class CoverageSummary(BaseModel):
         default_factory=list, max_length=10, description="Evidence references"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "run_id": "R20260125_142305",
                 "test_id": "T20260125_142305_axi_burst_test",
@@ -98,6 +99,7 @@ class CoverageSummary(BaseModel):
                 ],
             }
         }
+    )
 
 
 class CoverageGap(BaseModel):
@@ -107,6 +109,8 @@ class CoverageGap(BaseModel):
     optional assertion status.
     """
 
+    run_id: str | None = Field(None, description="Run that produced this coverage metric")
+    suite: str | None = Field(None, description="Suite that produced this coverage metric")
     metric_name: str = Field(..., description="Coverage metric name with gap")
     scope: str = Field(..., description="Module or testbench scope")
     kind: CoverageKind = Field(..., description="Coverage type")
@@ -119,9 +123,11 @@ class CoverageGap(BaseModel):
     )
     recommendation: str = Field(..., description="Actionable recommendation to close this gap")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
+                "run_id": "R20260125_142305",
+                "suite": "axi4_nightly",
                 "metric_name": "axi.awlen_bins",
                 "scope": "tb.env.axi_master_agent",
                 "kind": "functional",
@@ -134,11 +140,13 @@ class CoverageGap(BaseModel):
                 ),
             }
         }
+    )
 
 
 class CoverageGapsResponse(BaseModel):
     """Response from coverage.gaps listing uncovered areas with recommendations."""
 
+    run_id: str | None = Field(None, description="Run filter applied, if any")
     suite: str | None = Field(None, description="Suite filter applied, if any")
     kind: CoverageKind | None = Field(None, description="Coverage kind filter applied, if any")
     threshold_pct: float = Field(

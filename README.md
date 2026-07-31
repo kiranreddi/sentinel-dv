@@ -1,384 +1,221 @@
-# 🛡️ Sentinel DV v2.3.0 - Verification Intelligence for AI Agents
+# Sentinel DV
 
 <!-- mcp-name: io.github.kiranreddi/sentinel-dv -->
 
-<div align="center">
-
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI](https://img.shields.io/pypi/v/sentinel-dv.svg)](https://pypi.org/project/sentinel-dv/)
-[![MCP Registry](https://img.shields.io/badge/MCP-io.github.kiranreddi%2Fsentinel--dv-purple)](https://registry.modelcontextprotocol.io/?search=io.github.kiranreddi/sentinel-dv)
-[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
+[![MCP Registry](https://img.shields.io/badge/MCP-io.github.kiranreddi%2Fsentinel--dv-007f78)](https://registry.modelcontextprotocol.io/?search=io.github.kiranreddi/sentinel-dv)
 [![CI](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/ci.yml)
 [![Documentation](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/kiranreddi/sentinel-dv/actions/workflows/docs.yml)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Coverage](https://img.shields.io/badge/coverage-70%25+-brightgreen.svg)](tests/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-172126.svg)](LICENSE)
 
-**A security-first MCP server for verification intelligence (SystemVerilog/UVM/cocotb)**
+Sentinel DV v2.3.1 is a read-only Model Context Protocol server for design verification evidence. It indexes exported SystemVerilog, UVM, cocotb, assertion, coverage, regression, and waveform artifacts into DuckDB and exposes 28 bounded, schema-driven tools to AI agents.
 
-[Features](#-features) • [Architecture](#-architecture) • [Quick Start](#-quick-start) • [Documentation](#-documentation)
+[Documentation](https://kiranreddi.github.io/sentinel-dv/) | [Quick start](docs/getting-started/quick-start.md) | [Video walkthrough](docs/getting-started/video-walkthrough.md) | [All tools](docs/tools/mcp-tools-reference.md) | [Agent skills](docs/skills/overview.md)
 
-</div>
+## What it provides
 
----
+- **Run and test intelligence:** discovery, summaries, history, topology, diffs, replay-command generation, and live-status snapshots.
+- **Failure analysis:** normalized categories, stable signatures, bounded evidence, assertion failures, and failure clustering.
+- **Coverage closure:** functional, code, toggle, and FSM metrics; trends; gaps; vacuity; SVA status; and protocol-aware constraint candidates.
+- **Waveform context:** precomputed `*.wave.json` and bounded VCD summaries. Native FSDB/WLF streaming is intentionally out of scope.
+- **Agent workflows:** regression triage, single-test failure debugging, and coverage closure skills for Codex, Claude Code, and GitHub Copilot.
 
-## 🌟 What is Sentinel DV?
+Sentinel DV does not execute simulations, modify RTL or testbench files, or stream unrestricted raw artifacts. `runs.submit` and `tests.replay` return dry-run commands for engineer review.
 
-Sentinel DV is an **open-source Model Context Protocol (MCP) server** that provides large language models and AI agents with **safe, structured, read-only access** to verification artifacts—enabling deterministic triage, root-cause analysis, and verification insight without exposing raw logs or granting control of simulators.
+## Quick start
 
-### Verification Ecosystems Supported
+Python 3.10 or newer is required. This example indexes the checked-in demo corpus:
 
-- 🔧 **UVM (Universal Verification Methodology)** - Enterprise verification framework
-- 🐍 **cocotb** - Python-based verification with coroutines  
-- 📊 **SystemVerilog** - Assertions, coverage, and native testbenches
-- 🌊 **Waveform summaries** - `*.wave.json` and `*.vcd` via built-in parsers (no raw FSDB/WLF streaming)
-
-All through a **unified, schema-driven interface** with built-in security, redaction, and deterministic outputs.
-
----
-
-## 🏗️ Architecture
-
-Sentinel DV follows a **strict separation of concerns** with security-first principles:
-
-```
-sentinel_dv/
-├── server.py              # MCP server entrypoint
-├── config.py              # Security limits, feature flags, governance
-├── registry.py            # Tool registration and versioning
-├── schemas/               # Typed contracts for all data
-│   ├── common.py         # EvidenceRef, RunRef, base types
-│   ├── tests.py          # TestCase, TestTopology, UvmTopology
-│   ├── failures.py       # FailureEvent, FailureSignature
-│   ├── assertions.py     # AssertionInfo, AssertionFailure
-│   ├── coverage.py       # CoverageSummary, CoverageMetric
-│   ├── regressions.py    # RegressionSummary, RunDiff
-│   └── versioning.py     # Schema version management
-├── tools/                 # MCP tools (discovery + detail)
-│   ├── runs.py           # runs.list, runs.diff
-│   ├── tests.py          # tests.list, tests.get, tests.topology
-│   ├── failures.py       # failures.list
-│   ├── assertions.py     # assertions.list/get/failures
-│   ├── coverage.py       # coverage.list/summary
-│   ├── regressions.py    # regressions.summary
-│   └── wave.py           # wave.summary, wave.signals
-├── indexing/              # Artifact indexing and querying
-│   ├── indexer.py        # Build normalized index from artifacts
-│   ├── store.py          # DuckDB storage interface
-│   └── query.py          # Filter/sort/pagination
-├── adapters/              # Parse verification artifacts
-│   ├── uvm_log.py        # UVM log parsing
-│   ├── cocotb.py         # cocotb result parsing
-│   ├── assertion_reports.py # Assertion report/log parsing
-│   ├── coverage_reports.py  # Coverage summary parsing
-│   ├── protocol_tags.py     # Protocol taxonomy hints (AXI/APB/AHB/...)
-│   ├── waveform_summary.py  # Precomputed *.wave.json
-│   └── vcd_summary.py       # VCD → bounded summary (Verilator, etc.)
-├── normalization/         # Security and determinism
-│   ├── signatures.py     # Stable failure signature hashing
-│   ├── taxonomy.py       # Failure categorization
-│   └── redaction.py      # Automatic secret/PII redaction
-└── utils/                 # Common utilities
-    ├── hashing.py
-    ├── time.py
-    └── bounded_text.py
-```
-
-**Design Principles:**
-- **Read-only by default** - No simulator control, no artifact modification
-- **Schema-first** - Every response conforms to typed contracts
-- **Deterministic** - Same input → same output (no LLM-generated fields)
-- **Evidence-based** - All facts traceable to source artifacts
-- **Bounded and safe** - Automatic redaction, size limits, path sandboxing
-
----
-
-## ✨ Features
-
-### 🔒 Security First
-- **Read-only by design** - No simulation triggers or artifact writes
-- **Automatic redaction** - Credentials, tokens, emails, IP addresses, paths
-- **Path sandboxing** - Only configured artifact roots accessible
-- **Bounded outputs** - Max response sizes, max evidence excerpts
-- **Provenance tracking** - Every fact includes optional source references
-
-### 📊 Rich Verification Data
-- **Test results** - Status, duration, seed, simulator info, DUT config
-- **UVM topology** - Env/agent/driver/monitor/scoreboard hierarchy
-- **Failure analysis** - Categorized events (assertion/scoreboard/protocol/timeout)
-- **Assertion intelligence** - SVA definitions, runtime failures, intent mapping
-- **Coverage metrics** - Functional/code/assertion/toggle/FSM coverage
-- **Regression analytics** - Pass rates, failure signatures, run diffs
-- **Interface bindings** - Protocol mapping (AXI/AHB/APB/PCIe/USB)
-
-### ⚡ Performance & Scale
-- **Efficient indexing** - DuckDB for fast filtering and aggregation
-- **Smart pagination** - Bounded result sets with stable sorting
-- **Normalized storage** - Deduplicated, hashed artifacts
-- **Selective projection** - Request only needed fields
-
-### 🔌 Simulator Agnostic
-- Works with **any simulator** (Synopsys VCS, Cadence Xcelium, Mentor Questa, Verilator)
-- **Adapter pattern** - Ingest tool-specific formats, output unified schemas
-- **Pre-computed summaries** - No runtime dependency on EDA tools
-
-### 📋 Schema-Driven Contracts
-- **Versioned schemas** - SemVer with compatibility guarantees
-- **JSON Schema validation** - Deterministic, testable
-- **Stable tool APIs** - Backwards-compatible evolution
-- **Self-documenting** - Schemas define the interface
-
----
-
-## 🚀 Quick Start
-
-> **PyPI:** Use **`sentinel-dv>=2.3.0`** for commercial simulator fixtures (VCS, Questa, Cadence), multi-project demos, **28 MCP tools** (v2.0 submission/SVA/replay + v2.1 DV intelligence), assertion/coverage intelligence, and waveform indexing.
-
-### Install from MCP Registry
-
-Install via [uv](https://docs.astral.sh/uv/) (`uvx`) or your MCP client’s registry UI using server name `io.github.kiranreddi/sentinel-dv`.
-
-**Claude Desktop / MCP client (stdio):**
-
-```json
-{
-  "mcpServers": {
-    "sentinel-dv": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "sentinel-dv@2.3.0",
-        "sentinel-dv-server",
-        "--config",
-        "/absolute/path/to/config.yaml"
-      ]
-    }
-  }
-}
-```
-
-Alternatively set `SENTINEL_DV_CONFIG` to your config path and omit `--config`.
-
-**Before querying:** build the artifact index (required once per config):
+For a persistent environment, install `sentinel-dv>=2.3.1`. The commands below use `uvx` to run the same release without a persistent install.
 
 ```bash
-uvx --from sentinel-dv@2.3.0 sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
-```
-
-### Installation
-
-```bash
-# Clone the repository
 git clone https://github.com/kiranreddi/sentinel-dv.git
 cd sentinel-dv
+cp demo/config.example.yaml demo/config.yaml
 
-# Install with development dependencies
-pip install -e ".[dev]"
-
-# Or production install (requires >=2.3.0 for all 28 MCP tools)
-pip install "sentinel-dv>=2.3.0"
+uvx --from sentinel-dv@2.3.1 \
+  sentinel-dv-index --config "$PWD/demo/config.yaml" --index-all
 ```
 
-### Configuration
+Connect one agent:
 
-**Required:** copy `config.example.yaml` to `config.yaml` (or set `SENTINEL_DV_CONFIG` / pass `--config`). The server does not start without a config file and does not auto-use `demo/`.
+### Codex
 
-Create a `config.yaml`:
+```bash
+codex mcp add sentinel-dv \
+  --env SENTINEL_DV_CONFIG="$PWD/demo/config.yaml" \
+  -- uvx --from sentinel-dv@2.3.1 sentinel-dv-server
+```
+
+### Claude Code
+
+```bash
+claude mcp add \
+  --env SENTINEL_DV_CONFIG="$PWD/demo/config.yaml" \
+  --transport stdio --scope local sentinel-dv \
+  -- uvx --from sentinel-dv@2.3.1 sentinel-dv-server
+```
+
+### GitHub Copilot CLI
+
+```bash
+copilot mcp add sentinel-dv \
+  --env SENTINEL_DV_CONFIG="$PWD/demo/config.yaml" \
+  -- uvx --from sentinel-dv@2.3.1 sentinel-dv-server
+```
+
+Use an absolute `SENTINEL_DV_CONFIG` path. Verify the connection in the client's MCP status view, then call `runs.list`.
+
+See [Agent setup](docs/getting-started/agent-setup.md) for configuration-file examples, project scope, skill discovery, and troubleshooting.
+
+## Production configuration
+
+Copy `config.example.yaml` and define allowed artifact roots:
 
 ```yaml
-# Artifact roots (read-only)
 artifact_roots:
-  - /path/to/verification/regressions
-  - /path/to/uvm/logs
+  - /absolute/path/to/regression/artifacts
 
-# Index storage
 index:
   type: duckdb
   path: ./sentinel_dv.db
 
-# Adapters (enable/disable)
 adapters:
   uvm: true
   cocotb: true
   assertions: true
   coverage: true
-  waveform_summary: true   # *.wave.json and *.vcd under artifact_roots
+  waveform_summary: true
 
-# Security & limits
 security:
-  max_response_bytes: 2097152  # 2MB
+  max_response_bytes: 2097152
   max_page_size: 200
   max_evidence_refs: 10
-  max_excerpt_length: 1024
 
-# Redaction
 redaction:
   enabled: true
-  patterns:
-    - AKIA.*           # AWS keys
-    - ghp_.*           # GitHub tokens
-    - Bearer\s+\S+     # Bearer tokens
   redact_emails: true
   redact_paths: true
 ```
 
-### Running the Server
+Build the index before starting the server:
 
 ```bash
-# Start the MCP server
-python -m sentinel_dv.server --config config.yaml
-
-# Index artifacts (one-time or scheduled)
-python -m sentinel_dv.indexing.indexer --config config.yaml --index-all
-
-# Run with Claude Desktop
-# Add to Claude config:
-{
-  "mcpServers": {
-    "sentinel-dv": {
-      "command": "python",
-      "args": ["-m", "sentinel_dv.server", "--config", "/path/to/config.yaml"]
-    }
-  }
-}
+sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
+sentinel-dv-server --config /absolute/path/to/config.yaml
 ```
 
-### Example Queries
+Relative paths inside the YAML are resolved from the config file's directory. Production startup never silently falls back to demo data.
 
-With Claude or any MCP client:
+## MCP tools
 
-```
-"Why did test axi_burst_test fail in the latest regression?"
-→ Uses: tests.list, failures.list, tests.topology
+The 28 tools are grouped by engineering purpose:
 
-"What assertions failed in the AXI agent?"
-→ Uses: assertions.failures, assertions.get
+| Area | Tools |
+| --- | --- |
+| Runs | `runs.list`, `runs.get`, `runs.summary`, `runs.diff`, `runs.cross_sim`, `runs.submit` |
+| Tests | `tests.list`, `tests.get`, `tests.history`, `tests.topology`, `tests.cluster`, `tests.replay` |
+| Failures and assertions | `failures.list`, `assertions.list`, `assertions.get`, `assertions.failures`, `assertions.sva_status`, `assertions.vacuity` |
+| Coverage | `coverage.list`, `coverage.summary`, `coverage.gaps`, `coverage.trend`, `coverage.advisor` |
+| Regression and simulation | `regressions.summary`, `regression.health`, `sim.status` |
+| Waveforms | `wave.signals`, `wave.summary` |
 
-"Compare coverage between runs R123 and R124"
-→ Uses: runs.diff, coverage.summary
+Every registered tool carries read-only MCP annotations and a versioned output schema. The [MCP tools reference](docs/tools/mcp-tools-reference.md) documents exact inputs and outputs.
 
-"Show me the failure signatures from the past week"
-→ Uses: regressions.summary
-```
+## Agent skills
 
----
+The canonical skills live under `skills/`:
 
-## 📖 Documentation
+- [`sentinel-dv-regression-triage`](skills/sentinel-dv-regression-triage/SKILL.md)
+- [`sentinel-dv-failure-debugging`](skills/sentinel-dv-failure-debugging/SKILL.md)
+- [`sentinel-dv-coverage-closure`](skills/sentinel-dv-coverage-closure/SKILL.md)
 
-### Core Concepts
-- [Architecture Overview](docs/architecture/overview.md) - Design principles and structure
-- [Schema Reference](docs/architecture/schemas.md) - Complete type definitions
-- [Tool Contracts](docs/tools/overview.md) - Request/response specifications
-- [Security Model](docs/architecture/security.md) - Redaction, bounding, sandboxing
+Deterministic mirrors support project discovery:
 
-### Examples
-- [Examples overview](docs/examples/overview.md) — VCS, Questa, Cadence, Verilator, cocotb, and UVM artifact fixtures
-- [MCP tool gallery](https://kiranreddi.github.io/sentinel-dv/tools/mcp-tool-gallery/) — SVG “screenshots” for all 28 tools
-- [Verilator + VCD](docs/examples/verilator-counter.md) — Build, index, query `wave.*` with time windows
-- [VCS, Questa, and Cadence](docs/examples/commercial-simulators.md) — Exported artifact fixtures and all-tool verification
-- [cocotb + waveforms](docs/examples/cocotb-waveforms.md) — Index `demo/` tree
-- [demo/](demo/) — Runnable artifacts (multi-project UVM, cocotb, Verilator, VCS, Questa, Cadence)
+| Host | Path |
+| --- | --- |
+| Codex | `.agents/skills/` |
+| Claude Code | `.claude/skills/` |
+| GitHub Copilot | `.github/skills/` |
 
-### Guides
-- [Waveform summaries](docs/guides/waveforms.md) - JSON + VCD indexing
-- [Getting Started](docs/getting-started/quick-start.md) - Setup and first queries
-- [Adapter Development](docs/adapters/custom.md) - Parse new artifact formats
-- [Simulator Support](docs/guides/simulator-support.md) - Vendor-specific notes
-- [Deployment Guide](docs/deployment/production.md) - Production best practices
+The repository also contains Codex and Claude plugin manifests. `.mcp.json` defines the bundled stdio server command; provide `SENTINEL_DV_CONFIG` or a `config.yaml` in the server working directory.
 
-### Reference
-- [Documentation Site](https://kiranreddi.github.io/sentinel-dv/)
-- [Configuration Reference](docs/configuration.md)
-- [Examples](examples/) - Demo artifacts and clients
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Code of Conduct
-- Development setup
-- Testing guidelines
-- Pull request process
-
-### Development
+After editing a canonical skill:
 
 ```bash
-# Install with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Run with coverage
-pytest --cov=sentinel_dv --cov-report=html
-
-# Lint and format
-ruff check .
-black .
-mypy sentinel_dv/
+.venv/bin/python scripts/sync_agent_skills.py
+.venv/bin/python scripts/sync_agent_skills.py --check
 ```
 
----
+## Supported artifact sources
 
-## 📊 Project Status
+- UVM logs and topology hints
+- cocotb and generic JUnit XML
+- assertion definition and failure JSON
+- SVA run-status JSON
+- supported JSON, XML, text, and HTML coverage summaries
+- `*.wave.json` and VCD
+- live simulation status JSON
+- exported VCS, Xcelium, Questa, and Verilator results
 
-- ✅ **Core schemas** - Stable v1.0
-- ✅ **MCP tools** - 28 tools (discovery, analysis, regression, waveforms, v2.0 workflow, v2.1 DV intelligence, v2.3 run/test aggregation)
-- ✅ **Adapters** - UVM, cocotb, assertions, coverage
-- ✅ **Indexing** - DuckDB with efficient querying
-- ✅ **Security** - Redaction, sandboxing, bounding
-- ✅ **Test coverage** - 70%+ with unit and integration tests
-- ✅ **Documentation** - Full guides and API reference
-- ✅ **Waveform summaries** - `*.wave.json` + `*.vcd` (`VcdSummaryParser`); [Verilator demo](demo/verilator_counter/)
-- ✅ **Simulator examples** - VCS, Questa, and Cadence exported artifact fixtures with all-tool verification
-- 🚧 **Plugin ecosystem** - Coming soon
+Adapter output is normalized into versioned schemas so clients do not need vendor-specific parsing logic.
 
----
+## Security model
 
-## 🎯 Positioning
+- Tools are read-only and operate on an index plus configured artifact roots.
+- Path resolution is sandboxed to allowed roots.
+- Evidence counts, excerpts, pages, wave signals, bins, and total response size are bounded.
+- Configurable redaction protects common secrets, email addresses, IP addresses, and local paths.
+- Tool output is deterministic; the MCP server does not generate causal conclusions.
 
-### What Sentinel DV **is**
-- A **read-only MCP server** for verification ecosystems
-- A **schema-first context provider** for agents and LLMs
-- A **deterministic translation layer** from noisy artifacts to typed data
-- A **composable infrastructure component** for debug workflows
+Read [Security](docs/architecture/security.md) and [Production deployment](docs/deployment/production.md) before using production artifacts.
 
-### What Sentinel DV **is not**
-- ❌ It does **not** start simulations or submit jobs
-- ❌ It does **not** modify RTL/testbench code
-- ❌ It does **not** require any specific simulator
-- ❌ It is **not** an "AI that guesses"; it returns grounded, typed facts
+## Verification
 
----
+Create a development environment:
 
-## 🙏 Acknowledgments
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev,docs]"
+```
 
-Inspired by:
-- [Sentinel CI](https://github.com/kiranreddi/sentinel-ci) - Universal CI/CD intelligence
-- [Model Context Protocol](https://modelcontextprotocol.io) - Anthropic's agent-context standard
-- The verification community using UVM, cocotb, and SystemVerilog
+Run endpoint and workflow checks:
 
----
+```bash
+.venv/bin/python scripts/verify_all_mcp_tools.py
+.venv/bin/python scripts/verify_skill_workflows.py
+```
 
-## 📄 License
+Run the full quality suite:
 
-Apache License 2.0 - see [LICENSE](LICENSE) for details.
+```bash
+.venv/bin/pytest
+.venv/bin/ruff check .
+.venv/bin/black --check .
+.venv/bin/mypy sentinel_dv
+.venv/bin/mkdocs build --strict
+```
 
----
+The all-tools verifier invokes every registered MCP endpoint. The skill verifier indexes 52 checked-in demo artifacts and executes the published regression triage, failure debugging, and coverage closure sequences.
 
-## 🔗 Links
+## Project layout
 
-- 🌐 [Documentation](https://kiranreddi.github.io/sentinel-dv/)
-- 💬 [Discussions](https://github.com/kiranreddi/sentinel-dv/discussions)
-- 🐛 [Issue Tracker](https://github.com/kiranreddi/sentinel-dv/issues)
-- 📣 [Changelog](CHANGELOG.md)
+```text
+sentinel_dv/
+  adapters/        artifact parsers
+  indexing/        DuckDB indexing and queries
+  normalization/   signatures, taxonomy, redaction, coverage guidance
+  schemas/         versioned response contracts
+  tools/core.py    tool implementations
+  server.py        FastMCP registration and stdio entry point
 
----
+skills/            canonical agent skills
+demo/              license-free exported verification fixtures
+docs/              MkDocs documentation
+scripts/           verification, gallery, release, and skill-sync tooling
+tests/             unit and integration coverage
+```
 
-<div align="center">
+## Contributing
 
-**Built with ❤️ for the verification community**
-
-[⬆ back to top](#️-sentinel-dv-v120---verification-intelligence-for-ai-agents)
-
-</div>
+See [CONTRIBUTING.md](CONTRIBUTING.md). Sentinel DV is licensed under [Apache-2.0](LICENSE).

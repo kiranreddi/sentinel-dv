@@ -1,6 +1,6 @@
 # Examples
 
-Runnable examples shipped with Sentinel DV (**v2.3.0+**, 28 MCP tools):
+Runnable examples shipped with Sentinel DV (**v2.3.1+**, 28 MCP tools):
 
 | Path | Description | Documentation |
 |------|-------------|---------------|
@@ -17,7 +17,7 @@ Runnable examples shipped with Sentinel DV (**v2.3.0+**, 28 MCP tools):
 ## Quick start — AXI4 four-simulator demo
 
 ```bash
-pip install "sentinel-dv>=2.3.0"
+pip install "sentinel-dv>=2.3.1"
 
 cd demo/axi4_uvm
 sentinel-dv-index --config config.yaml --index-all
@@ -25,4 +25,4 @@ sentinel-dv-index --config config.yaml --index-all
 python ../../examples/axi4_sentinel_demo.py
 ```
 
-Install: `pip install "sentinel-dv>=2.3.0"`
+Install: `pip install "sentinel-dv>=2.3.1"`

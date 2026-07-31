@@ -1,0 +1,11 @@
+interface:
+  display_name: "Sentinel DV Coverage Closure"
+  short_description: "Prioritize and close verification coverage gaps"
+  default_prompt: "Use $sentinel-dv-coverage-closure to build an evidence-backed coverage closure plan for this run."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "sentinel-dv"
+      description: "Read-only Sentinel DV verification intelligence server"
+policy:
+  allow_implicit_invocation: true

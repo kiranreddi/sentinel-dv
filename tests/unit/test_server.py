@@ -10,6 +10,7 @@ import pytest
 from sentinel_dv import registry
 from sentinel_dv.config import SentinelDVConfig
 from sentinel_dv.server import init_server, mcp
+from sentinel_dv.tools.mcp_metadata import OUTPUT_SCHEMAS
 
 
 def test_server_registers_all_documented_tools(tmp_path: Path):
@@ -46,3 +47,19 @@ def test_mcp_tools_expose_read_only_annotations(tmp_path: Path) -> None:
             assert tool.output_schema is not None
 
     asyncio.run(_check())
+
+
+def test_list_output_schemas_accept_documented_error_envelope() -> None:
+    for name in (
+        "runs.list",
+        "tests.list",
+        "assertions.list",
+        "coverage.list",
+        "failures.list",
+        "assertions.failures",
+        "coverage.gaps",
+    ):
+        schema = OUTPUT_SCHEMAS[name]
+        assert schema["type"] == "object"
+        assert "error" in schema["properties"]
+        assert {"required": ["error"]} in schema["anyOf"]

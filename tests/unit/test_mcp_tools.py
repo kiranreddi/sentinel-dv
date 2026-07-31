@@ -137,7 +137,12 @@ class TestMcpTools:
         assert exc2.value.code == "NOT_FOUND"
 
     def test_regression_summary(self, indexed_store):
-        summary = core.get_regression_summary(indexed_store, suite="nightly", window_days=30)
+        summary = core.get_regression_summary(
+            indexed_store,
+            suite="nightly",
+            window_days=30,
+            as_of="2026-05-21T00:00:00Z",
+        )
         assert summary["pass_rate"] == 50.0
         assert summary["top_signatures"][0]["signature_id"] == "sig_scoreboard"
 
@@ -153,6 +158,8 @@ class TestMcpTools:
         )
         diff = core.compare_runs(indexed_store, run_id, run2_id)
         assert diff["resolved_failures"][0]["signature_id"] == "sig_scoreboard"
+        assert "persistent_failures" in diff
+        assert "coverage_deltas" in diff
 
     def test_invalid_page_size(self, indexed_store):
         with pytest.raises(ValueError, match="page_size"):
@@ -257,8 +264,22 @@ def test_assertion_failures_include_evidence(tmp_path):
                 }
             ],
         )
+        store.insert_assertion_failure(
+            assertion_id="a_assert",
+            test_id=test_id,
+            run_id=run_id,
+            message="assertion failed without timestamp",
+            time_ns=None,
+        )
         result = core.list_assertion_failures(store, include_evidence=True)
-        assert result["pagination"]["total_items"] == 1
+        assert result["pagination"]["total_items"] == 2
         assert result["assertion_failures"][0]["evidence"][0]["path"] == "logs/sim.log"
+        windowed = core.list_assertion_failures(
+            store,
+            start_time_ns=50,
+            end_time_ns=150,
+        )
+        assert windowed["pagination"]["total_items"] == 1
+        assert windowed["assertion_failures"][0]["time_ns"] == 100
     finally:
         store.close()

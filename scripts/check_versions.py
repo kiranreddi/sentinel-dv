@@ -15,6 +15,8 @@ PINNED_FILES: tuple[tuple[Path, str], ...] = (
     (ROOT / "pyproject.toml", r'^version = "{version}"'),
     (ROOT / "sentinel_dv" / "__init__.py", r'^__version__ = "{version}"'),
     (ROOT / "server.json", r'"version": "{version}"'),
+    (ROOT / ".codex-plugin" / "plugin.json", r'"version": "{version}"'),
+    (ROOT / ".claude-plugin" / "plugin.json", r'"version": "{version}"'),
     (ROOT / "README.md", r"Sentinel DV v{version}"),
     (ROOT / "docs" / "index.md", r"v{version}"),
     (ROOT / "docs" / "getting-started" / "installation.md", r"v{version}"),
@@ -86,9 +88,7 @@ def main(argv: list[str] | None = None) -> int:
     errors = check_pinned_files(package_version)
 
     if tag_version and tag_version != package_version:
-        errors.append(
-            f"Tag version {tag_version!r} != pyproject.toml version {package_version!r}"
-        )
+        errors.append(f"Tag version {tag_version!r} != pyproject.toml version {package_version!r}")
 
     if errors:
         print("Version check FAILED:", file=sys.stderr)

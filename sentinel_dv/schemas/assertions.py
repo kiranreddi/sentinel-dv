@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from sentinel_dv.schemas.common import EvidenceRef
 
@@ -43,8 +43,8 @@ class AssertionInfo(BaseModel):
         None, description="Whether assertion was enabled in a specific run"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "A_axi_protocol_check_bresp_valid",
                 "language": "sva",
@@ -60,6 +60,7 @@ class AssertionInfo(BaseModel):
                 "enabled_in_run": True,
             }
         }
+    )
 
 
 class AssertionFailure(BaseModel):
@@ -81,8 +82,8 @@ class AssertionFailure(BaseModel):
         default_factory=list, max_length=10, description="Evidence references"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "assertion_id": "A_axi_protocol_check_bresp_valid",
                 "test_id": "T20260125_142305_axi_burst_test",
@@ -98,6 +99,7 @@ class AssertionFailure(BaseModel):
                 ],
             }
         }
+    )
 
 
 class SVARunStatus(BaseModel):
@@ -116,8 +118,8 @@ class SVARunStatus(BaseModel):
         default=0, ge=0, description="Number of vacuous firings (antecedent never held)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "assertion_id": "A_axi_protocol_check_bresp_valid",
                 "test_id": "T20260125_142305_axi_burst_test",
@@ -127,6 +129,7 @@ class SVARunStatus(BaseModel):
                 "vacuous_count": 0,
             }
         }
+    )
 
 
 class VacuousAssertion(BaseModel):

@@ -21,7 +21,7 @@
 <text x="20" y="264" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;suite&quot;: &quot;verilator_counter&quot;,</text>
 <text x="20" y="279" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;framework&quot;: null,</text>
 <text x="20" y="294" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;window_days&quot;: 30,</text>
-<text x="20" y="309" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;as_of&quot;: &quot;2026-06-01T18:33:23.029752Z&quot;,</text>
+<text x="20" y="309" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;as_of&quot;: &quot;2026-07-31T05:26:42.922362Z&quot;,</text>
 <text x="20" y="324" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;entries&quot;: [</text>
 <text x="20" y="339" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    {</text>
 <text x="20" y="354" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;test_id&quot;: &quot;t_3bb6bfc925aa&quot;,</text>
@@ -32,7 +32,7 @@
 <text x="20" y="429" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;framework&quot;: &quot;cocotb&quot;,</text>
 <text x="20" y="444" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;sim_vendor&quot;: null,</text>
 <text x="20" y="459" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;suite&quot;: &quot;verilator_counter&quot;,</text>
-<text x="20" y="474" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;run_created_at&quot;: &quot;2026-06-01T18:33:22.774708Z&quot;</text>
+<text x="20" y="474" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">      &quot;run_created_at&quot;: &quot;2026-07-31T05:26:42.687257Z&quot;</text>
 <text x="20" y="489" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">    }</text>
 <text x="20" y="504" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  ],</text>
 <text x="20" y="519" fill="#e2e8f0" font-family="ui-monospace, 'Fira Code', 'SF Mono', Menlo, monospace" font-size="12">  &quot;entries_returned&quot;: 1,</text>

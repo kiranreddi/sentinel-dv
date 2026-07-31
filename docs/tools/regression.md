@@ -89,7 +89,24 @@ Structured diff between two runs.
   ],
   "resolved_failures": [
     { "signature_id": "sig_...", "count": 5 }
+  ],
+  "persistent_failures": [
+    {
+      "signature_id": "sig_persistent",
+      "base_count": 2,
+      "compare_count": 3,
+      "count_delta": 1
+    }
+  ],
+  "coverage_deltas": [
+    {
+      "kind": "functional",
+      "metric_name": "axi.awlen_bins",
+      "scope": "tb.env.axi_agent",
+      "base_covered_pct": 75.0,
+      "compare_covered_pct": 87.5,
+      "delta_pct": 12.5
+    }
   ]
 }
 ```
-

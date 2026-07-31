@@ -60,6 +60,10 @@ jobs:
       run: |
         ruff check sentinel_dv/ tests/
 
+    - name: Verify agent skill mirrors
+      run: |
+        python scripts/sync_agent_skills.py --check
+
     - name: Run formatting check (black)
       run: |
         black --check sentinel_dv/ tests/

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sentinel-dv": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "sentinel-dv@2.3.1",
+        "sentinel-dv-server"
+      ]
+    }
+  }
+}

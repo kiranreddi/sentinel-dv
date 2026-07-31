@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-07-31
+
+### Added
+
+- **Agent workflow skills** for regression triage, single-failure debugging, and coverage closure, with canonical sources plus synchronized Codex, Claude Code, and GitHub Copilot project layouts.
+- **Deterministic workflow verification** that indexes 52 checked-in artifacts and exercises all three published skill procedures against real MCP responses.
+- **Agent setup and video walkthrough documentation**, including a 45-second silent product tour and regenerated output gallery for all 28 MCP tools.
+
+### Changed
+
+- Documentation and product positioning now use **design verification** consistently.
+- The MkDocs site, README, operating guide, installation flow, tool references, and skill guides now describe the read-only execution boundary and host-specific setup.
+- Failure clusters are documented as normalized signature heuristics rather than proven root causes. Coverage advisor output is labeled as engineer-reviewed candidate code.
+
+### Fixed
+
+- `regression.health` excludes unavailable coverage, assertion, repeated-history, and cross-simulator cohorts from effective weights instead of scoring missing evidence as healthy.
+- `runs.diff`, `runs.cross_sim`, history, and health queries preserve exact run scope and disclose cohort availability.
+- `coverage.advisor` emits syntactically balanced SystemVerilog candidates without doubled template braces.
+- Stable coverage trends no longer report a zero-percent regression; coverage-gap follow-up points to the exact advisor run and metric.
+- MCP output schemas, metadata, pagination, assertion windows, and regenerated examples align with actual tool behavior.
+
 ## [2.3.0] - 2026-06-05
 
 ### Added
@@ -234,6 +256,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Waveform summaries were experimental and required external preprocessing (addressed in 1.1.0 for JSON and VCD).
 
+[2.3.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.3.1
 [1.1.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.1.0
 [1.0.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.0.1
 [1.0.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v1.0.0

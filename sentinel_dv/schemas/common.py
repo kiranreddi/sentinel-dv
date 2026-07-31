@@ -6,7 +6,7 @@ This module defines base types and enums shared by all schema modules.
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Evidence kinds
 EvidenceKind = Literal["log", "report", "coverage", "waveform_summary", "artifact"]
@@ -86,8 +86,8 @@ class RunRef(BaseModel):
     created_at: datetime = Field(..., description="Run creation timestamp (RFC3339)")
     ci: CIInfo | None = Field(None, description="CI system information")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "run_id": "R20260125_142305_abc123",
                 "suite": "nightly_regression",
@@ -99,6 +99,7 @@ class RunRef(BaseModel):
                 },
             }
         }
+    )
 
 
 class PaginationInfo(BaseModel):
@@ -124,11 +125,12 @@ class ErrorResponse(BaseModel):
     message: str = Field(..., description="Human-readable error message")
     details: dict[str, str] | None = Field(None, description="Additional error details")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "code": "INVALID_ARGUMENT",
                 "message": "page_size must be between 1 and 200",
                 "details": {"field": "page_size", "value": "500"},
             }
         }
+    )

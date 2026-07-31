@@ -1,0 +1,39 @@
+{
+  "name": "sentinel-dv",
+  "version": "2.3.1",
+  "description": "Evidence-backed regression triage, failure debugging, and coverage closure skills for Sentinel DV.",
+  "author": {
+    "name": "Sentinel DV Team",
+    "url": "https://github.com/kiranreddi"
+  },
+  "homepage": "https://kiranreddi.github.io/sentinel-dv/",
+  "repository": "https://github.com/kiranreddi/sentinel-dv",
+  "license": "Apache-2.0",
+  "keywords": [
+    "verification",
+    "systemverilog",
+    "uvm",
+    "cocotb",
+    "regression",
+    "coverage"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Sentinel DV",
+    "shortDescription": "Debug regressions and close DV coverage",
+    "longDescription": "Structured Sentinel DV workflows for regression triage, single-test failure analysis, and risk-based coverage closure.",
+    "developerName": "Sentinel DV Team",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read-only verification analysis"
+    ],
+    "websiteURL": "https://kiranreddi.github.io/sentinel-dv/",
+    "defaultPrompt": [
+      "Triage this verification regression.",
+      "Debug this failing DV test.",
+      "Build a coverage closure plan."
+    ],
+    "brandColor": "#0F766E"
+  }
+}

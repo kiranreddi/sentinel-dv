@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 LiveSimPhase = Literal["compiling", "elaborating", "running", "done", "failed", "unknown"]
 
@@ -41,8 +41,8 @@ class LiveSimProgress(BaseModel):
         None, ge=0.0, le=100.0, description="Completion percentage (tests_done / tests_total * 100)"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "suite": "axi4_regression",
                 "phase": "running",
@@ -58,3 +58,4 @@ class LiveSimProgress(BaseModel):
                 "percent_done": 39.17,
             }
         }
+    )

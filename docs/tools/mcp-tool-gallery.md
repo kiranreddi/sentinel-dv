@@ -36,7 +36,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-06-01T18:33:22.781554Z",
+          "created_at": "2026-07-31T05:26:42.691787Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -47,7 +47,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-06-01T18:33:22.774708Z",
+          "created_at": "2026-07-31T05:26:42.687257Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -58,7 +58,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-06-01T18:33:22.764279Z",
+          "created_at": "2026-07-31T05:26:42.678688Z",
           "ci_system": null,
           "ci_build_id": null,
           "total_tests": 1,
@@ -93,14 +93,14 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "run_id": "r_85b1d3f70e48",
         "run_id_full": "85b1d3f70e48fc8d1d4135b83ba53a9aeaa116a8a7775b50b1bf731beaf0eb33",
         "suite": "verilator_counter",
-        "created_at": "2026-06-01T18:33:22.774708Z",
+        "created_at": "2026-07-31T05:26:42.687257Z",
         "status": "pass",
         "ci_system": null,
         "ci_build_id": null,
         "ci_job_url": null,
         "artifact_manifest_hash": null,
-        "index_built_at": "2026-06-01T18:33:22.775153Z",
-        "created_at_ms": 1780338802774
+        "index_built_at": "2026-07-31T05:26:42.687537Z",
+        "created_at_ms": 1785475602687
       },
       "schema_version": "1.0.0"
     }
@@ -123,7 +123,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "run_id": "r_85b1d3f70e48",
       "suite": "verilator_counter",
       "status": "pass",
-      "created_at": "2026-06-01T18:33:22.774708Z",
+      "created_at": "2026-07-31T05:26:42.687257Z",
       "ci_system": null,
       "ci_build_id": null,
       "test_counts": {
@@ -198,8 +198,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "sim_vendor": null,
           "sim_version": null,
           "dut_top": null,
-          "created_at": "2026-06-01T18:33:22.774708Z",
-          "created_at_ms": 1780338802774
+          "created_at": "2026-07-31T05:26:42.687257Z",
+          "created_at_ms": 1785475602687
         }
       ],
       "pagination": {
@@ -238,8 +238,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "sim_vendor": null,
         "sim_version": null,
         "dut_top": null,
-        "created_at": "2026-06-01T18:33:22.774708Z",
-        "created_at_ms": 1780338802774
+        "created_at": "2026-07-31T05:26:42.687257Z",
+        "created_at_ms": 1785475602687
       }
     }
     ```
@@ -265,7 +265,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "suite": "verilator_counter",
       "framework": null,
       "window_days": 30,
-      "as_of": "2026-06-01T18:33:23.029752Z",
+      "as_of": "2026-07-31T05:26:42.922362Z",
       "entries": [
         {
           "test_id": "t_3bb6bfc925aa",
@@ -276,7 +276,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "framework": "cocotb",
           "sim_vendor": null,
           "suite": "verilator_counter",
-          "run_created_at": "2026-06-01T18:33:22.774708Z"
+          "run_created_at": "2026-07-31T05:26:42.687257Z"
         }
       ],
       "entries_returned": 1,
@@ -894,6 +894,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "schema_version": "1.0.0",
       "gaps": [
         {
+          "run_id": "r_85b1d3f70e48",
+          "suite": "verilator_counter",
           "metric_name": "toggle",
           "scope": "counter",
           "kind": "functional",
@@ -903,6 +905,8 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
           "recommendation": "Functional coverage gap in 'toggle' (scope: counter, 75.0% covered). Add constrained-random or directed tests targeting the uncovered bins. Consider increasing the test seed space or adding a dedicated directed test."
         },
         {
+          "run_id": "r_85b1d3f70e48",
+          "suite": "verilator_counter",
           "metric_name": "line",
           "scope": "counter",
           "kind": "functional",
@@ -921,12 +925,14 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "total_items": 2,
         "total_pages": 1
       },
+      "run_id": null,
       "suite": "verilator_counter",
       "kind": null,
+      "priority": null,
       "threshold_pct": 100.0,
       "total_metrics": 2,
       "gaps_found": 2,
-      "note": "Gaps are sorted by priority (high\u2192medium\u2192low) then by coverage percentage. Use tests.replay to reproduce specific failures. Showing page 1 of 1."
+      "note": "Gaps are sorted by priority (high\u2192medium\u2192low) then by coverage percentage. Use coverage.advisor with an exact run_id and metric_name for a reviewable stimulus candidate. Showing page 1 of 1."
     }
     ```
 
@@ -1120,26 +1126,26 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "suite": "verilator_counter",
       "window_days": 30,
-      "as_of": "2026-06-01T18:33:23.041655Z",
+      "as_of": "2026-07-31T05:26:42.935344Z",
       "pass_rate": 33.33,
       "runs": [
         {
           "run_id": "r_d39bb5009606",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-06-01T18:33:22.781554Z"
+          "created_at": "2026-07-31T05:26:42.691787Z"
         },
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
           "status": "pass",
-          "created_at": "2026-06-01T18:33:22.774708Z"
+          "created_at": "2026-07-31T05:26:42.687257Z"
         },
         {
           "run_id": "r_566fd6e9a21b",
           "suite": "verilator_counter",
           "status": "fail",
-          "created_at": "2026-06-01T18:33:22.764279Z"
+          "created_at": "2026-07-31T05:26:42.678688Z"
         }
       ],
       "top_signatures": [
@@ -1194,6 +1200,25 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         {
           "signature_id": "s_ea51e615c938",
           "count": 1
+        }
+      ],
+      "persistent_failures": [],
+      "coverage_deltas": [
+        {
+          "kind": "functional",
+          "metric_name": "line",
+          "scope": "counter",
+          "base_covered_pct": null,
+          "compare_covered_pct": 87.5,
+          "delta_pct": null
+        },
+        {
+          "kind": "functional",
+          "metric_name": "toggle",
+          "scope": "counter",
+          "base_covered_pct": null,
+          "compare_covered_pct": 75.0,
+          "delta_pct": null
         }
       ],
       "schema_version": "1.0.0"
@@ -1364,7 +1389,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         {
           "run_id": "r_85b1d3f70e48",
           "suite": "verilator_counter",
-          "created_at": "2026-06-01T18:33:22.774708Z",
+          "created_at": "2026-07-31T05:26:42.687257Z",
           "kind": "functional",
           "covered_pct": 81.25,
           "metric_count": 2,
@@ -1378,7 +1403,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "total_delta_pct": 0.0,
         "direction": "stable"
       },
-      "note": "Coverage regressed by 0.0% over 1 run(s). Positive delta_pct = more bins covered than previous run.",
+      "note": "Coverage stable with a net change of +0.0% over 1 run(s). Positive delta_pct = more bins covered than previous run.",
       "schema_version": "1.0.0"
     }
     ```
@@ -1397,6 +1422,7 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
     {
       "suite_prefix": null,
       "divergent_tests": [],
+      "unique_divergent_tests": 0,
       "unique_divergent_names": 0,
       "simulator_pairs_analysed": [],
       "note": "No cross-simulator divergence detected. All shared test names produce consistent results.",
@@ -1419,130 +1445,339 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
       "run_id": null,
       "clusters": [
         {
-          "signature": "expected count to wrap at n; observed n without wrap.",
-          "count": 4,
+          "signature": "s_171ee2cbf014",
+          "failure_count": 3,
+          "count": 3,
+          "distinct_test_count": 3,
+          "distinct_run_count": 3,
+          "representative_test_id": "t_e65285b55eec",
+          "representative_message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      ",
           "test_ids": [
-            "t_e65285b55eec",
             "t_731e321ad3c0",
             "t_7f5785415392",
-            "t_5b4ce57ba531"
+            "t_e65285b55eec"
           ],
-          "representative_test_id": "t_e65285b55eec",
-          "representative_message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      "
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_12ec8baa2f30",
+            "r_399aa82757dd",
+            "r_bcde15e0d7db"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 3
+          },
+          "category_counts": {
+            "scoreboard": 3
+          }
         },
         {
-          "signature": "[scb] data mismatch: expected count=n got n",
+          "signature": "s_31f7c4e8d3fa",
+          "failure_count": 2,
           "count": 2,
-          "test_ids": [
-            "t_7a0a37762958",
-            "t_3fb5c5afeb62"
-          ],
+          "distinct_test_count": 2,
+          "distinct_run_count": 2,
           "representative_test_id": "t_7a0a37762958",
-          "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5"
-        },
-        {
-          "signature": "pop while empty: empty flag was n",
-          "count": 1,
+          "representative_message": "[SCB] DATA MISMATCH: expected count=3 got 5",
           "test_ids": [
-            "t_cf16259fcc9e"
+            "t_3fb5c5afeb62",
+            "t_7a0a37762958"
           ],
-          "representative_test_id": "t_cf16259fcc9e",
-          "representative_message": "\npop while empty: empty flag was 0\n      "
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_566fd6e9a21b",
+            "r_b1d6f6071a8b"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 2
+          },
+          "category_counts": {
+            "scoreboard": 2
+          }
         },
         {
-          "signature": "[test] test failed",
+          "signature": "s_0a70541895bb",
+          "failure_count": 1,
           "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_bdf825c67e63",
+          "representative_message": "[TEST] counter_tb.sv:(92) @ 1300 TEST FAILED",
           "test_ids": [
-            "t_3fb5c5afeb62"
+            "t_bdf825c67e63"
           ],
-          "representative_test_id": "t_3fb5c5afeb62",
-          "representative_message": "[TEST] TEST FAILED"
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_c93470980bbc"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "fatal": 1
+          },
+          "category_counts": {
+            "unknown": 1
+          }
         },
         {
-          "signature": "[mon] assertion failed: pready_timeout after psel",
+          "signature": "s_11ffe14f53ed",
+          "failure_count": 1,
           "count": 1,
-          "test_ids": [
-            "t_e79a0d869304"
-          ],
-          "representative_test_id": "t_e79a0d869304",
-          "representative_message": "[MON] ASSERTION FAILED: pready_timeout after psel"
-        },
-        {
-          "signature": "data mismatch: expected count=n got n",
-          "count": 1,
-          "test_ids": [
-            "t_81f11ef7e513"
-          ],
-          "representative_test_id": "t_81f11ef7e513",
-          "representative_message": "DATA MISMATCH: expected count=3 got 5"
-        },
-        {
-          "signature": "uvm_error @ hex: uvm_test_top.env.scbd [scbd] fail: addr=addr exp=addr got=addr",
-          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_b439c1f1e40d",
+          "representative_message": "\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] FAIL: addr=0x000001C0 exp=0xDEADBEEF got=0x00000000\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] SCOREBOARD MISMATCHES DETECTED\n",
           "test_ids": [
             "t_b439c1f1e40d"
           ],
-          "representative_test_id": "t_b439c1f1e40d",
-          "representative_message": "\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] FAIL: addr=0x000001C0 exp=0xDEADBEEF got=0x00000000\n        UVM_ERROR @ 1248000: uvm_test_top.env.scbd [SCBD] SCOREBOARD MISMATCHES DETECTED\n"
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_e0e82e0b1722"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "scoreboard": 1
+          }
         },
         {
-          "signature": "[scb] counter_scoreboard.sv:(n) @ n data mismatch: expected count=n got n",
+          "signature": "s_167aa5eb920e",
+          "failure_count": 1,
           "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_bdf825c67e63",
+          "representative_message": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5",
           "test_ids": [
             "t_bdf825c67e63"
           ],
-          "representative_test_id": "t_bdf825c67e63",
-          "representative_message": "[SCB] counter_scoreboard.sv:(88) @ 1250 DATA MISMATCH: expected count=3 got 5"
-        },
-        {
-          "signature": "traceback (most recent call last): file \"test_counter.py\", line n, in test_over",
-          "count": 1,
-          "test_ids": [
-            "t_ce337fb0bfda"
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_c93470980bbc"
           ],
-          "representative_test_id": "t_ce337fb0bfda",
-          "representative_message": "\nTraceback (most recent call last):\n  File \"test_counter.py\", line 45, in test_overflow\n    assert dut.count.value == 0, \"Counter should wrap to 0\"\nAssertionError: Counter overflow not handled correct"
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "scoreboard": 1
+          }
         },
         {
-          "signature": "test failed",
+          "signature": "s_36ba5cf5dcf0",
+          "failure_count": 1,
           "count": 1,
-          "test_ids": [
-            "t_81f11ef7e513"
-          ],
-          "representative_test_id": "t_81f11ef7e513",
-          "representative_message": "TEST FAILED"
-        },
-        {
-          "signature": "[test] counter_tb.sv:(n) @ n test failed",
-          "count": 1,
-          "test_ids": [
-            "t_bdf825c67e63"
-          ],
-          "representative_test_id": "t_bdf825c67e63",
-          "representative_message": "[TEST] counter_tb.sv:(92) @ 1300 TEST FAILED"
-        },
-        {
-          "signature": "expected n-bit result; got value out of range.",
-          "count": 1,
-          "test_ids": [
-            "t_fed229b40a64"
-          ],
-          "representative_test_id": "t_fed229b40a64",
-          "representative_message": "\nExpected 16-bit result; got value out of range.\n      "
-        },
-        {
-          "signature": "[scb] axi data mismatch: aw beat n expected addr got addr",
-          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_7dd03c3d152f",
+          "representative_message": "[SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF",
           "test_ids": [
             "t_7dd03c3d152f"
           ],
-          "representative_test_id": "t_7dd03c3d152f",
-          "representative_message": "[SCB] AXI DATA MISMATCH: AW beat 3 expected 0xDEAD got 0xBEEF"
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_2968fa34e74e"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "scoreboard": 1
+          }
+        },
+        {
+          "signature": "s_7a0796e85275",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_3fb5c5afeb62",
+          "representative_message": "[TEST] TEST FAILED",
+          "test_ids": [
+            "t_3fb5c5afeb62"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_b1d6f6071a8b"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "fatal": 1
+          },
+          "category_counts": {
+            "unknown": 1
+          }
+        },
+        {
+          "signature": "s_7ed619f7cb5c",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_e79a0d869304",
+          "representative_message": "[MON] ASSERTION FAILED: pready_timeout after psel",
+          "test_ids": [
+            "t_e79a0d869304"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_07d0f584403c"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "assertion": 1
+          }
+        },
+        {
+          "signature": "s_81b0397b3f81",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_cf16259fcc9e",
+          "representative_message": "\npop while empty: empty flag was 0\n      ",
+          "test_ids": [
+            "t_cf16259fcc9e"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_c6f691e1ad14"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "unknown": 1
+          }
+        },
+        {
+          "signature": "s_89d86964979b",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_81f11ef7e513",
+          "representative_message": "DATA MISMATCH: expected count=3 got 5",
+          "test_ids": [
+            "t_81f11ef7e513"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_3bd942f45ef3"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "scoreboard": 1
+          }
+        },
+        {
+          "signature": "s_9a453c8f8338",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_ce337fb0bfda",
+          "representative_message": "\nTraceback (most recent call last):\n  File \"test_counter.py\", line 45, in test_overflow\n    assert dut.count.value == 0, \"Counter should wrap to 0\"\nAssertionError: Counter overflow not handled correct",
+          "test_ids": [
+            "t_ce337fb0bfda"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_0fb765971a20"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "unknown": 1
+          }
+        },
+        {
+          "signature": "s_e8185f767f71",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_fed229b40a64",
+          "representative_message": "\nExpected 16-bit result; got value out of range.\n      ",
+          "test_ids": [
+            "t_fed229b40a64"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_26595f0640e8"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "unknown": 1
+          }
+        },
+        {
+          "signature": "s_ea51e615c938",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_5b4ce57ba531",
+          "representative_message": "\nExpected count to wrap at 15; observed 16 without wrap.\n      ",
+          "test_ids": [
+            "t_5b4ce57ba531"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_d39bb5009606"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "error": 1
+          },
+          "category_counts": {
+            "unknown": 1
+          }
+        },
+        {
+          "signature": "s_f635f13d2227",
+          "failure_count": 1,
+          "count": 1,
+          "distinct_test_count": 1,
+          "distinct_run_count": 1,
+          "representative_test_id": "t_81f11ef7e513",
+          "representative_message": "TEST FAILED",
+          "test_ids": [
+            "t_81f11ef7e513"
+          ],
+          "test_ids_truncated": false,
+          "run_ids": [
+            "r_3bd942f45ef3"
+          ],
+          "run_ids_truncated": false,
+          "severity_counts": {
+            "fatal": 1
+          },
+          "category_counts": {
+            "unknown": 1
+          }
         }
       ],
       "total_failures_analysed": 17,
-      "unique_clusters": 13,
-      "note": "13 root-cause cluster(s) explain 17 failure(s). Top cluster accounts for 23.5% of failures. Fix the representative failure in each cluster first.",
+      "unique_clusters": 14,
+      "clusters_returned": 14,
+      "clusters_truncated": false,
+      "note": "14 signature cluster(s) group 17 failure(s). Top cluster accounts for 17.6% of failures. Investigate a representative failure from each leading cluster first.",
       "schema_version": "1.0.0"
     }
     ```
@@ -1561,15 +1796,15 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
 ??? success "Response"
     ```json
     {
-      "health_score": 71.2,
+      "health_score": 59.1,
       "band": "coverage-gaps",
       "band_symbol": "\ud83d\udfe0",
       "component_scores": {
         "pass_rate": 33.3,
         "coverage": 81.2,
-        "assertion_health": 85.0,
-        "flakiness": 100.0,
-        "cross_sim_consistency": 100.0
+        "assertion_health": null,
+        "flakiness": null,
+        "cross_sim_consistency": null
       },
       "weights": {
         "pass_rate": 0.3,
@@ -1577,6 +1812,21 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "assertion_health": 0.15,
         "flakiness": 0.1,
         "cross_sim_consistency": 0.1
+      },
+      "effective_weights": {
+        "pass_rate": 0.4615,
+        "coverage": 0.5385
+      },
+      "data_quality": {
+        "coverage_available": true,
+        "assertion_health_available": false,
+        "flakiness_available": false,
+        "cross_sim_consistency_available": false,
+        "warnings": [
+          "No assertion definitions or SVA status were indexed; assertion health is unavailable.",
+          "No repeated test cohorts were indexed; flakiness is unavailable.",
+          "No comparable multi-simulator cohorts were indexed; cross-simulator consistency is unavailable."
+        ]
       },
       "raw_data": {
         "total_tests": 3,
@@ -1586,17 +1836,29 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
         "coverage_by_kind": {
           "functional": 81.25
         },
-        "total_assertions": 10,
-        "vacuous_assertions": 3,
+        "total_assertions": 0,
+        "vacuous_assertions": 0,
         "failing_assertions": 0,
         "flaky_tests": 0,
-        "divergent_tests": 0
+        "history_cohorts": 0,
+        "divergent_tests": 0,
+        "cross_sim_cohorts": 0,
+        "scope": {
+          "run_id": null,
+          "suite": "verilator_counter"
+        },
+        "heuristics": {
+          "flaky_tests": "A test cohort is flagged when both pass and fail outcomes exist in indexed history for the scoped suite.",
+          "divergent_tests": "Latest pass/fail outcomes differ across simulators within the same suite, framework, DUT top, and test name."
+        }
       },
       "recommendations": [
-        "Pass rate is 33% (2 failures). Use tests.cluster to find root causes.",
-        "3 assertion(s) fire vacuously \u2014 the antecedent is never triggered. Add targeted stimulus."
+        "Pass rate is 33% (2 failures). Use tests.cluster to group recurring failure signatures.",
+        "Index assertion definition/status artifacts before using health score for sign-off.",
+        "Index repeated runs for the same test cohorts before evaluating flakiness.",
+        "Index matching test cohorts from at least two simulators before evaluating cross-simulator consistency."
       ],
-      "note": "\ud83d\udfe0 Health score: 71.2/100 (coverage-gaps). Breakdown \u2014 pass_rate: 33%, coverage: 81%, assertions: 85%, flakiness: 100%, cross-sim: 100%.",
+      "note": "\ud83d\udfe0 Health score: 59.1/100 (coverage-gaps). Breakdown \u2014 pass_rate: 33%, coverage: 81%, assertions: unavailable, flakiness: unavailable, cross-sim: unavailable.",
       "schema_version": "1.0.0"
     }
     ```
@@ -1615,12 +1877,15 @@ exactly as MCP clients receive it (`schema_version` + payload or `error`).
 ??? success "Response"
     ```json
     {
+      "run_id": null,
       "suite": "verilator_counter",
       "kind": null,
+      "metric_name": null,
+      "protocol": null,
       "total_gaps": 2,
       "high_priority_gaps": 0,
       "advisories": [],
-      "note": "0 targeted constraint/sequence snippet(s) generated for high-priority coverage gaps (0\u201325% covered). Each advisory includes ready-to-use SystemVerilog code. Paste the constraint_sv block into your test's constraint block to direct stimulus toward the uncovered bin.",
+      "note": "0 targeted constraint/sequence snippet(s) generated for high-priority coverage gaps. Each advisory is candidate SystemVerilog code. Review signal names, legal values, protocol rules, and testbench ownership before use.",
       "schema_version": "1.0.0"
     }
     ```

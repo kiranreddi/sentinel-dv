@@ -1297,7 +1297,7 @@ class IndexStore:
         result = self._conn.execute(
             f"""
             SELECT * FROM tests
-            WHERE ({' OR '.join(match_clauses)}) {framework_clause}
+            WHERE ({" OR ".join(match_clauses)}) {framework_clause}
             ORDER BY
                 CASE
                     WHEN name = ? THEN 0
@@ -1488,10 +1488,10 @@ class IndexStore:
             where_clauses.append("assertion_id = ?")
             params.append(assertion_id)
         if start_time_ns is not None:
-            where_clauses.append("(time_ns IS NULL OR time_ns >= ?)")
+            where_clauses.append("time_ns >= ?")
             params.append(start_time_ns)
         if end_time_ns is not None:
-            where_clauses.append("(time_ns IS NULL OR time_ns <= ?)")
+            where_clauses.append("time_ns <= ?")
             params.append(end_time_ns)
 
         where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
@@ -1585,6 +1585,7 @@ class IndexStore:
 
     def query_coverage_metrics(
         self,
+        run_id: str | None = None,
         suite: str | None = None,
         kind: str | None = None,
         limit: int = 2000,
@@ -1595,6 +1596,7 @@ class IndexStore:
         coverage summary, enriched with run and suite metadata.
 
         Args:
+            run_id: Filter to a specific run.
             suite: Filter to a specific suite (via runs table join).
             kind: Filter to a specific coverage kind.
             limit: Maximum number of metrics to return.
@@ -1609,6 +1611,9 @@ class IndexStore:
         where_clauses: list[str] = []
         params: list[Any] = []
 
+        if run_id:
+            where_clauses.append("cs.run_id = ?")
+            params.append(run_id)
         if suite:
             where_clauses.append("r.suite = ?")
             params.append(suite)
@@ -1653,7 +1658,7 @@ class IndexStore:
                         "suite": run_suite,
                     }
                 )
-        return results
+        return results[:limit]
 
     def insert_coverage_summary(
         self,
@@ -1751,6 +1756,50 @@ class IndexStore:
             {"signature_id": sig, "count": base_sigs[sig]}
             for sig in sorted(base_sigs.keys() - compare_sigs.keys())
         ]
+        persistent_failures = [
+            {
+                "signature_id": sig,
+                "base_count": base_sigs[sig],
+                "compare_count": compare_sigs[sig],
+                "count_delta": compare_sigs[sig] - base_sigs[sig],
+            }
+            for sig in sorted(base_sigs.keys() & compare_sigs.keys())
+        ]
+
+        def _coverage_by_key(run_id: str) -> dict[tuple[str, str, str], float]:
+            buckets: dict[tuple[str, str, str], list[float]] = {}
+            for metric in self.query_coverage_metrics(run_id=run_id, limit=100_000):
+                key = (
+                    str(metric["kind"]),
+                    str(metric["name"]),
+                    str(metric["scope"]),
+                )
+                buckets.setdefault(key, []).append(float(metric["covered"]))
+            return {key: sum(values) / len(values) for key, values in buckets.items()}
+
+        base_coverage = _coverage_by_key(base_run_id)
+        compare_coverage = _coverage_by_key(compare_run_id)
+        coverage_deltas = []
+        for kind, name, scope in sorted(set(base_coverage) | set(compare_coverage)):
+            key = (kind, name, scope)
+            base_pct = base_coverage.get(key)
+            compare_pct = compare_coverage.get(key)
+            coverage_deltas.append(
+                {
+                    "kind": kind,
+                    "metric_name": name,
+                    "scope": scope,
+                    "base_covered_pct": round(base_pct, 2) if base_pct is not None else None,
+                    "compare_covered_pct": (
+                        round(compare_pct, 2) if compare_pct is not None else None
+                    ),
+                    "delta_pct": (
+                        round(compare_pct - base_pct, 2)
+                        if base_pct is not None and compare_pct is not None
+                        else None
+                    ),
+                }
+            )
 
         return {
             "base_run_id": base_run_id,
@@ -1758,6 +1807,8 @@ class IndexStore:
             "test_changes": test_changes,
             "new_failures": new_failures,
             "resolved_failures": resolved_failures,
+            "persistent_failures": persistent_failures,
+            "coverage_deltas": coverage_deltas,
         }
 
     def _failure_signatures_for_run(self, run_id: str) -> dict[str, int]:
@@ -2149,10 +2200,10 @@ class IndexStore:
         suite_prefix: str | None = None,
         limit: int = 200,
     ) -> list[dict[str, Any]]:
-        """Find tests whose pass/fail status diverges across simulators.
+        """Find latest pass/fail outcomes that diverge across simulators.
 
-        Matches tests by name (ignoring suite prefix), groups by sim_vendor,
-        returns rows where at least one sim passes and another fails.
+        Comparisons stay within the same suite, framework, DUT top, and test
+        name. Only the latest indexed result per simulator and cohort is used.
 
         Args:
             suite_prefix: Optional filter on suite name prefix.
@@ -2168,44 +2219,90 @@ class IndexStore:
         params: list[Any] = []
         suite_filter = ""
         if suite_prefix:
-            suite_filter = "AND (r.suite LIKE ?)"
+            suite_filter = "WHERE r.suite LIKE ?"
             params.append(f"{suite_prefix}%")
 
         params.append(limit)
 
         rows = self._conn.execute(
             f"""
+            WITH ranked AS (
+                SELECT
+                    t.*,
+                    r.suite,
+                    r.created_at AS run_created_at,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY
+                            r.suite,
+                            t.name,
+                            t.framework,
+                            COALESCE(t.dut_top, ''),
+                            t.sim_vendor
+                        ORDER BY
+                            COALESCE(t.created_at_ms, r.created_at_ms) DESC,
+                            t.test_id DESC
+                    ) AS recency_rank
+                FROM tests t
+                JOIN runs r ON t.run_id = r.run_id
+                {suite_filter}
+            )
             SELECT
-                t1.name,
-                t1.sim_vendor AS sim_a,
-                t1.status    AS status_a,
-                t1.run_id    AS run_id_a,
-                t2.sim_vendor AS sim_b,
-                t2.status    AS status_b,
-                t2.run_id    AS run_id_b
-            FROM tests t1
-            JOIN tests t2
-                ON  t1.name = t2.name
-                AND t1.sim_vendor IS NOT NULL
-                AND t2.sim_vendor IS NOT NULL
-                AND t1.sim_vendor < t2.sim_vendor
-                AND t1.status != t2.status
-            JOIN runs r ON t1.run_id = r.run_id
-            WHERE 1=1 {suite_filter}
-            ORDER BY t1.name ASC
+                a.suite,
+                a.name,
+                a.framework,
+                a.dut_top,
+                a.sim_vendor AS sim_a,
+                a.sim_version AS sim_version_a,
+                a.status AS status_a,
+                a.run_id AS run_id_a,
+                a.run_created_at AS run_created_at_a,
+                b.sim_vendor AS sim_b,
+                b.sim_version AS sim_version_b,
+                b.status AS status_b,
+                b.run_id AS run_id_b,
+                b.run_created_at AS run_created_at_b
+            FROM ranked a
+            JOIN ranked b
+                ON a.suite = b.suite
+                AND a.name = b.name
+                AND a.framework = b.framework
+                AND COALESCE(a.dut_top, '') = COALESCE(b.dut_top, '')
+                AND a.sim_vendor < b.sim_vendor
+            WHERE
+                a.recency_rank = 1
+                AND b.recency_rank = 1
+                AND a.status IN ('pass', 'fail')
+                AND b.status IN ('pass', 'fail')
+                AND a.status != b.status
+            ORDER BY a.suite ASC, a.name ASC, a.sim_vendor ASC, b.sim_vendor ASC
             LIMIT ?
             """,
             params,
         ).fetchall()
 
-        cols = ["test_name", "sim_a", "status_a", "run_id_a", "sim_b", "status_b", "run_id_b"]
+        cols = [
+            "suite",
+            "test_name",
+            "framework",
+            "dut_top",
+            "sim_a",
+            "sim_version_a",
+            "status_a",
+            "run_id_a",
+            "run_created_at_a",
+            "sim_b",
+            "sim_version_b",
+            "status_b",
+            "run_id_b",
+            "run_created_at_b",
+        ]
         return [dict(zip(cols, row, strict=False)) for row in rows]
 
     def cluster_failures(
         self,
         run_id: str | None = None,
         max_clusters: int = 20,
-    ) -> list[dict[str, Any]]:
+    ) -> dict[str, Any]:
         """Cluster test failures by normalised error signature.
 
         Groups failures with similar error messages so engineers can identify
@@ -2216,8 +2313,7 @@ class IndexStore:
             max_clusters: Maximum number of distinct clusters to return.
 
         Returns:
-            List of dicts: signature, count, representative_test_id,
-            representative_message, test_ids.
+            Cluster rows plus untruncated totals.
         """
         if not self._conn:
             raise RuntimeError("Not connected to database")
@@ -2230,7 +2326,15 @@ class IndexStore:
 
         rows = self._conn.execute(
             f"""
-            SELECT f.test_id, f.message, f.summary, f.failure_id
+            SELECT
+                f.test_id,
+                f.run_id,
+                f.message,
+                f.summary,
+                f.failure_id,
+                f.signature_id,
+                f.severity,
+                f.category
             FROM failures f
             {where}
             ORDER BY f.failure_id ASC
@@ -2256,26 +2360,58 @@ class IndexStore:
         clusters: dict[str, dict[str, Any]] = defaultdict(
             lambda: {
                 "count": 0,
-                "test_ids": [],
+                "test_ids": set(),
+                "run_ids": set(),
+                "severity_counts": {},
+                "category_counts": {},
                 "representative_test_id": None,
                 "representative_message": None,
             }
         )
-        for test_id, message, summary, _ in rows:
+        for test_id, failure_run_id, message, summary, _, signature_id, severity, category in rows:
             raw = message or summary or ""
-            sig = _normalise(raw[:200])
+            sig = str(signature_id) if signature_id else _normalise(raw[:200])
             c = clusters[sig]
             c["count"] += 1
             if c["representative_test_id"] is None:
                 c["representative_test_id"] = test_id
                 c["representative_message"] = raw[:200]
-            c["test_ids"].append(test_id)
+            c["test_ids"].add(test_id)
+            c["run_ids"].add(failure_run_id)
+            c["severity_counts"][severity] = c["severity_counts"].get(severity, 0) + 1
+            c["category_counts"][category] = c["category_counts"].get(category, 0) + 1
 
-        sorted_clusters = sorted(clusters.items(), key=lambda kv: kv[1]["count"], reverse=True)
-        return [
-            {"signature": sig, **data, "test_ids": data["test_ids"][:50]}
-            for sig, data in sorted_clusters[:max_clusters]
-        ]
+        sorted_clusters = sorted(
+            clusters.items(),
+            key=lambda kv: (-kv[1]["count"], kv[0]),
+        )
+        result: list[dict[str, Any]] = []
+        for sig, data in sorted_clusters[:max_clusters]:
+            test_ids = sorted(data["test_ids"])
+            run_ids = sorted(data["run_ids"])
+            result.append(
+                {
+                    "signature": sig,
+                    "failure_count": data["count"],
+                    "count": data["count"],
+                    "distinct_test_count": len(test_ids),
+                    "distinct_run_count": len(run_ids),
+                    "representative_test_id": data["representative_test_id"],
+                    "representative_message": data["representative_message"],
+                    "test_ids": test_ids[:50],
+                    "test_ids_truncated": len(test_ids) > 50,
+                    "run_ids": run_ids[:50],
+                    "run_ids_truncated": len(run_ids) > 50,
+                    "severity_counts": dict(sorted(data["severity_counts"].items())),
+                    "category_counts": dict(sorted(data["category_counts"].items())),
+                }
+            )
+        return {
+            "clusters": result,
+            "total_failures": len(rows),
+            "total_clusters": len(sorted_clusters),
+            "clusters_truncated": len(sorted_clusters) > max_clusters,
+        }
 
     def regression_health_data(
         self,
@@ -2289,22 +2425,25 @@ class IndexStore:
         if not self._conn:
             raise RuntimeError("Not connected to database")
 
-        # -- pass rate -------------------------------------------------------
-        run_filter_clause = ""
-        run_params: list[Any] = []
-        suite_filter_clause = ""
-        suite_params: list[Any] = []
-
+        effective_suite = suite
         if run_id:
-            run_filter_clause = "WHERE t.run_id = ?"
-            run_params.append(run_id)
-        elif suite:
-            run_filter_clause = "WHERE r.suite = ?"
-            run_params.append(suite)
+            run = self.get_run(run_id)
+            if not run:
+                raise ValueError(f"Run not found: {run_id}")
+            run_suite = run.get("suite")
+            if suite and run_suite != suite:
+                raise ValueError(f"Run {run_id} does not belong to suite {suite}")
+            effective_suite = run_suite
 
-        if suite:
-            suite_filter_clause = "WHERE r.suite = ?"
-            suite_params.append(suite)
+        # -- pass rate -------------------------------------------------------
+        test_scope = ""
+        test_params: list[Any] = []
+        if run_id:
+            test_scope = "WHERE t.run_id = ?"
+            test_params.append(run_id)
+        elif effective_suite:
+            test_scope = "WHERE r.suite = ?"
+            test_params.append(effective_suite)
 
         test_counts = self._conn.execute(
             f"""
@@ -2314,21 +2453,30 @@ class IndexStore:
                 SUM(CASE WHEN t.status = 'fail' THEN 1 ELSE 0 END) AS failed
             FROM tests t
             LEFT JOIN runs r ON t.run_id = r.run_id
-            {run_filter_clause}
+            {test_scope}
             """,
-            run_params,
+            test_params,
         ).fetchone()
         total_tests, passed_tests, failed_tests = test_counts or (0, 0, 0)
 
         # -- coverage --------------------------------------------------------
+        coverage_scope = ""
+        coverage_params: list[Any] = []
+        if run_id:
+            coverage_scope = "WHERE cs.run_id = ?"
+            coverage_params.append(run_id)
+        elif effective_suite:
+            coverage_scope = "WHERE r.suite = ?"
+            coverage_params.append(effective_suite)
+
         cov_rows = self._conn.execute(
             f"""
             SELECT cs.metrics_json, cs.kind
             FROM coverage_summaries cs
-            JOIN runs r ON cs.run_id = r.run_id
-            {suite_filter_clause}
+            LEFT JOIN runs r ON cs.run_id = r.run_id
+            {coverage_scope}
             """,
-            suite_params,
+            coverage_params,
         ).fetchall()
         cov_totals: dict[str, list[float]] = {}
         for metrics_raw, cov_kind in cov_rows:
@@ -2348,32 +2496,146 @@ class IndexStore:
         )
 
         # -- assertion health ------------------------------------------------
-        row = self._conn.execute(
-            "SELECT COUNT(*) FROM sva_run_status WHERE vacuous_count > 0 OR status = 'vacuous'"
-        ).fetchone()
-        vacuous_count = (row[0] if row else 0) or 0
+        assertion_scope = ""
+        assertion_params: list[Any] = []
+        if run_id:
+            assertion_scope = "WHERE s.run_id = ?"
+            assertion_params.append(run_id)
+        elif effective_suite:
+            assertion_scope = "WHERE r.suite = ?"
+            assertion_params.append(effective_suite)
 
         row = self._conn.execute(
-            "SELECT COUNT(*) FROM sva_run_status WHERE fail_count > 0 OR status = 'fail'"
+            f"""
+            SELECT
+                COUNT(DISTINCT s.assertion_id),
+                COUNT(DISTINCT CASE
+                    WHEN s.vacuous_count > 0 OR s.status = 'vacuous'
+                    THEN s.assertion_id END
+                ),
+                COUNT(DISTINCT CASE
+                    WHEN s.fail_count > 0 OR s.status IN ('fail', 'failing')
+                    THEN s.assertion_id END
+                )
+            FROM sva_run_status s
+            LEFT JOIN runs r ON s.run_id = r.run_id
+            {assertion_scope}
+            """,
+            assertion_params,
         ).fetchone()
-        failing_assertions = (row[0] if row else 0) or 0
-
-        row = self._conn.execute("SELECT COUNT(DISTINCT assertion_id) FROM assertions").fetchone()
-        total_assertions = (row[0] if row else 0) or 0
+        total_assertions, vacuous_count, failing_assertions = row or (0, 0, 0)
 
         # -- flakiness (tests with both pass and fail across runs) -----------
-        row = self._conn.execute("""
-            SELECT COUNT(*) FROM (
-                SELECT name
-                FROM tests
-                GROUP BY name
-                HAVING COUNT(DISTINCT status) > 1
+        flaky_scope = ""
+        flaky_params: list[Any] = []
+        if effective_suite:
+            flaky_scope = "WHERE r.suite = ?"
+            flaky_params.append(effective_suite)
+        if run_id:
+            flaky_scope += (
+                " AND EXISTS ("
+                "SELECT 1 FROM tests target "
+                "WHERE target.run_id = ? "
+                "AND target.name = t.name "
+                "AND target.framework = t.framework "
+                "AND COALESCE(target.dut_top, '') = COALESCE(t.dut_top, '')"
+                ")"
             )
-            """).fetchone()
+            flaky_params.append(run_id)
+
+        row = self._conn.execute(
+            f"""
+            SELECT COUNT(*) FROM (
+                SELECT t.name, t.framework, COALESCE(t.dut_top, '') AS dut_top
+                FROM tests t
+                LEFT JOIN runs r ON t.run_id = r.run_id
+                {flaky_scope}
+                GROUP BY t.name, t.framework, COALESCE(t.dut_top, '')
+                HAVING COUNT(DISTINCT CASE
+                    WHEN t.status IN ('pass', 'fail') THEN t.status END
+                ) > 1
+            )
+            """,
+            flaky_params,
+        ).fetchone()
         flaky_count = (row[0] if row else 0) or 0
 
+        history_scope = ""
+        history_params: list[Any] = []
+        if effective_suite:
+            history_scope = "WHERE r.suite = ?"
+            history_params.append(effective_suite)
+        if run_id:
+            history_scope += (
+                " AND EXISTS ("
+                "SELECT 1 FROM tests target "
+                "WHERE target.run_id = ? "
+                "AND target.name = t.name "
+                "AND target.framework = t.framework "
+                "AND COALESCE(target.dut_top, '') = COALESCE(t.dut_top, '')"
+                ")"
+            )
+            history_params.append(run_id)
+        row = self._conn.execute(
+            f"""
+            SELECT COUNT(*) FROM (
+                SELECT t.name, t.framework, COALESCE(t.dut_top, '') AS dut_top
+                FROM tests t
+                LEFT JOIN runs r ON t.run_id = r.run_id
+                {history_scope}
+                GROUP BY t.name, t.framework, COALESCE(t.dut_top, '')
+                HAVING COUNT(DISTINCT t.run_id) >= 2
+            )
+            """,
+            history_params,
+        ).fetchone()
+        history_cohorts = (row[0] if row else 0) or 0
+
         # -- cross-sim divergence -------------------------------------------
-        divergent_count = len(self.cross_sim_divergence(limit=500))
+        divergence_rows = self.cross_sim_divergence(
+            suite_prefix=effective_suite,
+            limit=5_000,
+        )
+        if effective_suite:
+            divergence_rows = [item for item in divergence_rows if item["suite"] == effective_suite]
+        divergent_count = len(divergence_rows)
+
+        cross_sim_scope = ""
+        cross_sim_params: list[Any] = []
+        if effective_suite:
+            cross_sim_scope = "AND r.suite = ?"
+            cross_sim_params.append(effective_suite)
+        if run_id:
+            cross_sim_scope += (
+                " AND EXISTS ("
+                "SELECT 1 FROM tests target "
+                "WHERE target.run_id = ? "
+                "AND target.name = t.name "
+                "AND target.framework = t.framework "
+                "AND COALESCE(target.dut_top, '') = COALESCE(t.dut_top, '')"
+                ")"
+            )
+            cross_sim_params.append(run_id)
+        row = self._conn.execute(
+            f"""
+            SELECT COUNT(*) FROM (
+                SELECT
+                    r.suite,
+                    t.name,
+                    t.framework,
+                    COALESCE(t.dut_top, '') AS dut_top
+                FROM tests t
+                JOIN runs r ON t.run_id = r.run_id
+                WHERE t.status IN ('pass', 'fail')
+                    AND t.sim_vendor IS NOT NULL
+                    {cross_sim_scope}
+                GROUP BY r.suite, t.name, t.framework, COALESCE(t.dut_top, '')
+                HAVING COUNT(DISTINCT t.sim_vendor) >= 2
+            )
+            """,
+            cross_sim_params,
+        ).fetchone()
+        cross_sim_cohorts = (row[0] if row else 0) or 0
 
         return {
             "total_tests": int(total_tests or 0),
@@ -2385,5 +2647,18 @@ class IndexStore:
             "vacuous_assertions": int(vacuous_count),
             "failing_assertions": int(failing_assertions),
             "flaky_tests": int(flaky_count),
+            "history_cohorts": int(history_cohorts),
             "divergent_tests": int(divergent_count),
+            "cross_sim_cohorts": int(cross_sim_cohorts),
+            "scope": {"run_id": run_id, "suite": effective_suite},
+            "heuristics": {
+                "flaky_tests": (
+                    "A test cohort is flagged when both pass and fail outcomes exist "
+                    "in indexed history for the scoped suite."
+                ),
+                "divergent_tests": (
+                    "Latest pass/fail outcomes differ across simulators within the "
+                    "same suite, framework, DUT top, and test name."
+                ),
+            },
         }

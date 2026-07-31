@@ -7,7 +7,7 @@ Get comprehensive details about specific verification artifacts.
 Retrieve complete test case information.
 
 ### Purpose
-Get full test details including configuration, execution metadata, and failure references.
+Get the indexed execution record for one test. Failure and artifact evidence are queried through their dedicated tools.
 
 ### Input Schema
 
@@ -25,19 +25,17 @@ class TestsGetOutput(BaseModel):
 
 class TestCase(BaseModel):
     test_id: str
-    name: str
-    classname: str | None
-    framework: str  # "uvm" | "cocotb" | "sv_unit"
-    status: str  # "pass" | "fail" | "error" | "skipped"
-    duration_ms: int | None
-    timestamp: str
+    test_id_full: str
     run_id: str
-    config: dict[str, Any]
-    failure_refs: list[EvidenceRef]
-    stdout_ref: EvidenceRef | None
-    stderr_ref: EvidenceRef | None
-    waveform_ref: EvidenceRef | None
-    coverage_ref: EvidenceRef | None
+    framework: str
+    name: str
+    seed: int | None
+    status: str
+    duration_ms: int | None
+    sim_vendor: str | None
+    sim_version: str | None
+    dut_top: str | None
+    created_at: str
 ```
 
 ### Example
@@ -55,46 +53,23 @@ class TestCase(BaseModel):
   "schema_version": "1.0.0",
   "item": {
     "test_id": "T20260125_143000_axi_burst_test",
-    "name": "axi_burst_test",
-    "classname": "axi_tests.AXIBurstTest",
-    "framework": "uvm",
-    "status": "fail",
-    "duration_ms": 15420,
-    "timestamp": "2026-01-25T14:35:20Z",
+    "test_id_full": "T20260125_143000_axi_burst_test",
     "run_id": "R20260125_143000",
-    "config": {
-      "seed": 42,
-      "verbosity": "UVM_MEDIUM",
-      "timeout_ns": 1000000
-    },
-    "failure_refs": [
-      {
-        "type": "assertion",
-        "path": "axi_master_if.axi_awvalid_awready_check",
-        "time_ns": 12450
-      },
-      {
-        "type": "uvm_error",
-        "path": "uvm_test_top.env.axi_agent.monitor",
-        "time_ns": 12451
-      }
-    ],
-    "stdout_ref": {
-      "type": "log",
-      "path": "artifacts/R20260125_143000/axi_burst_test/run.log"
-    },
-    "stderr_ref": null,
-    "waveform_ref": {
-      "type": "waveform",
-      "path": "artifacts/R20260125_143000/axi_burst_test/waves.vcd"
-    },
-    "coverage_ref": {
-      "type": "coverage",
-      "path": "artifacts/R20260125_143000/axi_burst_test/coverage.xml"
-    }
+    "framework": "uvm",
+    "name": "axi_burst_test",
+    "status": "fail",
+    "seed": 42,
+    "duration_ms": 15420,
+    "sim_vendor": "vcs",
+    "sim_version": "T-2025.06",
+    "dut_top": "axi4_dut",
+    "created_at": "2026-01-25T14:35:20Z"
   }
 }
 ```
+
+Use `failures.list(include_evidence=true)`, `coverage.summary(include_evidence=true)`,
+and `wave.summary` for evidence and artifact-backed analysis.
 
 ---
 

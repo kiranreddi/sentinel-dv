@@ -1,114 +1,114 @@
 # Installation
 
-**Current release: v2.3.0** ([changelog](../about/changelog.md))
+Sentinel DV v2.3.1 is distributed through PyPI and the MCP Registry as `io.github.kiranreddi/sentinel-dv`.
 
-This guide shows how to configure and run Sentinel DV locally, then connect it to an MCP client (e.g. Claude Desktop).
+## Choose an install
 
-## 1. Install
+=== "uvx"
 
-### From MCP Registry (recommended)
+    `uvx` runs an isolated package without modifying the active Python environment:
 
-Use server name `io.github.kiranreddi/sentinel-dv` in an MCP registry–aware client, or run with `uvx`:
+    ```bash
+    uvx --from sentinel-dv@2.3.1 sentinel-dv-server --config /absolute/path/to/config.yaml
+    ```
 
-```bash
-uvx --from sentinel-dv sentinel-dv-server --config /absolute/path/to/config.yaml
-```
+=== "PyPI"
 
-### From PyPI
+    ```bash
+    python3 -m pip install "sentinel-dv>=2.3.1"
+    sentinel-dv-server --config /absolute/path/to/config.yaml
+    ```
 
-```bash
-pip install "sentinel-dv>=2.3.0"
-```
+=== "Source"
 
-> **Note:** Do not install PyPI **1.0.0** (broken wheel). Use **`sentinel-dv>=2.3.0`** for VCS/Questa/Cadence fixtures, assertion/coverage intelligence, VCD/JSON waveforms, and all **28 MCP tools**. Verified flow: install → `sentinel-dv-index --index-all` → `sentinel-dv-server` → MCP tools.
+    ```bash
+    git clone https://github.com/kiranreddi/sentinel-dv.git
+    cd sentinel-dv
+    python3 -m venv .venv
+    .venv/bin/pip install -e ".[dev,docs]"
+    ```
 
-For development:
+Python 3.10 or newer is required.
 
-```bash
-pip install -e ".[dev]"
-```
+## Configure
 
-## 2. Create `config.yaml` (required)
-
-Sentinel DV **requires** a config file before indexing or serving MCP tools. There is no automatic `demo/` fallback.
-
-Copy the provided template and update:
+Copy the production template:
 
 ```bash
 cp config.example.yaml config.yaml
 ```
 
-You may also use `config.yml` in the working directory, or set `SENTINEL_DV_CONFIG` / pass `--config` with any path you choose.
+At minimum, set:
 
-Edit `config.yaml` to set:
+```yaml
+artifact_roots:
+  - /absolute/path/to/regression/artifacts
 
-- `artifact_roots`: directories that contain your verification artifacts (UVM `*.log`, cocotb JUnit XML like `results.xml` / `junit.xml`)
-- `index.path`: where the DuckDB database should be written
-- `adapters`: enable/disable parsers (booleans under `uvm`, `cocotb`, `assertions`, `coverage`, `waveform_summary`)
-- For waveforms: set `waveform_summary: true` and add `*.wave.json` and/or `*.vcd` files whose `test_name` matches indexed tests (see [Waveform summaries](../guides/waveforms.md) and `demo/verilator_counter/`)
+index:
+  type: duckdb
+  path: ./sentinel_dv.db
 
-## 3. Index artifacts (required)
-
-```bash
-python -m sentinel_dv.indexing.indexer --config config.yaml --index-all
+adapters:
+  uvm: true
+  cocotb: true
+  assertions: true
+  coverage: true
+  waveform_summary: true
 ```
 
-This scans the configured `artifact_roots` and rebuilds the index.
+Relative paths are resolved from the directory containing the config file. See [Configuration](../configuration.md) for security limits, redaction, submit templates, and adapter settings.
 
-## 4. Start the MCP server (stdio)
+## Build the index
 
 ```bash
-python -m sentinel_dv.server --config config.yaml
+sentinel-dv-index --config /absolute/path/to/config.yaml --index-all
 ```
 
-Alternative: set the config path once:
+Run indexing after artifacts change. The server queries the index and does not watch artifact roots.
+
+## Start the stdio server
+
+```bash
+sentinel-dv-server --config /absolute/path/to/config.yaml
+```
+
+A stdio MCP server normally appears silent when started directly because stdout is reserved for JSON-RPC. Use your MCP client's status view to test the handshake.
+
+You may set the config once instead:
 
 ```bash
 export SENTINEL_DV_CONFIG=/absolute/path/to/config.yaml
-python -m sentinel_dv.server
+sentinel-dv-server
 ```
 
-## 5. Connect via Claude Desktop
+If neither `--config` nor `SENTINEL_DV_CONFIG` is set, Sentinel DV checks for `config.yaml` or `config.yml` in the server's working directory. It never falls back to demo artifacts in production.
 
-Add Sentinel DV to your Claude Desktop MCP config:
+## Connect an agent
 
-```json
-{
-  "mcpServers": {
-    "sentinel-dv": {
-      "command": "python",
-      "args": [
-        "-m",
-        "sentinel_dv.server",
-        "--config",
-        "/absolute/path/to/config.yaml"
-      ]
-    }
-  }
-}
+Continue to [Agent setup](agent-setup.md) for Codex, Claude Code, GitHub Copilot CLI, and generic MCP JSON examples.
+
+## Verify a development checkout
+
+```bash
+.venv/bin/python scripts/verify_all_mcp_tools.py
+.venv/bin/python scripts/verify_skill_workflows.py
 ```
 
-## 6. Connect via Cline (VS Code)
+Expected final lines:
 
-Update `.vscode/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "sentinel-dv": {
-      "command": "python",
-      "args": [
-        "-m",
-        "sentinel_dv.server",
-        "--config",
-        "${workspaceFolder}/config.yaml"
-      ]
-    }
-  }
-}
+```text
+All 28 MCP tools verified.
+All 3 Sentinel DV skill workflows verified.
 ```
 
-## Notes
+These checks index the checked-in demo corpus; they do not require commercial simulator licenses.
 
-- Sentinel DV exposes MCP tools over **stdio** (there are currently no documented HTTP endpoints).
-- If the server reports `INDEX_NOT_READY`, run the indexing step again.
+## Upgrade
+
+Pin the package version in MCP configuration so every host runs the same server:
+
+```text
+sentinel-dv@2.3.1
+```
+
+After changing versions, rebuild the index and re-run the connection check. Review the [changelog](../about/changelog.md) before adopting schema or tool changes.

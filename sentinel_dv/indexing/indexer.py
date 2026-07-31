@@ -616,14 +616,16 @@ class ArtifactIndexer:
                 test_id, run_id, _ = ctx
         if not run_id:
             rel = self._relative_path(path)
-            ctx = self._artifact_context(path)
+            artifact_ctx = self._artifact_context(path)
             run_id, run_id_full = generate_run_id(
-                suite=ctx.suite,
-                ci_system=ctx.ci_system,
-                ci_build_id=ctx.ci_build_id,
-                ci_job_url=ctx.ci_job_url,
+                suite=artifact_ctx.suite,
+                ci_system=artifact_ctx.ci_system,
+                ci_build_id=artifact_ctx.ci_build_id,
+                ci_job_url=artifact_ctx.ci_job_url,
                 artifact_manifest=(
-                    None if ctx.ci_system and ctx.ci_build_id else [(rel, self._file_hash(path))]
+                    None
+                    if artifact_ctx.ci_system and artifact_ctx.ci_build_id
+                    else [(rel, self._file_hash(path))]
                 ),
             )
             created_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -631,22 +633,22 @@ class ArtifactIndexer:
                 store,
                 run_id=run_id,
                 run_id_full=run_id_full,
-                suite=ctx.suite,
+                suite=artifact_ctx.suite,
                 created_at=created_at,
                 status="pass",
-                ci_system=ctx.ci_system,
-                ci_build_id=ctx.ci_build_id,
-                ci_job_url=ctx.ci_job_url,
+                ci_system=artifact_ctx.ci_system,
+                ci_build_id=artifact_ctx.ci_build_id,
+                ci_job_url=artifact_ctx.ci_job_url,
             ):
                 store.insert_run(
                     run_id=run_id,
                     run_id_full=run_id_full,
-                    suite=ctx.suite,
+                    suite=artifact_ctx.suite,
                     created_at=created_at,
                     status="pass",
-                    ci_system=ctx.ci_system,
-                    ci_build_id=ctx.ci_build_id,
-                    ci_job_url=ctx.ci_job_url,
+                    ci_system=artifact_ctx.ci_system,
+                    ci_build_id=artifact_ctx.ci_build_id,
+                    ci_job_url=artifact_ctx.ci_job_url,
                 )
                 stats["runs"] += 1
 
@@ -720,6 +722,7 @@ class ArtifactIndexer:
             # Look up assertion_id from the assertions table
             assertion_id = None
             if assertion_name and test_id:
+                assert store._conn is not None
                 row = store._conn.execute(
                     "SELECT assertion_id FROM assertions WHERE name = ? LIMIT 1",
                     [assertion_name],
@@ -907,14 +910,14 @@ class ArtifactIndexer:
         stats["tests"] = store.count_tests()
         stats["failures"] = store.count_failures()
         if store._conn:
-            for key, table in (
-                ("coverage", "coverage_summaries"),
-                ("assertions", "assertions"),
-                ("assertion_failures", "assertion_failures"),
-                ("waveforms", "waveform_summaries"),
-            ):
-                row = store._conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
-                stats[key] = int(row[0]) if row else 0
+            row = store._conn.execute("SELECT COUNT(*) FROM coverage_summaries").fetchone()
+            stats["coverage"] = int(row[0]) if row else 0
+            row = store._conn.execute("SELECT COUNT(*) FROM assertions").fetchone()
+            stats["assertions"] = int(row[0]) if row else 0
+            row = store._conn.execute("SELECT COUNT(*) FROM assertion_failures").fetchone()
+            stats["assertion_failures"] = int(row[0]) if row else 0
+            row = store._conn.execute("SELECT COUNT(*) FROM waveform_summaries").fetchone()
+            stats["waveforms"] = int(row[0]) if row else 0
 
     def _relative_path(self, path: Path) -> str:
         for root in self.artifact_roots:

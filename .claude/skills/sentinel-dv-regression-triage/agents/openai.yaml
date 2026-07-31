@@ -1,0 +1,11 @@
+interface:
+  display_name: "Sentinel DV Regression Triage"
+  short_description: "Triage regressions with Sentinel DV evidence"
+  default_prompt: "Use $sentinel-dv-regression-triage to group failure signatures and prioritize evidence-backed investigations in this verification regression."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "sentinel-dv"
+      description: "Read-only Sentinel DV verification intelligence server"
+policy:
+  allow_implicit_invocation: true

@@ -6,279 +6,148 @@ hide:
 
 <div class="sdv-landing" markdown>
 
-<div class="sdv-hero" markdown>
+<section class="sdv-hero" markdown>
 
-<div class="sdv-hero__inner" markdown>
+<div class="sdv-hero__content" markdown>
 
-<span class="sdv-hero__badge">:material-shield-check: MCP · Security-first</span>
-<span class="sdv-hero__badge">v2.3.0</span>
+<p class="sdv-kicker">Read-only MCP for design verification</p>
 
 # Sentinel DV
 
-<p class="sdv-hero__tagline">Verification intelligence for AI agents</p>
-
 <p class="sdv-hero__lead">
-Read-only Model Context Protocol access to SystemVerilog, UVM, and cocotb artifacts—indexed with DuckDB, validated against versioned schemas, and bounded for safe LLM reasoning.
+Give Codex, Claude, Copilot, and other MCP clients structured access to SystemVerilog, UVM, cocotb, assertion, coverage, regression, and waveform evidence.
 </p>
 
 <div class="sdv-hero__actions" markdown>
 
-[Get started](getting-started/quick-start.md){ .md-button .md-button--primary }
-[MCP tool gallery](tools/mcp-tool-gallery.md){ .md-button }
-[View on GitHub](https://github.com/kiranreddi/sentinel-dv){ .md-button .sdv-btn-outline target=_blank }
+[Start with the demo](getting-started/quick-start.md){ .md-button .md-button--primary }
+[Connect an agent](getting-started/agent-setup.md){ .md-button }
+[Watch 45s](getting-started/video-walkthrough.md){ .md-button }
 
 </div>
 
-</div>
+<p class="sdv-hero__meta">v2.3.1 · 28 tools · 3 workflow skills · Apache-2.0</p>
 
 </div>
 
-<div class="sdv-stats" markdown>
+</section>
 
-<div class="sdv-stat" markdown>
-<span class="sdv-stat__value">15</span>
-<span class="sdv-stat__label">MCP tools</span>
-</div>
+<section class="sdv-fact-strip" aria-label="Sentinel DV architecture facts">
+  <div><strong>Read-only</strong><span>No simulation or artifact mutation</span></div>
+  <div><strong>Schema-first</strong><span>Versioned, bounded JSON responses</span></div>
+  <div><strong>DuckDB</strong><span>Indexed queries across regressions</span></div>
+  <div><strong>Simulator-neutral</strong><span>VCS, Xcelium, Questa, Verilator</span></div>
+</section>
 
-<div class="sdv-stat" markdown>
-<span class="sdv-stat__value">Read-only</span>
-<span class="sdv-stat__label">By design</span>
-</div>
+## From regression noise to traceable evidence
 
-<div class="sdv-stat" markdown>
-<span class="sdv-stat__value">DuckDB</span>
-<span class="sdv-stat__label">Fast indexing</span>
-</div>
+<div class="sdv-workflow" markdown>
 
-<div class="sdv-stat" markdown>
-<span class="sdv-stat__value">Schemas</span>
-<span class="sdv-stat__label">Typed responses</span>
-</div>
+1. **Index** exported logs, JUnit XML, assertion status, coverage reports, and waveform summaries.
+2. **Query** 28 read-only MCP tools with stable IDs, filters, pagination, schemas, and evidence references.
+3. **Investigate** with focused skills for regression triage, failure debugging, and coverage closure.
+4. **Decide** with observations, inference, missing-data warnings, and reproducible follow-up criteria kept separate.
 
 </div>
 
-## Why Sentinel DV
+[Explore the tool model](tools/overview.md){ .md-button }
 
-<div class="grid cards" markdown>
+## Three engineering workflows
 
--   :material-shield-lock:{ .lg .middle } __Security first__
+<div class="sdv-workflow-table" markdown>
 
-    ---
-
-    Read-only MCP tools with path sandboxing, automatic redaction, and bounded outputs. No simulator control or artifact modification.
-
-    [:octicons-arrow-right-24: Security model](architecture/security.md)
-
--   :material-file-document-check:{ .lg .middle } __Schema-driven__
-
-    ---
-
-    Every response conforms to versioned, typed contracts. Deterministic outputs support reliable agent reasoning.
-
-    [:octicons-arrow-right-24: Schema reference](architecture/schemas.md)
-
--   :material-database-search:{ .lg .middle } __Rich verification data__
-
-    ---
-
-    Tests, failures, UVM topology, assertions, coverage, and regression analytics—across **28 MCP tools**.
-
-    [:octicons-arrow-right-24: Tool reference](tools/overview.md)
-
--   :material-server-network:{ .lg .middle } __Simulator agnostic__
-
-    ---
-
-    VCS, Xcelium, Questa, Verilator, and more via adapter plugins and unified schemas.
-
-    [:octicons-arrow-right-24: Simulator support](guides/simulator-support.md)
-
--   :material-speedometer:{ .lg .middle } __Indexed queries__
-
-    ---
-
-    DuckDB-backed indexing with pagination and selective projection for fast, bounded reads.
-
-    [:octicons-arrow-right-24: Performance guide](guides/performance.md)
-
--   :material-puzzle-outline:{ .lg .middle } __Extensible adapters__
-
-    ---
-
-    Plugin architecture for custom parsers and new artifact formats.
-
-    [:octicons-arrow-right-24: Custom adapters](adapters/custom.md)
+| Workflow | Engineering question | Evidence path |
+| --- | --- | --- |
+| [Regression triage](skills/regression-triage.md) | What changed, and which failures matter first? | Run summary → health quality → clusters → baseline diff → focused evidence |
+| [Failure debugging](skills/failure-debugging.md) | What initiated this test failure? | Test context → chronological events → assertions → topology → bounded waveform window |
+| [Coverage closure](skills/coverage-closure.md) | Which valid gap should we close next? | Summary → trend → run-scoped gaps → vacuity → reviewed constraint candidate |
 
 </div>
 
-## Quick start
+## Watch the real workflow
 
-<div class="sdv-code-band" markdown>
+<div class="sdv-video sdv-video--home">
+  <video
+    controls
+    playsinline
+    preload="metadata"
+    poster="assets/videos/sentinel-dv-quickstart-poster.jpg"
+    aria-label="Sentinel DV setup and workflow walkthrough"
+  >
+    <source src="assets/videos/sentinel-dv-quickstart.mp4" type="video/mp4">
+    Your browser does not support embedded MP4 video.
+  </video>
+</div>
 
-=== "Configure"
+[Open the scene index and verification commands](getting-started/video-walkthrough.md){ .md-button }
 
-    ```yaml title="config.yaml"
-    artifact_roots:
-      - /path/to/verification/regressions
+## Verification data model
 
-    index:
-      type: duckdb
-      path: ./sentinel_dv.db
+<div class="sdv-capabilities" markdown>
 
-    adapters:
-      uvm: true
-      cocotb: true
-      assertions: true
-      coverage: true
-    ```
+<section markdown>
 
-=== "Index & serve"
+### Execution
 
-    ```bash
-    # Index artifacts
-    python -m sentinel_dv.indexing.indexer --config config.yaml --index-all
+Runs, tests, framework, simulator metadata, seeds, duration, CI context, replay command generation, and live status snapshots.
 
-    # Start MCP server
-    python -m sentinel_dv.server --config config.yaml
-    ```
+</section>
 
-=== "Ask an agent"
+<section markdown>
 
-    ```text
-    "Why did test axi_burst_test fail?"
-    → tests.list, failures.list, assertions.failures
+### Debug
 
-    "Compare coverage between R123 and R124"
-    → runs.diff, coverage.summary
-    ```
+Normalized failure categories, stable signatures, bounded evidence, UVM topology, assertion definitions and failures, VCD and JSON waveform summaries.
+
+</section>
+
+<section markdown>
+
+### Closure
+
+Functional, code, toggle, and FSM metrics; run diffs; vacuity and SVA status; trend analysis; gap ranking; protocol-aware candidate constraints.
+
+</section>
 
 </div>
 
-[Full installation guide](getting-started/installation.md){ .md-button }
+## Designed for controlled agent access
 
-## Supported ecosystems
+Sentinel DV exposes exported verification artifacts, not EDA control. Every MCP tool is annotated read-only. Paths are constrained to configured artifact roots; excerpts and response sizes are bounded; optional redaction protects credentials, email addresses, and local paths.
 
-<div class="sdv-panels" markdown>
+`runs.submit` and `tests.replay` are intentionally named workflow tools, but they only generate dry-run commands for engineer review.
 
-<div class="sdv-panel" markdown>
+[Review the security model](architecture/security.md){ .md-button }
 
-### UVM
+## Supported artifacts
 
-- Test topology extraction
-- UVM report parsing (INFO/WARNING/ERROR/FATAL)
-- Phase tracking
-- Component hierarchy mapping
+| Source | Indexed evidence |
+| --- | --- |
+| UVM logs | Reports, components, topology hints, failures, phases |
+| cocotb / JUnit XML | Test status, duration, exception and failure details |
+| Assertion exports | Definitions, intent, runtime failures, SVA pass/fail/vacuity status |
+| Coverage exports | Functional, code, toggle, FSM, per-scope metrics and gaps |
+| Waveforms | Precomputed `*.wave.json` and bounded VCD summaries |
+| CI metadata | Suite, run, build identifiers, status and timestamps |
 
-</div>
+Commercial waveform databases such as FSDB and WLF are not streamed. Export a bounded summary or VCD inside an allowed artifact root.
 
-<div class="sdv-panel" markdown>
+## Verify before adoption
 
-### cocotb
-
-- JUnit/XML result parsing
-- Python exception tracing
-- Coroutine tracking
-- Custom JSON dumps
-
-</div>
-
-<div class="sdv-panel" markdown>
-
-### SystemVerilog
-
-- SVA and immediate assertions
-- Functional, code, toggle, and FSM coverage
-- Compile and elaboration logs
-
-</div>
-
-<div class="sdv-panel" markdown>
-
-### Waveforms
-
-- Precomputed `*.wave.json` or Verilator **`*.vcd`** via built-in `VcdSummaryParser`
-- MCP tools `wave.signals` and `wave.summary` ([all 28 tools](tools/mcp-tools-reference.md))
-- [Guide](guides/waveforms.md) · [Verilator example](examples/verilator-counter.md) · [Tool gallery (screenshots)](tools/mcp-tool-gallery.md)
-
-</div>
-
-</div>
-
-## Use cases
-
-!!! example "Automated triage"
-
-    **"Why did this test fail?"**
-
-    Structured failure events with categorization, evidence, and topology context.
-
-!!! example "Regression analytics"
-
-    **"What changed between passing and failing runs?"**
-
-    Compare runs with structured diffs: new failures, resolved issues, coverage deltas.
-
-!!! example "Coverage analysis"
-
-    **"Which tests cover the AXI write channel?"**
-
-    Query coverage metrics by scope, interface, and protocol.
-
-!!! example "Assertion mapping"
-
-    **"Show assertions related to the APB protocol"**
-
-    Discover assertions by protocol, scope, or intent with runtime failure tracking.
-
-## Install
+The repository includes deterministic checks for the complete MCP surface and the published skills:
 
 ```bash
-pip install sentinel-dv
+.venv/bin/python scripts/verify_all_mcp_tools.py
+.venv/bin/python scripts/verify_skill_workflows.py
 ```
 
-```bash
-git clone https://github.com/kiranreddi/sentinel-dv.git
-cd sentinel-dv
-pip install -e ".[dev]"
-```
+The checked-in demo corpus covers UVM, cocotb, AXI4, assertions, coverage, JSON waveform summaries, VCD, and exported VCS, Xcelium, Questa, and Verilator artifacts.
 
-<div class="grid cards" markdown>
+<div class="sdv-final-links" markdown>
 
--   :fontawesome-brands-github:{ .lg .middle } __GitHub__
-
-    ---
-
-    Issues, features, and contributions
-
-    [:octicons-arrow-right-24: kiranreddi/sentinel-dv](https://github.com/kiranreddi/sentinel-dv)
-
--   :material-forum:{ .lg .middle } __Discussions__
-
-    ---
-
-    Questions and community help
-
-    [:octicons-arrow-right-24: GitHub Discussions](https://github.com/kiranreddi/sentinel-dv/discussions)
-
--   :material-book-open-variant:{ .lg .middle } __Documentation__
-
-    ---
-
-    Guides, architecture, and tool reference
-
-    [:octicons-arrow-right-24: Browse docs](getting-started/quick-start.md)
-
-</div>
-
-## License
-
-Sentinel DV is licensed under the [Apache License 2.0](about/license.md).
-
-<div class="sdv-cta" markdown>
-
-Ready to connect your verification workspace to AI agents?
-
-[Get started →](getting-started/quick-start.md){ .md-button .md-button--primary }
+[Install Sentinel DV](getting-started/installation.md){ .md-button .md-button--primary }
+[Read all 28 tool contracts](tools/mcp-tools-reference.md){ .md-button }
+[View real tool output](tools/mcp-tool-gallery.md){ .md-button }
 
 </div>
 

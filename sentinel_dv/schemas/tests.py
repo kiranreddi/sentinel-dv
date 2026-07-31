@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from sentinel_dv.schemas.common import EvidenceRef, RunRef
 
@@ -65,8 +65,8 @@ class TestCase(BaseModel):
         default_factory=list, description="Evidence for test result"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "T20260125_142305_axi_burst_test",
                 "framework": "uvm",
@@ -90,6 +90,7 @@ class TestCase(BaseModel):
                 ],
             }
         }
+    )
 
 
 class UvmComponent(BaseModel):
@@ -152,8 +153,8 @@ class TestTopology(BaseModel):
         default_factory=list, description="Unified interface bindings"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "test_id": "T20260125_142305_axi_burst_test",
                 "uvm": {
@@ -203,3 +204,4 @@ class TestTopology(BaseModel):
                 ],
             }
         }
+    )

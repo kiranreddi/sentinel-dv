@@ -145,7 +145,7 @@ class SentinelDVConfig(BaseModel):
         default_factory=RedactionConfig, description="Redaction configuration"
     )
     submit: SubmitConfig = Field(
-        default_factory=SubmitConfig,
+        default_factory=SubmitConfig,  # type: ignore[arg-type]
         description="Regression job submission and replay command generation",
     )
 

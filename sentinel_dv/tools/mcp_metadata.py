@@ -13,9 +13,12 @@ READ_ONLY_ANNOTATIONS = ToolAnnotations(
     openWorldHint=False,
 )
 
-_SCHEMA_VERSION = {"type": "string", "description": "Sentinel DV schema version (e.g. 1.0.0)"}
+_SCHEMA_VERSION: dict[str, Any] = {
+    "type": "string",
+    "description": "Sentinel DV schema version (e.g. 1.0.0)",
+}
 
-_ERROR_ENVELOPE = {
+_ERROR_ENVELOPE: dict[str, Any] = {
     "type": "object",
     "properties": {
         "schema_version": _SCHEMA_VERSION,
@@ -32,7 +35,7 @@ _ERROR_ENVELOPE = {
     "required": ["schema_version", "error"],
 }
 
-_PAGINATION = {
+_PAGINATION: dict[str, Any] = {
     "type": "object",
     "properties": {
         "page": {"type": "integer"},
@@ -43,7 +46,7 @@ _PAGINATION = {
     "required": ["page", "page_size", "total_items", "total_pages"],
 }
 
-_LIST_ENVELOPE = {
+_LIST_SUCCESS_ENVELOPE: dict[str, Any] = {
     "type": "object",
     "properties": {
         "schema_version": _SCHEMA_VERSION,
@@ -53,7 +56,18 @@ _LIST_ENVELOPE = {
     "additionalProperties": True,
 }
 
-_ITEM_ENVELOPE = {
+_LIST_ENVELOPE: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        **_LIST_SUCCESS_ENVELOPE["properties"],
+        "error": _ERROR_ENVELOPE["properties"]["error"],
+    },
+    "required": ["schema_version"],
+    "anyOf": [{"required": ["pagination"]}, {"required": ["error"]}],
+    "additionalProperties": True,
+}
+
+_ITEM_ENVELOPE: dict[str, Any] = {
     "type": "object",
     "properties": {
         "schema_version": _SCHEMA_VERSION,
@@ -66,7 +80,7 @@ _ITEM_ENVELOPE = {
     "additionalProperties": True,
 }
 
-_DETAIL_ENVELOPE = {
+_DETAIL_ENVELOPE: dict[str, Any] = {
     "type": "object",
     "properties": {"schema_version": _SCHEMA_VERSION},
     "required": ["schema_version"],
@@ -201,7 +215,8 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
     ),
     "runs.diff": (
         "Structured diff between two runs (read-only). "
-        "Returns `{base_run_id, compare_run_id, test_changes, new_failures, resolved_failures}`."
+        "Returns `{base_run_id, compare_run_id, test_changes, new_failures, "
+        "resolved_failures, persistent_failures, coverage_deltas}`."
     ),
     "wave.signals": (
         "Per-signal waveform data for a test (read-only). "
@@ -249,9 +264,11 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
     ),
     "coverage.gaps": (
         "Prioritised coverage gaps with actionable recommendations (read-only). "
-        "Returns `{gaps: [{metric_name, scope, kind, covered_pct, bins_missed, priority, "
+        "Returns `{gaps: [{run_id, suite, metric_name, scope, kind, covered_pct, "
+        "bins_missed, priority, "
         "recommendation}], gaps_found, total_metrics, note}`. "
-        "Filter by `suite` or `kind`; adjust `threshold_pct` (default 100%). "
+        "Filter by `run_id`, `suite`, `kind`, or `priority`; adjust `threshold_pct` "
+        "(default 100%). "
         "Priorities: high (< 25% or error/boundary metrics), medium, low."
     ),
     # DV Intelligence tools — v2.1.0
@@ -264,32 +281,36 @@ TOOL_DESCRIPTIONS: dict[str, str] = {
     ),
     "runs.cross_sim": (
         "Find tests whose pass/fail status diverges across simulators (read-only). "
-        "Returns `{divergent_tests: [{test_name, sim_a, status_a, sim_b, status_b}], "
-        "unique_divergent_names, simulator_pairs_analysed}`. "
-        "Any divergence is a tape-out sign-off blocker — often indicates X-propagation, "
-        "race conditions, or tool-specific bugs."
+        "Compares the latest result within the same suite, framework, DUT top, and test name. "
+        "Returns `{divergent_tests: [{suite, test_name, framework, dut_top, sim_a, "
+        "status_a, sim_b, status_b}], unique_divergent_tests, simulator_pairs_analysed}`. "
+        "Any divergence requires review before sign-off and can indicate X-propagation, "
+        "race conditions, unsupported constructs, or tool-specific behavior."
     ),
     "tests.cluster": (
-        "Group test failures by error signature to surface root causes (read-only). "
-        "Returns `{clusters: [{signature, count, representative_test_id, "
-        "representative_message, test_ids}], total_failures_analysed, unique_clusters}`. "
-        "Turns 500 individual failures into 5 actionable root causes. "
-        "Fix the representative failure in each cluster first."
+        "Heuristically group test failures by indexed or normalized error signature (read-only). "
+        "Returns `{clusters: [{signature, failure_count, distinct_test_count, "
+        "severity_counts, category_counts, representative_test_id, representative_message, "
+        "test_ids}], total_failures_analysed, unique_clusters, clusters_truncated}`. "
+        "Turns many individual failures into a bounded set of signature groups. "
+        "Clusters are investigation candidates, not proven root causes."
     ),
     "regression.health": (
-        "Composite DV health score (0–100) with breakdown (read-only). "
-        "Returns `{health_score, band, component_scores, recommendations}`. "
-        "Score bands: 90–100 ✅ sign-off-ready, 75–89 🟡 minor issues, "
-        "50–74 🟠 coverage gaps, 0–49 🔴 not ready. "
+        "Scoped composite DV health indicator (0–100) with breakdown (read-only). "
+        "Returns `{health_score, band, component_scores, data_quality, recommendations}`. "
+        "Score bands are heuristic labels, not independent sign-off proof. "
         "Components: pass_rate (30%), coverage (35%), assertion_health (15%), "
-        "flakiness (10%), cross_sim_consistency (10%)."
+        "flakiness (10%), cross_sim_consistency (10%); unavailable components are "
+        "excluded and disclosed."
     ),
     "coverage.advisor": (
         "Generate SystemVerilog constraints + UVM sequence hints to hit uncovered bins (read-only). "
-        "Returns `{advisories: [{bin_name, covered_pct, protocol_hint, "
+        "Filter by `run_id`, `suite`, `kind`, exact `metric_name`, and optional `protocol`. "
+        "Returns `{advisories: [{run_id, suite, bin_name, covered_pct, protocol_hint, "
         "constraint_sv, sequence_hint}], total_gaps, high_priority_gaps}`. "
         "Protocol-aware: recognises AXI4, AHB, APB, CHI patterns. "
-        "Each advisory includes ready-to-paste SV code. "
+        "Each advisory includes a reviewable SV candidate that must be adapted to "
+        "local fields, legal values, and testbench ownership. "
         "Use after `coverage.gaps` to turn gap analysis into directed tests."
     ),
 }

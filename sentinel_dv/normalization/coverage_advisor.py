@@ -1,8 +1,8 @@
 """Protocol-aware SystemVerilog constraint and UVM sequence advisor.
 
 Given a list of high-priority coverage gaps (CoverageGap objects from
-coverage_hints.py), this module generates ready-to-use SV constraint blocks
-and UVM sequence hints that engineers can paste directly into their testbench.
+coverage_hints.py), this module generates reviewable SV constraint candidates
+and UVM sequence hints for engineers to adapt to their testbench.
 
 Protocol knowledge is embedded as a pattern dictionary keyed by coverpoint
 name fragments.  If no specific protocol match is found, a generic
@@ -172,14 +172,21 @@ def _safe_id(name: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_]", "_", name)[:30]
 
 
-def _find_rule(metric_name: str) -> tuple[str, str, str] | None:
+def _find_rule(metric_name: str, protocol: str | None = None) -> tuple[str, str, str] | None:
     """Return (constraint_sv, sequence_hint, protocol) for the best matching rule."""
     lower = metric_name.lower()
-    for pattern, constraint_tmpl, hint, protocol in _PROTOCOL_RULES:
+    protocol_filter = protocol.lower() if protocol else None
+    for pattern, constraint_tmpl, hint, rule_protocol in _PROTOCOL_RULES:
+        if protocol_filter and rule_protocol.lower() not in {protocol_filter, "generic"}:
+            continue
         if re.search(pattern, lower):
             safe = _safe_id(metric_name)
             constraint_sv = constraint_tmpl.replace("{safe}", safe).replace("{bin}", metric_name)
-            return constraint_sv, hint, protocol
+            # Protocol templates are plain strings. Double braces keep the
+            # templates readable beside the f-string fallback but must not
+            # leak into the returned SystemVerilog.
+            constraint_sv = constraint_sv.replace("{{", "{").replace("}}", "}")
+            return constraint_sv, hint, rule_protocol
     return None
 
 
@@ -207,7 +214,10 @@ constraint c_{safe} {{
     return constraint_sv, hint, "generic"
 
 
-def build_advisories(gaps: list[Any]) -> list[dict[str, Any]]:
+def build_advisories(
+    gaps: list[Any],
+    protocol: str | None = None,
+) -> list[dict[str, Any]]:
     """Convert a list of CoverageGap objects into advisory dicts.
 
     Each advisory contains:
@@ -216,7 +226,7 @@ def build_advisories(gaps: list[Any]) -> list[dict[str, Any]]:
     - covered_pct: float
     - priority: str
     - protocol_hint: str  (AXI4 / AHB / APB / CHI / generic)
-    - constraint_sv: str  (ready-to-paste SV code block)
+    - constraint_sv: str  (reviewable SV constraint candidate)
     - sequence_hint: str  (plain-English action)
 
     Args:
@@ -235,25 +245,32 @@ def build_advisories(gaps: list[Any]) -> list[dict[str, Any]]:
         covered_pct = getattr(gap, "covered_pct", 0.0)
         priority = getattr(gap, "priority", "high")
 
-        # De-dup by bin name to avoid identical snippets for cross-sim duplicates
-        dedup_key = metric_name
+        run_id = getattr(gap, "run_id", None)
+        suite = getattr(gap, "suite", None)
+
+        # Keep identically named metrics in different scopes distinct.
+        dedup_key = f"{scope}\0{metric_name}"
         if dedup_key in seen:
             continue
         seen.add(dedup_key)
 
-        match = _find_rule(metric_name)
+        match = _find_rule(metric_name, protocol=protocol)
         if match:
-            constraint_sv, sequence_hint, protocol = match
+            constraint_sv, sequence_hint, protocol_hint = match
         else:
-            constraint_sv, sequence_hint, protocol = _generic_constraint(metric_name, scope)
+            constraint_sv, sequence_hint, protocol_hint = _generic_constraint(metric_name, scope)
+            if protocol:
+                protocol_hint = protocol
 
         advisories.append(
             {
                 "bin_name": metric_name,
                 "scope": scope,
+                "run_id": run_id,
+                "suite": suite,
                 "covered_pct": covered_pct,
                 "priority": priority,
-                "protocol_hint": protocol,
+                "protocol_hint": protocol_hint,
                 "constraint_sv": constraint_sv,
                 "sequence_hint": sequence_hint,
             }

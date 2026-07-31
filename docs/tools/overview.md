@@ -10,10 +10,10 @@ Find and list verification artifacts with filtering and pagination.
 
 | Tool | Purpose | Key Filters |
 |------|---------|-------------|
-| [`runs.list`](discovery.md#runslist) | List indexed runs | suite, status, time range, CI info |
+| [`runs.list`](discovery.md#runslist) | List indexed runs | suite, status, CI system |
 | [`tests.list`](discovery.md#testslist) | List tests | run_id, framework, status, name pattern |
 | [`assertions.list`](discovery.md#assertionslist) | List assertions | scope, protocol, tags |
-| [`coverage.list`](discovery.md#coveragelist) | List coverage summaries | run_id, kind, scope |
+| [`coverage.list`](discovery.md#coveragelist) | List coverage summaries | run_id, kind |
 
 ### 📊 Detail Tools
 
@@ -21,7 +21,7 @@ Get comprehensive information about specific items.
 
 | Tool | Purpose | Returns |
 |------|---------|---------|
-| [`tests.get`](detail.md#testsget) | Get test details | Full TestCase with evidence |
+| [`tests.get`](detail.md#testsget) | Get test details | Indexed execution metadata |
 | [`tests.history`](mcp-tools-reference.md#testshistory) | Test outcomes over time | Status timeline + flaky hint |
 | [`tests.topology`](detail.md#teststopology) | Get test topology | UVM hierarchy + interface bindings |
 | `runs.get` | Get run details | Run identifier |
@@ -77,24 +77,24 @@ New in v2.0.0: job submission, live simulation monitoring, SVA formal status, se
 
 | Tool | Purpose | Requires config |
 |------|---------|-----------------|
-| [`runs.submit`](#runssubmit) | Generate simulator submit command | `submit.enabled: true` |
-| [`sim.status`](#simstatus) | Live simulation progress | `adapters.live_sim: true` |
-| [`assertions.sva_status`](#assertionssva_status) | SVA/formal property status | — |
-| [`assertions.vacuity`](#assertionsvacuity) | Vacuously-passing assertions | — |
-| [`tests.replay`](#testsreplay) | Seed-replay command for failing test | `submit.enabled: true` |
-| [`coverage.gaps`](#coveragegaps) | Prioritized coverage closure guidance | — |
+| [`runs.submit`](mcp-tools-reference.md#runssubmit) | Generate simulator submit command | `submit.enabled: true` |
+| [`sim.status`](mcp-tools-reference.md#simstatus) | Live simulation progress | `adapters.live_sim: true` |
+| [`assertions.sva_status`](mcp-tools-reference.md#assertionssva_status) | SVA/formal property status | — |
+| [`assertions.vacuity`](mcp-tools-reference.md#assertionsvacuity) | Vacuously-passing assertions | — |
+| [`tests.replay`](mcp-tools-reference.md#testsreplay) | Seed-replay command for failing test | `submit.enabled: true` |
+| [`coverage.gaps`](mcp-tools-reference.md#coveragegaps) | Prioritized coverage closure guidance | — |
 
 ### 🧠 v2.1.0 DV Intelligence Tools
 
-New in v2.1.0: actionable intelligence tools that go beyond data reporting into automated DV decision support.
+New in v2.1.0: bounded analysis tools that turn indexed evidence into reviewable DV investigation signals.
 
 | Tool | Purpose | Key Insight |
 |------|---------|-------------|
-| [`coverage.trend`](#coveragetrend) | Coverage trajectory over time | Identifies stalled or regressing coverage |
-| [`runs.cross_sim`](#runscross_sim) | Cross-simulator divergence detector | Finds tests that pass on one sim but fail on another |
-| [`tests.cluster`](#testscluster) | Failure root-cause clustering | Groups failures by common signature for faster triage |
-| [`regression.health`](#regressionhealth) | Composite DV readiness score | 0–100 sign-off readiness with weighted sub-scores |
-| [`coverage.advisor`](#coverageadvisor) | SV constraint code generator | Protocol-aware snippets (AXI4, AHB, APB, CHI) to hit uncovered bins |
+| [`coverage.trend`](mcp-tools-reference.md#coveragetrend) | Coverage trajectory over time | Identifies stalled or regressing coverage |
+| [`runs.cross_sim`](mcp-tools-reference.md#runscross_sim) | Cross-simulator divergence detector | Finds tests that pass on one sim but fail on another |
+| [`tests.cluster`](mcp-tools-reference.md#testscluster) | Failure signature clustering | Heuristically groups failures for faster triage |
+| [`regression.health`](mcp-tools-reference.md#regressionhealth) | Composite DV health indicator | Scoped 0–100 score with data-quality disclosure |
+| [`coverage.advisor`](mcp-tools-reference.md#coverageadvisor) | SV constraint candidate generator | Reviewable protocol-aware snippets (AXI4, AHB, APB, CHI) |
 
 ---
 
@@ -118,11 +118,13 @@ All list tools support pagination:
 ```json
 {
   "schema_version": "1.0.0",
-  "page": 1,
-  "page_size": 50,
-  "total_items": 150,
-  "total_pages": 3,
-  "items": [...]
+  "pagination": {
+    "page": 1,
+    "page_size": 50,
+    "total_items": 150,
+    "total_pages": 3
+  },
+  "runs": [...]
 }
 ```
 
@@ -216,22 +218,22 @@ All tools return structured errors:
 ```
 1. coverage.summary (identify low coverage runs)
 2. coverage.gaps    (get prioritized gap list with recommendations)
-3. coverage.advisor (get SV constraint code to hit specific uncovered bins)
-4. runs.submit      (generate new run command to target gaps)
+3. coverage.advisor (get a reviewable SV constraint candidate)
+4. runs.submit      (generate a dry-run command for engineer review)
 ```
 
-### "Is my regression sign-off ready?"
+### "What sign-off evidence is available?"
 
 ```
-1. regression.health (get 0–100 readiness score with breakdown)
+1. regression.health (get scoped indicator, effective weights, and missing-data warnings)
 2. coverage.trend    (check if coverage is trending upward)
-3. runs.cross_sim    (verify no simulator divergence)
+3. runs.cross_sim    (inspect comparable simulator cohorts and divergence)
 ```
 
 ### "Why are so many tests failing?"
 
 ```
-1. tests.cluster     (group failures by root-cause signature)
+1. tests.cluster     (group failures by normalized signature)
 2. failures.list     (drill into each cluster)
 3. assertions.failures (check correlated assertion failures)
 ```
@@ -246,7 +248,7 @@ All tools return structured errors:
 
 ```
 1. tests.list   (find the failing test ID)
-2. tests.replay (get ready-to-paste replay command)
+2. tests.replay (get a dry-run replay command for engineer review)
 ```
 
 ---

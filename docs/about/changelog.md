@@ -11,6 +11,28 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.3.1] - 2026-07-31
+
+### Added
+
+- Three evidence-driven agent skills for Codex, Claude Code, and GitHub Copilot.
+- Real workflow verifier covering regression triage, failure debugging, and coverage closure.
+- Agent setup guide, redesigned documentation, complete 28-tool gallery, and an embedded 45-second walkthrough.
+
+### Changed
+
+- Product positioning consistently uses **design verification**.
+- Signature clusters and generated SystemVerilog are explicitly described as heuristic investigation groups and reviewable candidates.
+- Health reports disclose unavailable components and effective reweighting.
+
+### Fixed
+
+- Exact run scoping for coverage, health, diffs, and cross-simulator comparisons.
+- Missing cohort data no longer receives a perfect health score.
+- Coverage advisor brace generation, stable-trend notes, assertion windows, pagination, and output-schema accuracy.
+
+---
+
 ## [2.3.0] - 2026-06-05
 
 ### Added
@@ -58,10 +80,10 @@ Minor release: reliability and coverage-ingestion improvements since v2.1.0, plu
 ### Added
 
 - **DV Intelligence Tool 1 — Coverage Trend** (`coverage.trend`): time-series coverage trajectory across runs. Computes per-run coverage percentages with deltas and characterizes trend direction as `improving`, `stalling`, or `declining`.
-- **DV Intelligence Tool 2 — Cross-Simulator Divergence** (`runs.cross_sim`): detects tests that pass on one simulator vendor but fail on another. Surfaces `critical` divergences that must be resolved before sign-off.
-- **DV Intelligence Tool 3 — Failure Clustering** (`tests.cluster`): groups failures by root-cause signature using message and category similarity, reducing hundreds of failures to a handful of actionable clusters for faster triage.
+- **DV Intelligence Tool 2 — Cross-Simulator Divergence** (`runs.cross_sim`): detects comparable tests that pass on one simulator vendor but fail on another and surfaces those cohorts for engineer review.
+- **DV Intelligence Tool 3 — Failure Clustering** (`tests.cluster`): groups failures by normalized message and category similarity, reducing repeated symptoms to bounded investigation candidates.
 - **DV Intelligence Tool 4 — Regression Health Score** (`regression.health`): composite 0–100 DV readiness score with weighted sub-scores for pass rate (30%), coverage (35%), assertion health (15%), flakiness (10%), and cross-simulator consistency (10%). Outputs `band`: `sign-off-ready` | `minor-issues` | `coverage-gaps` | `not-ready`.
-- **DV Intelligence Tool 5 — Coverage Advisor** (`coverage.advisor`): generates ready-to-paste SystemVerilog constraint and UVM sequence snippets for uncovered bins. Protocol-aware for AXI4, AHB, APB, CHI, PCIe naming patterns.
+- **DV Intelligence Tool 5 — Coverage Advisor** (`coverage.advisor`): generates reviewable SystemVerilog constraint candidates and UVM sequence hints for uncovered bins. Protocol-aware for AXI4, AHB, APB, and CHI naming patterns.
 - `sentinel_dv/normalization/coverage_advisor.py`: new module — `_PROTOCOL_RULES` knowledge base + `build_advisories()` entry point.
 - New store methods: `coverage_trend()`, `cross_sim_divergence()`, `cluster_failures()`, `regression_health_data()`.
 - Gallery assets regenerated for all 26 tools (5 new SVG cards).
@@ -83,7 +105,7 @@ Minor release: reliability and coverage-ingestion improvements since v2.1.0, plu
 - **F1 — Regression job submission** (`runs.submit`): generate simulator-specific submit commands (VCS, Questa, Xcelium, Riviera) from config templates. Input is shell-quoted; suite names validated with strict allowlist regex.
 - **F2 — Live simulator hook** (`sim.status`): read real-time `live_status.json` from artifact roots via `LiveSimAdapter`. Detects staleness, computes `percent_done`. Reference harness: `examples/live_sim_writer.py`.
 - **F3 — SVA/Formal property status** (`assertions.sva_status`, `assertions.vacuity`): paginated query of the new `sva_run_status` DuckDB table; `vacuity` tool flags vacuously-passing assertions with remediation recommendations.
-- **F4 — Seed replay** (`tests.replay`): look up failing test seed from the index and emit a ready-to-paste replay command.
+- **F4 — Seed replay** (`tests.replay`): look up a failing test seed from the index and emit a dry-run replay command for engineer review.
 - **F5 — Coverage closure guidance** (`coverage.gaps`): heuristic engine classifies under-covered bins as high/medium/low priority and emits actionable recommendations.
 - **Bug Fix 1** — DuckDB ID sequences now seeded from existing max IDs at server start; no duplicate-key errors on re-open.
 - **Bug Fix 2** — `resolve_config_with_demo_fallback()` emits `UserWarning` before falling back to demo data (silent fallback removed from `resolve_config`).
@@ -166,6 +188,7 @@ Minor release: reliability and coverage-ingestion improvements since v2.1.0, plu
 
 See the repository [CHANGELOG.md](https://github.com/kiranreddi/sentinel-dv/blob/main/CHANGELOG.md) for the full 1.0.0 entry.
 
+[2.3.1]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.3.1
 [2.3.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.3.0
 [2.2.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.2.0
 [2.1.0]: https://github.com/kiranreddi/sentinel-dv/releases/tag/v2.1.0

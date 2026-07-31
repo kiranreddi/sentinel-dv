@@ -23,6 +23,7 @@ from sentinel_dv.normalization.coverage_advisor import build_advisories
 from sentinel_dv.tools.core import (
     cluster_test_failures,
     get_coverage_advisor,
+    get_coverage_gaps,
     get_coverage_trend,
     get_cross_sim_comparison,
     get_regression_health,
@@ -79,18 +80,18 @@ def _make_store(tmp_path: Path) -> IndexStore:
     t2 = "t_questa_001"
     t3 = "t_vcs_002"
     t4 = "t_questa_002"
-    for tid, rid, sim, status in [
-        (t1, run_vcs, "vcs", "fail"),
-        (t2, run_questa, "questa", "pass"),
-        (t3, run_vcs, "vcs", "pass"),
-        (t4, run_questa, "questa", "pass"),
+    for tid, rid, sim, status, name in [
+        (t1, run_vcs, "vcs", "fail", "axi4_bk2bk_test"),
+        (t2, run_questa, "questa", "pass", "axi4_bk2bk_test"),
+        (t3, run_vcs, "vcs", "pass", "axi4_clean_test"),
+        (t4, run_questa, "questa", "pass", "axi4_clean_test"),
     ]:
         store.insert_test(
             test_id=tid,
             test_id_full=tid,
             run_id=rid,
             framework="uvm",
-            name="axi4_bk2bk_test",
+            name=name,
             status=status,
             sim_vendor=sim,
             created_at="2024-01-01T10:00:00",
@@ -161,6 +162,13 @@ class TestCoverageTrend:
                 last_delta = trend[-1]["delta_pct"]
                 assert last_delta is not None
 
+    def test_single_run_is_described_as_stable(self, tmp_path):
+        with _make_store(tmp_path) as store:
+            result = get_coverage_trend(store, suite="axi4_unit", kind="functional", limit=1)
+            assert result["summary"]["direction"] == "stable"
+            assert "Coverage stable" in result["note"]
+            assert "regressed" not in result["note"]
+
     def test_invalid_kind_raises(self, tmp_path):
         with _make_store(tmp_path) as store:
             with pytest.raises(ToolError) as exc:
@@ -224,6 +232,34 @@ class TestCrossSimComparison:
             r = get_cross_sim_comparison(store)
             assert "note" in r
 
+    def test_does_not_compare_across_suites(self, tmp_path):
+        db = tmp_path / "cohorts.db"
+        with IndexStore(db) as store:
+            for run_id, suite, simulator, status in [
+                ("r_suite_a", "suite_a", "vcs", "fail"),
+                ("r_suite_b", "suite_b", "questa", "pass"),
+            ]:
+                store.insert_run(
+                    run_id=run_id,
+                    run_id_full=run_id,
+                    suite=suite,
+                    status=status,
+                    created_at="2026-01-01T00:00:00Z",
+                )
+                store.insert_test(
+                    test_id=f"t_{run_id}",
+                    test_id_full=f"t_{run_id}",
+                    run_id=run_id,
+                    framework="uvm",
+                    name="same_name",
+                    status=status,
+                    sim_vendor=simulator,
+                    dut_top="dut",
+                    created_at="2026-01-01T00:01:00Z",
+                )
+            result = get_cross_sim_comparison(store)
+            assert result["divergent_tests"] == []
+
 
 # ---------------------------------------------------------------------------
 # tests.cluster
@@ -257,6 +293,14 @@ class TestClusterFailures:
             r = cluster_test_failures(store, run_id="r_vcs_001")
             assert r["total_failures_analysed"] >= 1
 
+    def test_truncation_keeps_unbounded_totals(self, tmp_path):
+        with _make_store(tmp_path) as store:
+            result = cluster_test_failures(store, max_clusters=1)
+            assert result["clusters_returned"] == 1
+            assert result["unique_clusters"] == 2
+            assert result["total_failures_analysed"] == 3
+            assert result["clusters_truncated"] is True
+
 
 # ---------------------------------------------------------------------------
 # regression.health
@@ -285,6 +329,38 @@ class TestRegressionHealth:
                 assert key in comps
                 if comps[key] is not None:
                     assert 0 <= comps[key] <= 100
+
+    def test_run_scope_applies_to_coverage(self, tmp_path):
+        with _make_store(tmp_path) as store:
+            result = get_regression_health(store, run_id="r_vcs_001")
+            assert result["raw_data"]["overall_coverage"] == 50.0
+            assert result["raw_data"]["scope"] == {
+                "run_id": "r_vcs_001",
+                "suite": "axi4_unit",
+            }
+
+    def test_unavailable_comparison_components_are_reweighted(self, tmp_path):
+        db = tmp_path / "single-run.db"
+        with IndexStore(db) as store:
+            store.insert_run(
+                run_id="r1", run_id_full="r1", suite="s", status="pass", created_at="2024-01-01"
+            )
+            store.insert_test(
+                test_id="t1",
+                test_id_full="t1",
+                run_id="r1",
+                framework="uvm",
+                name="mytest",
+                status="pass",
+                created_at="2024-01-01T10:00:00",
+            )
+            result = get_regression_health(store, run_id="r1")
+            assert result["component_scores"]["flakiness"] is None
+            assert result["component_scores"]["cross_sim_consistency"] is None
+            assert result["data_quality"]["flakiness_available"] is False
+            assert result["data_quality"]["cross_sim_consistency_available"] is False
+            assert "flakiness" not in result["effective_weights"]
+            assert "cross_sim_consistency" not in result["effective_weights"]
 
     def test_recommendations_non_empty(self, tmp_path):
         with _make_store(tmp_path) as store:
@@ -327,6 +403,29 @@ class TestCoverageAdvisor:
                 assert "sequence_hint" in a
                 assert "protocol_hint" in a
                 assert "bin_name" in a
+
+    def test_targets_exact_run_and_metric(self, tmp_path):
+        with _make_store(tmp_path) as store:
+            result = get_coverage_advisor(
+                store,
+                run_id="r_vcs_001",
+                metric_name="cp_awburst.wrap",
+                protocol="axi4",
+            )
+            assert len(result["advisories"]) == 1
+            advisory = result["advisories"][0]
+            assert advisory["run_id"] == "r_vcs_001"
+            assert advisory["bin_name"] == "cp_awburst.wrap"
+            assert advisory["protocol_hint"] == "AXI4"
+
+
+class TestCoverageGapScoping:
+    def test_run_filter_preserves_gap_provenance(self, tmp_path):
+        with _make_store(tmp_path) as store:
+            result = get_coverage_gaps(store, run_id="r_vcs_001")
+            assert result["gaps"]
+            assert {gap["run_id"] for gap in result["gaps"]} == {"r_vcs_001"}
+            assert {gap["suite"] for gap in result["gaps"]} == {"axi4_unit"}
 
     def test_axi4_protocol_detection(self, tmp_path):
         with _make_store(tmp_path) as store:
@@ -380,6 +479,9 @@ class TestBuildAdvisories:
         assert len(advs) == 1
         assert advs[0]["protocol_hint"] == "AXI4"
         assert "WRAP" in advs[0]["constraint_sv"]
+        assert "{{" not in advs[0]["constraint_sv"]
+        assert "}}" not in advs[0]["constraint_sv"]
+        assert "inside {1, 3, 7, 15}" in advs[0]["constraint_sv"]
 
     def test_axi4_slverr(self):
         gaps = [self._make_gap("cp_bresp.slverr")]

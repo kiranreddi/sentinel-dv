@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from sentinel_dv.schemas.common import EvidenceRef
 
@@ -65,8 +65,8 @@ class FailureEvent(BaseModel):
         default_factory=list, max_length=10, description="Evidence references"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "F20260125_142305_001",
                 "test_id": "T20260125_142305_axi_burst_test",
@@ -88,6 +88,7 @@ class FailureEvent(BaseModel):
                 ],
             }
         }
+    )
 
 
 class FailureSignature(BaseModel):
@@ -109,8 +110,8 @@ class FailureSignature(BaseModel):
     first_seen: datetime = Field(..., description="First occurrence timestamp")
     last_seen: datetime = Field(..., description="Last occurrence timestamp")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "signature_id": "sig_axi_bresp_decerr_abc123",
                 "category": "assertion",
@@ -124,3 +125,4 @@ class FailureSignature(BaseModel):
                 "last_seen": "2026-01-25T14:23:05Z",
             }
         }
+    )

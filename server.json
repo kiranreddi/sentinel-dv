@@ -3,7 +3,7 @@
   "name": "io.github.kiranreddi/sentinel-dv",
   "title": "Sentinel DV",
   "description": "MCP tools for UVM/cocotb logs, coverage, regressions, and waveform triage.",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "websiteUrl": "https://kiranreddi.github.io/sentinel-dv/",
   "repository": {
     "url": "https://github.com/kiranreddi/sentinel-dv",
@@ -22,7 +22,7 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "sentinel-dv",
-      "version": "2.3.0",
+      "version": "2.3.1",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"

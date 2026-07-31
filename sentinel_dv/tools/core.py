@@ -756,7 +756,7 @@ def get_sim_status(
     from sentinel_dv.adapters.live_sim import LiveSimAdapter
 
     adapter = LiveSimAdapter(
-        artifact_roots=cfg.artifact_roots,
+        artifact_roots=[Path(root) for root in cfg.artifact_roots],
         max_age_seconds=cfg.adapters.live_sim_max_age_seconds,
     )
 
@@ -1045,8 +1045,10 @@ def generate_replay_command(
 
 def get_coverage_gaps(
     store: IndexStore,
+    run_id: str | None = None,
     suite: str | None = None,
     kind: str | None = None,
+    priority: str | None = None,
     threshold_pct: float = 100.0,
     page: int = 1,
     page_size: int = 50,
@@ -1058,8 +1060,10 @@ def get_coverage_gaps(
 
     Args:
         store: Index store.
+        run_id: Filter to a specific run.
         suite: Filter to a specific test suite.
         kind: Coverage kind filter (functional|code|assertion|toggle|fsm|unknown).
+        priority: Filter generated gaps by high, medium, or low priority.
         threshold_pct: Report metrics below this coverage percentage (default: 100.0).
         page: Page number (1-based).
         page_size: Items per page.
@@ -1074,10 +1078,18 @@ def get_coverage_gaps(
     from sentinel_dv.schemas.coverage import CoverageGapsResponse
 
     valid_kinds = {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
+    valid_priorities = {"high", "medium", "low"}
+    if run_id:
+        validate_id(run_id, "run_id")
     if kind and kind not in valid_kinds:
         raise ToolError(
             "INVALID_INPUT",
             f"Invalid kind '{kind}'. Must be one of: {sorted(valid_kinds)}.",
+        )
+    if priority and priority not in valid_priorities:
+        raise ToolError(
+            "INVALID_INPUT",
+            f"Invalid priority '{priority}'. Must be one of: {sorted(valid_priorities)}.",
         )
     if not 0.0 <= threshold_pct <= 100.0:
         raise ToolError(
@@ -1090,20 +1102,24 @@ def get_coverage_gaps(
     max_gaps = cfg.security.max_coverage_gaps
 
     # Query all coverage metrics from indexed runs
-    metrics = store.query_coverage_metrics(suite=suite, kind=kind)
+    metrics = store.query_coverage_metrics(run_id=run_id, suite=suite, kind=kind)
 
     total_metrics = len(metrics)
     all_gaps = generate_recommendations(
         metrics=metrics,
         threshold_pct=threshold_pct,
-        max_gaps=max_gaps,
+        max_gaps=len(metrics),
     )
+    if priority:
+        all_gaps = [gap for gap in all_gaps if gap.priority == priority]
+    all_gaps = all_gaps[:max_gaps]
 
     gaps_found = len(all_gaps)
     offset = (page - 1) * page_size
     paginated_gaps = all_gaps[offset : offset + page_size]
 
     response = CoverageGapsResponse(
+        run_id=run_id,
         suite=suite,
         kind=kind,  # type: ignore[arg-type]
         threshold_pct=threshold_pct,
@@ -1112,7 +1128,8 @@ def get_coverage_gaps(
         gaps=paginated_gaps,
         note=(
             "Gaps are sorted by priority (high→medium→low) then by coverage percentage. "
-            "Use tests.replay to reproduce specific failures. "
+            "Use coverage.advisor with an exact run_id and metric_name for a "
+            "reviewable stimulus candidate. "
             f"Showing page {page} of {max(1, (gaps_found + page_size - 1) // page_size)}."
         ),
     )
@@ -1123,8 +1140,10 @@ def get_coverage_gaps(
         page_size,
         gaps_found,
         extra={
+            "run_id": run_id,
             "suite": suite,
             "kind": kind,
+            "priority": priority,
             "threshold_pct": threshold_pct,
             "total_metrics": total_metrics,
             "gaps_found": gaps_found,
@@ -1185,6 +1204,7 @@ def get_coverage_trend(
     oldest = rows[0]["covered_pct"] if rows else 0.0
     total_delta = round(recent - oldest, 2)
     improving = total_delta > 0
+    direction = "improving" if improving else ("stable" if total_delta == 0 else "regressing")
     runs_seen = len({r["run_id"] for r in rows})
 
     return detail_response(
@@ -1197,12 +1217,10 @@ def get_coverage_trend(
                 "oldest_pct": oldest,
                 "latest_pct": recent,
                 "total_delta_pct": total_delta,
-                "direction": (
-                    "improving" if improving else ("stable" if total_delta == 0 else "regressing")
-                ),
+                "direction": direction,
             },
             "note": (
-                f"Coverage {'improved' if improving else 'regressed'} by {abs(total_delta):.1f}% "
+                f"Coverage {direction} with a net change of {total_delta:+.1f}% "
                 f"over {runs_seen} run(s). "
                 "Positive delta_pct = more bins covered than previous run."
             ),
@@ -1232,10 +1250,15 @@ def get_cross_sim_comparison(
     rows = store.cross_sim_divergence(suite_prefix=suite_prefix, limit=limit)
 
     # Build a per-test summary
-    by_test: dict[str, list[dict[str, Any]]] = {}
+    by_test: dict[tuple[str, str, str, str], list[dict[str, Any]]] = {}
     for r in rows:
-        name = r["test_name"]
-        by_test.setdefault(name, []).append(r)
+        cohort = (
+            r["suite"],
+            r["test_name"],
+            r["framework"],
+            r["dut_top"] or "",
+        )
+        by_test.setdefault(cohort, []).append(r)
 
     sim_pairs: set[tuple[str, str]] = set()
     for r in rows:
@@ -1245,7 +1268,8 @@ def get_cross_sim_comparison(
         {
             "suite_prefix": suite_prefix,
             "divergent_tests": rows,
-            "unique_divergent_names": len(by_test),
+            "unique_divergent_tests": len(by_test),
+            "unique_divergent_names": len({row["test_name"] for row in rows}),
             "simulator_pairs_analysed": [{"sim_a": a, "sim_b": b} for a, b in sorted(sim_pairs)],
             "note": (
                 f"{len(by_test)} test(s) produce different pass/fail outcomes across simulators. "
@@ -1263,7 +1287,7 @@ def cluster_test_failures(
     run_id: str | None = None,
     max_clusters: int = 15,
 ) -> dict[str, Any]:
-    """Group test failures by root-cause signature to cut triage time.
+    """Group test failures by normalized signature to cut triage time.
 
     Instead of investigating 500 individual failures, this tool clusters them
     by normalised error message, surfacing the top root causes with counts.
@@ -1282,9 +1306,10 @@ def cluster_test_failures(
     if not 1 <= max_clusters <= 50:
         raise ToolError("INVALID_INPUT", "max_clusters must be between 1 and 50.")
 
-    clusters = store.cluster_failures(run_id=run_id, max_clusters=max_clusters)
-
-    total_failures = sum(c["count"] for c in clusters)
+    result = store.cluster_failures(run_id=run_id, max_clusters=max_clusters)
+    clusters = result["clusters"]
+    total_failures = result["total_failures"]
+    total_clusters = result["total_clusters"]
     top_cluster_pct = round(clusters[0]["count"] / total_failures * 100, 1) if clusters else 0.0
 
     return detail_response(
@@ -1292,11 +1317,13 @@ def cluster_test_failures(
             "run_id": run_id,
             "clusters": clusters,
             "total_failures_analysed": total_failures,
-            "unique_clusters": len(clusters),
+            "unique_clusters": total_clusters,
+            "clusters_returned": len(clusters),
+            "clusters_truncated": result["clusters_truncated"],
             "note": (
-                f"{len(clusters)} root-cause cluster(s) explain {total_failures} failure(s). "
+                f"{total_clusters} signature cluster(s) group {total_failures} failure(s). "
                 f"Top cluster accounts for {top_cluster_pct:.1f}% of failures. "
-                "Fix the representative failure in each cluster first."
+                "Investigate a representative failure from each leading cluster first."
                 if clusters
                 else "No failures found. Run is clean or no failure messages were indexed."
             ),
@@ -1328,7 +1355,12 @@ def get_regression_health(
     Returns:
         Dict with health_score, band, component_scores, and recommendations.
     """
-    data = store.regression_health_data(run_id=run_id, suite=suite)
+    if run_id:
+        validate_id(run_id, "run_id")
+    try:
+        data = store.regression_health_data(run_id=run_id, suite=suite)
+    except ValueError as exc:
+        raise ToolError("NOT_FOUND", str(exc)) from exc
 
     # Component scores (each 0–100)
     total = data["total_tests"]
@@ -1336,7 +1368,8 @@ def get_regression_health(
     pass_rate_score = round(passed / total * 100, 1) if total else 0.0
 
     cov = data["overall_coverage"]
-    coverage_score = round(cov, 1) if cov is not None else 0.0
+    coverage_available = cov is not None
+    coverage_score: float | None = round(cov, 1) if cov is not None else None
 
     total_ass = data["total_assertions"]
     vacuous = data["vacuous_assertions"]
@@ -1349,10 +1382,20 @@ def get_regression_health(
         assertion_score = None
 
     flaky = data["flaky_tests"]
-    flakiness_score = max(0.0, round(100.0 - (flaky / max(total, 1)) * 200, 1))
+    history_cohorts = data["history_cohorts"]
+    flakiness_available = history_cohorts > 0
+    flakiness_score: float | None = (
+        max(0.0, round(100.0 - (flaky / history_cohorts) * 200, 1)) if flakiness_available else None
+    )
 
     divergent = data["divergent_tests"]
-    cross_sim_score = max(0.0, round(100.0 - (divergent / max(total, 1)) * 200, 1))
+    cross_sim_cohorts = data["cross_sim_cohorts"]
+    cross_sim_available = cross_sim_cohorts > 0
+    cross_sim_score: float | None = (
+        max(0.0, round(100.0 - (divergent / cross_sim_cohorts) * 200, 1))
+        if cross_sim_available
+        else None
+    )
 
     # Weighted composite (weights sum to 1.0)
     weights = {
@@ -1369,15 +1412,14 @@ def get_regression_health(
         "flakiness": flakiness_score,
         "cross_sim_consistency": cross_sim_score,
     }
-    available_weights = {
-        key: weight for key, weight in weights.items() if scores.get(key) is not None
-    }
+    available_scores = {key: float(score) for key, score in scores.items() if score is not None}
+    available_weights = {key: weights[key] for key in available_scores}
     weight_total = sum(available_weights.values()) or 1.0
     effective_weights = {
         key: round(weight / weight_total, 4) for key, weight in available_weights.items()
     }
     health_score = round(
-        sum(float(scores[k]) * weights[k] for k in available_weights) / weight_total,
+        sum(available_scores[key] * weights[key] for key in available_scores) / weight_total,
         1,
     )
 
@@ -1398,9 +1440,9 @@ def get_regression_health(
     if pass_rate_score < 95:
         recommendations.append(
             f"Pass rate is {pass_rate_score:.0f}% ({data['failed_tests']} failures). "
-            "Use tests.cluster to find root causes."
+            "Use tests.cluster to group recurring failure signatures."
         )
-    if coverage_score < 80:
+    if coverage_score is not None and coverage_score < 80:
         recommendations.append(
             f"Overall coverage is {coverage_score:.0f}%. "
             "Use coverage.advisor to generate constraints for uncovered bins."
@@ -1411,6 +1453,13 @@ def get_regression_health(
             "the antecedent is never triggered. Add targeted stimulus."
         )
     data_quality_warnings: list[str] = []
+    if not coverage_available:
+        data_quality_warnings.append(
+            "No coverage metrics were indexed for this scope; coverage is unavailable."
+        )
+        recommendations.append(
+            "Index coverage artifacts before using the health score for sign-off."
+        )
     if not assertion_health_available:
         data_quality_warnings.append(
             "No assertion definitions or SVA status were indexed; assertion health is unavailable."
@@ -1418,14 +1467,35 @@ def get_regression_health(
         recommendations.append(
             "Index assertion definition/status artifacts before using health score for sign-off."
         )
+    if not flakiness_available:
+        data_quality_warnings.append(
+            "No repeated test cohorts were indexed; flakiness is unavailable."
+        )
+        recommendations.append(
+            "Index repeated runs for the same test cohorts before evaluating flakiness."
+        )
+    if not cross_sim_available:
+        data_quality_warnings.append(
+            "No comparable multi-simulator cohorts were indexed; cross-simulator consistency "
+            "is unavailable."
+        )
+        recommendations.append(
+            "Index matching test cohorts from at least two simulators before evaluating "
+            "cross-simulator consistency."
+        )
     if divergent > 0:
         recommendations.append(
             f"{divergent} test(s) diverge across simulators. "
             "Use runs.cross_sim to investigate before tape-out."
         )
     if not recommendations:
-        recommendations.append("No critical issues detected. Ready for sign-off review.")
+        recommendations.append(
+            "No critical signals were detected in the indexed scope. "
+            "Continue sign-off review with the disclosed data quality."
+        )
     assertion_text = f"{assertion_score:.0f}%" if assertion_score is not None else "unavailable"
+    flakiness_text = f"{flakiness_score:.0f}%" if flakiness_score is not None else "unavailable"
+    cross_sim_text = f"{cross_sim_score:.0f}%" if cross_sim_score is not None else "unavailable"
 
     return detail_response(
         {
@@ -1436,7 +1506,10 @@ def get_regression_health(
             "weights": weights,
             "effective_weights": effective_weights,
             "data_quality": {
+                "coverage_available": coverage_available,
                 "assertion_health_available": assertion_health_available,
+                "flakiness_available": flakiness_available,
+                "cross_sim_consistency_available": cross_sim_available,
                 "warnings": data_quality_warnings,
             },
             "raw_data": data,
@@ -1444,10 +1517,10 @@ def get_regression_health(
             "note": (
                 f"{band_symbol} Health score: {health_score}/100 ({band}). "
                 f"Breakdown — pass_rate: {pass_rate_score:.0f}%, "
-                f"coverage: {coverage_score:.0f}%, "
+                f"coverage: {f'{coverage_score:.0f}%' if coverage_score is not None else 'unavailable'}, "
                 f"assertions: {assertion_text}, "
-                f"flakiness: {flakiness_score:.0f}%, "
-                f"cross-sim: {cross_sim_score:.0f}%."
+                f"flakiness: {flakiness_text}, "
+                f"cross-sim: {cross_sim_text}."
             ),
         }
     )
@@ -1455,8 +1528,11 @@ def get_regression_health(
 
 def get_coverage_advisor(
     store: IndexStore,
+    run_id: str | None = None,
     suite: str | None = None,
     kind: str | None = None,
+    metric_name: str | None = None,
+    protocol: str | None = None,
     max_recommendations: int = 10,
 ) -> dict[str, Any]:
     """Generate SystemVerilog constraint/UVM sequence snippets for uncovered bins.
@@ -1470,8 +1546,11 @@ def get_coverage_advisor(
 
     Args:
         store: Index store.
+        run_id: Filter to a specific run.
         suite: Filter to a specific suite.
         kind: Coverage kind filter.
+        metric_name: Filter to one metric name.
+        protocol: Optional protocol context (axi4|ahb|apb|chi|generic).
         max_recommendations: Max advisories to return (1–25).
 
     Returns:
@@ -1482,42 +1561,59 @@ def get_coverage_advisor(
     from sentinel_dv.normalization.coverage_hints import generate_recommendations
 
     valid_kinds = {"functional", "code", "assertion", "toggle", "fsm", "unknown"}
+    valid_protocols = {"axi4", "ahb", "apb", "chi", "generic"}
+    if run_id:
+        validate_id(run_id, "run_id")
     if kind and kind not in valid_kinds:
         raise ToolError(
             "INVALID_INPUT", f"Invalid kind '{kind}'. Choose from: {sorted(valid_kinds)}."
         )
     if not 1 <= max_recommendations <= 25:
         raise ToolError("INVALID_INPUT", "max_recommendations must be between 1 and 25.")
+    if protocol and protocol.lower() not in valid_protocols:
+        raise ToolError(
+            "INVALID_INPUT",
+            f"Invalid protocol '{protocol}'. Choose from: {sorted(valid_protocols)}.",
+        )
 
-    metrics = store.query_coverage_metrics(suite=suite, kind=kind)
+    metrics = store.query_coverage_metrics(run_id=run_id, suite=suite, kind=kind)
+    if metric_name:
+        metrics = [metric for metric in metrics if metric["name"] == metric_name]
     if not metrics:
         return detail_response(
             {
+                "run_id": run_id,
                 "suite": suite,
                 "kind": kind,
+                "metric_name": metric_name,
+                "protocol": protocol,
                 "advisories": [],
                 "note": "No coverage metrics indexed.",
             }
         )
 
     gaps = generate_recommendations(metrics, threshold_pct=100.0)
-    high_gaps = [g for g in gaps if g.priority == "high"][:max_recommendations]
+    high_gaps = [g for g in gaps if g.priority == "high"]
+    selected_gaps = gaps if metric_name else high_gaps
+    selected_gaps = selected_gaps[:max_recommendations]
 
-    advisories = build_advisories(high_gaps)
+    advisories = build_advisories(selected_gaps, protocol=protocol)
 
     return detail_response(
         {
+            "run_id": run_id,
             "suite": suite,
             "kind": kind,
+            "metric_name": metric_name,
+            "protocol": protocol,
             "total_gaps": len(gaps),
             "high_priority_gaps": len(high_gaps),
             "advisories": advisories,
             "note": (
                 f"{len(advisories)} targeted constraint/sequence snippet(s) generated for "
-                f"high-priority coverage gaps (0–25% covered). "
-                "Each advisory includes ready-to-use SystemVerilog code. "
-                "Paste the constraint_sv block into your test's constraint block to "
-                "direct stimulus toward the uncovered bin."
+                f"{'the selected metric' if metric_name else 'high-priority coverage gaps'}. "
+                "Each advisory is candidate SystemVerilog code. Review signal names, "
+                "legal values, protocol rules, and testbench ownership before use."
             ),
         }
     )

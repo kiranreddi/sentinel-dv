@@ -1,231 +1,126 @@
 # Quick Start
 
-Get up and running with Sentinel DV in minutes.
+This path installs Sentinel DV, indexes the checked-in demo artifacts, connects an MCP client, and verifies the server with real tool calls.
 
 ## Prerequisites
 
-- Python 3.10 or higher
-- Verification artifacts (UVM logs, cocotb results, coverage reports)
-- 500MB+ disk space for indexing
+- Python 3.10 or newer
+- [`uv`](https://docs.astral.sh/uv/) for the shortest install path
+- An MCP client such as Codex, Claude Code, or GitHub Copilot CLI
 
-## Installation
+The commands below run v2.3.1 through `uvx`. For a persistent environment, use
+`python3 -m pip install "sentinel-dv>=2.3.1"`.
 
-=== "PyPI (Recommended)"
+## 1. Create a demo configuration
+
+Clone the repository so the example artifacts and verification scripts are available:
+
+```bash
+git clone https://github.com/kiranreddi/sentinel-dv.git
+cd sentinel-dv
+cp demo/config.example.yaml demo/config.yaml
+```
+
+`config.yaml` is resolved relative to its own directory. Review `artifact_roots` and `index.path` before using the same pattern with production artifacts.
+
+## 2. Index artifacts
+
+```bash
+uvx --from sentinel-dv@2.3.1 \
+  sentinel-dv-index --config "$PWD/demo/config.yaml" --index-all
+```
+
+Indexing is a required, separate step. The MCP server reads the DuckDB index; it does not scan raw artifacts on each tool call.
+
+## 3. Connect an MCP client
+
+=== "Codex"
 
     ```bash
-    pip install "sentinel-dv>=2.3.0"
+    codex mcp add sentinel-dv \
+      --env SENTINEL_DV_CONFIG="$PWD/demo/config.yaml" \
+      -- uvx --from sentinel-dv@2.3.1 sentinel-dv-server
     ```
 
-=== "From Source"
+=== "Claude Code"
 
     ```bash
-    git clone https://github.com/kiranreddi/sentinel-dv.git
-    cd sentinel-dv
-    pip install -e ".[dev]"
+    claude mcp add \
+      --env SENTINEL_DV_CONFIG="$PWD/demo/config.yaml" \
+      --transport stdio --scope local sentinel-dv \
+      -- uvx --from sentinel-dv@2.3.1 sentinel-dv-server
     ```
 
-## Configuration
+=== "GitHub Copilot CLI"
 
-**Required:** Sentinel DV does not start without a config file (no silent `demo/` default).
+    ```bash
+    copilot mcp add sentinel-dv \
+      --env SENTINEL_DV_CONFIG="$PWD/demo/config.yaml" \
+      -- uvx --from sentinel-dv@2.3.1 sentinel-dv-server
+    ```
 
-From the repository root, copy the template and edit paths for your environment:
+Use an absolute path for `SENTINEL_DV_CONFIG`. See [Agent setup](agent-setup.md) for configuration files, project scope, skills, and host-specific verification.
+
+## 4. Verify the connection
+
+In the client, confirm that the `sentinel-dv` server is connected and that `runs.list` is available:
+
+| Client | Check |
+| --- | --- |
+| Codex | `/mcp` |
+| Claude Code | `/mcp` or `claude mcp list` |
+| GitHub Copilot CLI | `/mcp list` or `copilot mcp list` |
+
+Then ask:
+
+```text
+List the indexed runs with runs.list. Do not summarize beyond the returned data.
+```
+
+An empty result is not a passing regression. It means the selected index has no matching records or needs to be rebuilt.
+
+## 5. Use a workflow skill
+
+The repository includes three skills under `.agents/skills`, `.claude/skills`, and `.github/skills`.
+
+=== "Regression triage"
+
+    ```text
+    Use the Sentinel DV regression triage skill to assess the latest failing run.
+    Preserve IDs, disclose missing health components, and prioritize failure clusters.
+    ```
+
+=== "Failure debugging"
+
+    ```text
+    Use the Sentinel DV failure debugging skill to explain why test_counter_sim failed.
+    Separate observations, inference, and missing evidence.
+    ```
+
+=== "Coverage closure"
+
+    ```text
+    Use the Sentinel DV coverage closure skill for the latest xcelium run.
+    Prioritize AXI4 functional gaps and check assertion vacuity.
+    ```
+
+The skills guide the tool sequence and reporting rules. The MCP server remains the source of live, typed verification data.
+
+## Repository verification
+
+From a development checkout:
 
 ```bash
-cp config.example.yaml config.yaml
+.venv/bin/python scripts/verify_all_mcp_tools.py
+.venv/bin/python scripts/verify_skill_workflows.py
 ```
 
-Alternatively set `export SENTINEL_DV_CONFIG=/absolute/path/to/config.yaml`, or place `config.yaml` / `config.yml` in the directory where you start the server.
+The first command invokes all 28 MCP tools. The second executes the three published skill workflows against 52 checked-in demo artifacts.
 
-Example `config.yaml`:
+## Next
 
-```yaml
-artifact_roots:
-  - /path/to/verification/regressions
-  
-index:
-  type: duckdb
-  path: ./sentinel_dv.db
-
-adapters:
-  uvm: true
-  cocotb: true
-  assertions: true
-  coverage: true
-
-security:
-  max_page_size: 200
-  max_response_bytes: 2097152
-
-redaction:
-  enabled: true
-  redact_emails: true
-  redact_paths: true
-```
-
-!!! tip "Example Configuration"
-    Copy `config.example.yaml` and customize for your environment.
-
-## Index Your Artifacts
-
-```bash
-python -m sentinel_dv.indexing.indexer --config config.yaml --index-all
-```
-
-This will:
-
-1. Scan configured artifact roots
-2. Parse verification artifacts using enabled adapters
-3. Build normalized index in DuckDB
-4. Generate failure signatures and topology
-
-**Expected output:**
-
-```
-[INFO] Scanning artifact roots...
-[INFO] Found 150 test logs
-[INFO] Parsing UVM logs...
-[INFO] Parsing cocotb results...
-[INFO] Building index...
-[INFO] Indexed 150 tests, 45 failures, 1200 assertions, 80 coverage reports
-[INFO] Index complete: sentinel_dv.db (125MB)
-```
-
-## Start the Server
-
-```bash
-python -m sentinel_dv.server --config config.yaml
-```
-
-**Server will start on stdio (MCP protocol):**
-
-```
-Sentinel DV v2.3.0 started
-Schema version: 1.0.0
-Tools registered: 15
-Index ready: 150 tests indexed
-```
-
-## Use with Claude Desktop
-
-Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
-
-```json
-{
-  "mcpServers": {
-    "sentinel-dv": {
-      "command": "python",
-      "args": [
-        "-m",
-        "sentinel_dv.server",
-        "--config",
-        "/absolute/path/to/config.yaml"
-      ]
-    }
-  }
-}
-```
-
-Restart Claude Desktop.
-
-## First Queries
-
-Try these queries with Claude:
-
-!!! example "Test Failure Analysis"
-    ```
-    "Why did test axi_burst_test fail in the latest run?"
-    ```
-    
-    Claude will use:
-    - `tests.list` to find the test
-    - `failures.list` to get failure events
-    - `tests.topology` to understand the testbench structure
-
-!!! example "Coverage Comparison"
-    ```
-    "Compare functional coverage between runs R123 and R124"
-    ```
-    
-    Claude will use:
-    - `runs.diff` to compute differences
-    - `coverage.summary` to get detailed metrics
-
-!!! example "Assertion Tracking"
-    ```
-    "Show me all AXI assertion failures from this week"
-    ```
-    
-    Claude will use:
-    - `assertions.list` to find AXI assertions
-    - `assertions.failures` to get runtime failures
-    - `regressions.summary` for time windowing
-
-!!! example "Regression Health"
-    ```
-    "What's the pass rate for the nightly regression?"
-    ```
-    
-    Claude will use:
-    - `regressions.summary` for suite-level stats
-    - `runs.list` to enumerate runs
-
-!!! example "Waveform window (1.2.0+)"
-    ```
-    "Show clk toggles for test_counter_sim between 2 and 3 microseconds"
-    ```
-    
-    Claude will use:
-    - `tests.list` to resolve `test_id`
-    - `wave.signals` with `start_time_ns: 2000`, `end_time_ns: 3000`
-    
-    Requires `waveform_summary: true` and an indexed VCD or `*.wave.json`. See [MCP tools reference](../tools/mcp-tools-reference.md).
-
-## Verify It Works
-
-Check that tools are accessible:
-
-```python
-# test_connection.py
-from sentinel_dv.config import load_config
-from sentinel_dv.indexing.store import get_store
-
-config = load_config("config.yaml")
-store = get_store()
-
-print(f"Tests indexed: {store.count_tests()}")
-print(f"Runs indexed: {store.count_runs()}")
-print(f"Failures indexed: {store.count_failures()}")
-```
-
-## Next Steps
-
-- [MCP tool gallery](../tools/mcp-tool-gallery.md) — visual cards for all 28 tools (real JSON from `demo/`)
-- [Multi-project demo](https://github.com/kiranreddi/sentinel-dv/blob/main/demo/README.md) — UVM, cocotb, Verilator, and commercial simulator fixtures
-- [VCS, Questa, and Cadence](../examples/commercial-simulators.md) — license-free artifact validation (`python scripts/verify_all_mcp_tools.py --sim vcs`)
-- [Verilator + VCD example](../examples/verilator-counter.md) — end-to-end waveform demo
-- [Waveform summaries](../guides/waveforms.md) — `*.wave.json` and `*.vcd` indexing
-- [Configure adapters](../configuration.md) for your specific simulator
-- [Explore tools](../tools/overview.md) available for queries
-- [Understand schemas](../architecture/schemas.md) for structured data
-- [Deploy to production](../deployment/production.md) with systemd
-
-## Troubleshooting
-
-??? question "Index not building?"
-
-    - Check artifact root paths are correct and readable
-    - Ensure logs are in recognized format (UVM, cocotb)
-
-??? question "Server not starting?"
-
-    - Verify Python version (3.10+)
-    - Check config.yaml is valid YAML
-    - Ensure index database exists and is readable
-
-??? question "No results from queries?"
-
-    - Verify index was built successfully
-    - Check that artifacts contain expected data
-    - Try simpler queries first (e.g., `runs.list`)
-
-[Full Troubleshooting Guide](../guides/troubleshooting.md){ .md-button }
+- [Agent setup](agent-setup.md)
+- [Skill workflows](../skills/overview.md)
+- [All 28 MCP tools](../tools/mcp-tools-reference.md)
+- [Artifact and simulator support](../guides/simulator-support.md)
+- [Production deployment](../deployment/production.md)

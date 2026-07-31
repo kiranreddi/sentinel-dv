@@ -4,12 +4,15 @@
     "suite": "verilator_counter"
   },
   "response": {
+    "run_id": null,
     "suite": "verilator_counter",
     "kind": null,
+    "metric_name": null,
+    "protocol": null,
     "total_gaps": 2,
     "high_priority_gaps": 0,
     "advisories": [],
-    "note": "0 targeted constraint/sequence snippet(s) generated for high-priority coverage gaps (0\u201325% covered). Each advisory includes ready-to-use SystemVerilog code. Paste the constraint_sv block into your test's constraint block to direct stimulus toward the uncovered bin.",
+    "note": "0 targeted constraint/sequence snippet(s) generated for high-priority coverage gaps. Each advisory is candidate SystemVerilog code. Review signal names, legal values, protocol rules, and testbench ownership before use.",
     "schema_version": "1.0.0"
   }
 }

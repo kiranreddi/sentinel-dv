@@ -175,6 +175,8 @@ def generate_recommendations(
 
         gaps.append(
             CoverageGap(
+                run_id=metric.get("run_id"),
+                suite=metric.get("suite"),
                 metric_name=name,
                 scope=scope,
                 kind=kind,  # type: ignore[arg-type]

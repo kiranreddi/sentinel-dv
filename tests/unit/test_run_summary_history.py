@@ -121,6 +121,7 @@ def test_test_history_across_runs(indexed_store) -> None:
         test_name="tb.test_one",
         suite="demo_suite",
         window_days=30,
+        as_of="2026-05-30T00:00:00Z",
     )
     assert payload["entries_returned"] == 2
     assert payload["is_flaky"] is True

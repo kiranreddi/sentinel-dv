@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from sentinel_dv.schemas.common import EvidenceRef, RunRef
 from sentinel_dv.schemas.failures import FailureSignature
@@ -29,8 +29,8 @@ class RegressionSummary(BaseModel):
         ..., max_length=100, description="Top failure signatures by count"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "suite": "nightly_regression",
                 "window": {
@@ -58,6 +58,7 @@ class RegressionSummary(BaseModel):
                 ],
             }
         }
+    )
 
 
 class DiffItem(BaseModel):
@@ -73,8 +74,8 @@ class DiffItem(BaseModel):
         default_factory=list, max_length=5, description="Evidence references"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "kind": "new_failure_signature",
                 "description": "New assertion failure: AXI BRESP DECERR",
@@ -86,6 +87,7 @@ class DiffItem(BaseModel):
                 "evidence": [],
             }
         }
+    )
 
 
 class RunDiff(BaseModel):
@@ -95,8 +97,8 @@ class RunDiff(BaseModel):
     compare_run_id: str = Field(..., description="Comparison run identifier")
     changes: list[DiffItem] = Field(..., description="List of differences")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "base_run_id": "R20260124_142305",
                 "compare_run_id": "R20260125_142305",
@@ -124,3 +126,4 @@ class RunDiff(BaseModel):
                 ],
             }
         }
+    )

@@ -12,6 +12,9 @@ ErrorCode = Literal[
     "INTERNAL",
     "INDEX_NOT_READY",
     "LIMIT_EXCEEDED",
+    "INVALID_INPUT",
+    "CONFIG_ERROR",
+    "COMMAND_TOO_LONG",
 ]
 
 

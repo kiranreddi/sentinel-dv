@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "sentinel-dv",
+  "displayName": "Sentinel DV",
+  "version": "2.3.1",
+  "description": "Evidence-backed regression triage, failure debugging, and coverage closure skills for Sentinel DV.",
+  "author": {
+    "name": "Sentinel DV Team",
+    "url": "https://github.com/kiranreddi"
+  },
+  "homepage": "https://kiranreddi.github.io/sentinel-dv/",
+  "repository": "https://github.com/kiranreddi/sentinel-dv",
+  "license": "Apache-2.0",
+  "keywords": [
+    "verification",
+    "systemverilog",
+    "uvm",
+    "cocotb",
+    "regression",
+    "coverage"
+  ],
+  "skills": "./skills/"
+}
