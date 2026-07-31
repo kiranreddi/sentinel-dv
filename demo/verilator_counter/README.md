@@ -51,6 +51,7 @@ Full parameter examples: [docs/examples/verilator-counter.md](../../docs/example
 | `results.xml` | JUnit pass (`test_counter_sim`) |
 | `results_regression_fail.xml` | JUnit fail (`test_counter_overflow`) |
 | `counter_tb.uvm.log` | Illustrative UVM log (topology + scoreboard error) |
+| `test_counter_sim*.wave.json` | Checked-in cocotb and UVM waveform summaries for clean-clone and CI workflows |
 | `assertions/` | SVA assertion reports |
 | `coverage/coverage.json` | Functional coverage summary |
 | `config.example.yaml` | All adapters enabled |

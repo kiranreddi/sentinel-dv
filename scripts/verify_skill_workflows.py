@@ -64,8 +64,13 @@ def verify_skill_workflows() -> dict[str, Any]:
             assert triage_assertions["assertion_failures"]
             assert triage_health["data_quality"]["cross_sim_consistency_available"] is False
 
-            # Failure debugging: a UVM failure with topology and an indexed VCD.
+            # Failure debugging: a UVM failure with topology and indexed waveform evidence.
             debug_test = _first(failing_tests, name="test_counter_sim")
+            debug_run = _first(
+                all_runs,
+                run_id=debug_test["run_id"],
+                suite="verilator_counter",
+            )
             debug_test_id = debug_test["test_id"]
             debug_details = core.get_test_details(store, debug_test_id)
             debug_failures = core.list_failures(
@@ -105,7 +110,7 @@ def verify_skill_workflows() -> dict[str, Any]:
             assert debug_assertions["assertion_failures"] == []
             assert debug_topology["item"]["uvm"] is not None
             assert debug_history["entries_returned"] >= 1
-            assert debug_wave["format"] == "vcd-summary"
+            assert debug_wave["format"] in {"vcd-summary", "precomputed-vcd"}
             assert debug_signals["signals"]
 
             # Coverage closure: AXI4 functional gaps, vacuity, and one targeted advisor result.
@@ -172,6 +177,7 @@ def verify_skill_workflows() -> dict[str, Any]:
                 },
                 "failure_debugging": {
                     "test_id": debug_test_id,
+                    "suite": debug_run["suite"],
                     "category": debug_failures["failures"][0]["category"],
                     "waveform_format": debug_wave["format"],
                     "signals_in_window": len(debug_signals["signals"]),

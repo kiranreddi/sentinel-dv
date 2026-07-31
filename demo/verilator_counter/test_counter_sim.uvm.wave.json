@@ -1,0 +1,50 @@
+{
+  "test_name": "test_counter_sim",
+  "framework": "uvm",
+  "format": "precomputed-vcd",
+  "end_time_ns": 10000,
+  "signal_groups": [
+    {
+      "name": "counter",
+      "signals": [
+        {
+          "name": "clk",
+          "width": 1,
+          "toggles": 100,
+          "last_value": "0"
+        },
+        {
+          "name": "rst",
+          "width": 1,
+          "toggles": 2,
+          "last_value": "0"
+        },
+        {
+          "name": "count",
+          "width": 4,
+          "toggles": 16,
+          "last_value": "0xf"
+        }
+      ]
+    }
+  ],
+  "highlights": [
+    {
+      "time_ns": 1000,
+      "signal": "rst",
+      "value": "0",
+      "note": "reset released"
+    },
+    {
+      "time_ns": 2500,
+      "signal": "count",
+      "value": "0x3",
+      "note": "counter increment window"
+    }
+  ],
+  "metadata": {
+    "source": "checked-in demo fixture",
+    "generator": "verilator-vcd-summary",
+    "linked_framework": "uvm"
+  }
+}
